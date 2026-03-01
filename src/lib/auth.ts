@@ -11,11 +11,13 @@ declare module "next-auth" {
     user: {
       id: string;
       userType: UserType;
+      avatarUrl?: string | null;
     } & DefaultSession["user"];
   }
 
   interface User {
     userType: UserType;
+    avatarUrl?: string | null;
   }
 }
 
@@ -113,6 +115,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         if (user) {
           session.user.id = user.id;
           session.user.userType = user.userType;
+          session.user.avatarUrl = user.avatarUrl;
         }
       }
       return session;

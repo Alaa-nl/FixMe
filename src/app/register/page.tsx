@@ -124,14 +124,14 @@ export default function RegisterPage() {
 
   if (status === "loading") {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="flex flex-1 items-center justify-center">
         <div className="animate-spin h-10 w-10 border-4 border-primary border-t-transparent rounded-full"></div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 py-12">
+    <div className="flex flex-1 items-center justify-center px-4 py-12">
       <div className="max-w-md w-full bg-card rounded-xl shadow-lg p-8">
         {/* Logo */}
         <div className="text-center mb-8">

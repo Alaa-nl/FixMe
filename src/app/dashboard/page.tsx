@@ -1,9 +1,8 @@
 "use client";
 
-import { useSession, signOut } from "next-auth/react";
+import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
-import Button from "@/components/ui/Button";
 
 export default function DashboardPage() {
   const { data: session, status } = useSession();
@@ -17,7 +16,7 @@ export default function DashboardPage() {
 
   if (status === "loading") {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="flex flex-1 items-center justify-center">
         <div className="animate-spin h-10 w-10 border-4 border-primary border-t-transparent rounded-full"></div>
       </div>
     );
@@ -28,7 +27,7 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background p-8">
+    <div className="bg-background p-8 flex-1">
       <div className="max-w-4xl mx-auto">
         <div className="bg-card rounded-xl shadow-lg p-8">
           <h1 className="text-3xl font-bold text-gray-800 mb-4">Dashboard</h1>
@@ -42,11 +41,6 @@ export default function DashboardPage() {
             <p className="text-gray-600">
               User Type: <span className="font-medium">{session.user?.userType}</span>
             </p>
-            <div className="pt-4">
-              <Button onClick={() => signOut({ callbackUrl: "/" })}>
-                Sign Out
-              </Button>
-            </div>
           </div>
         </div>
       </div>
