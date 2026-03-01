@@ -105,6 +105,49 @@ export async function GET(request: NextRequest) {
       },
     });
 
+    // Fetch disputes (customer's disputes only)
+    const disputes = await prisma.dispute.findMany({
+      where: {
+        job: {
+          customerId: userId,
+        },
+      },
+      orderBy: { createdAt: "desc" },
+      include: {
+        job: {
+          include: {
+            repairRequest: {
+              select: {
+                id: true,
+                title: true,
+              },
+            },
+            customer: {
+              select: {
+                id: true,
+                name: true,
+                avatarUrl: true,
+              },
+            },
+            fixer: {
+              select: {
+                id: true,
+                name: true,
+                avatarUrl: true,
+              },
+            },
+          },
+        },
+        openedBy: {
+          select: {
+            id: true,
+            name: true,
+            avatarUrl: true,
+          },
+        },
+      },
+    });
+
     // Calculate stats
     const activeRequestCount = activeRequests.length;
     const completedCount = await prisma.job.count({
@@ -136,6 +179,7 @@ export async function GET(request: NextRequest) {
         activeRequests,
         activeJobs,
         pastJobs,
+        disputes,
         stats,
       },
       { status: 200 }

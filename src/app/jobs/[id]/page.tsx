@@ -8,6 +8,7 @@ import JobTimeline from "@/components/job/JobTimeline";
 import JobActions from "@/components/job/JobActions";
 import ReviewForm from "@/components/review/ReviewForm";
 import ReviewCard from "@/components/review/ReviewCard";
+import DisputeForm from "@/components/dispute/DisputeForm";
 
 interface JobPageProps {
   params: Promise<{ id: string }>;
@@ -68,6 +69,16 @@ export default async function JobPage({ params }: JobPageProps) {
       },
       payments: true,
       reviews: true,
+      disputes: {
+        include: {
+          openedBy: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+        },
+      },
     },
   });
 
@@ -257,6 +268,43 @@ export default async function JobPage({ params }: JobPageProps) {
                       ))}
                     </div>
                   </div>
+                )}
+              </div>
+            )}
+
+            {/* Dispute Section */}
+            {isCustomer && (
+              <div>
+                {job.disputes && job.disputes.length > 0 ? (
+                  /* Show existing dispute */
+                  <div className="bg-red-50 border-l-4 border-red-500 p-6 rounded-lg">
+                    <h3 className="text-xl font-bold text-red-900 mb-2">
+                      ⚠️ Dispute open
+                    </h3>
+                    <p className="text-red-800 mb-4">
+                      A dispute has been opened for this job. The payment is on hold
+                      pending admin review.
+                    </p>
+                    <Link
+                      href={`/disputes/${job.disputes[0].id}`}
+                      className="inline-block px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium"
+                    >
+                      View dispute details
+                    </Link>
+                  </div>
+                ) : (
+                  /* Show dispute form option if eligible */
+                  (job.status === "IN_PROGRESS" ||
+                    (job.status === "COMPLETED" &&
+                      job.completedAt &&
+                      (Date.now() - new Date(job.completedAt).getTime()) /
+                        (1000 * 60 * 60) <=
+                        48)) && (
+                    <DisputeForm
+                      jobId={job.id}
+                      onSuccess={() => window.location.reload()}
+                    />
+                  )
                 )}
               </div>
             )}

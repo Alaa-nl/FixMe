@@ -6,11 +6,13 @@ import Link from "next/link";
 import { timeAgo } from "@/lib/utils";
 import { getCategoryIcon } from "@/lib/categoryIcons";
 import Button from "@/components/ui/Button";
+import DisputeCard from "@/components/dispute/DisputeCard";
 
 interface DashboardData {
   activeRequests: any[];
   activeJobs: any[];
   pastJobs: any[];
+  disputes?: any[];
   stats: {
     activeRequestCount: number;
     completedCount: number;
@@ -68,6 +70,10 @@ export default function CustomerDashboard() {
         return "bg-green-100 text-green-700 border-green-300";
       case "SCHEDULED":
         return "bg-purple-100 text-purple-700 border-purple-300";
+      case "DISPUTED":
+        return "bg-red-100 text-red-700 border-red-300";
+      case "REFUNDED":
+        return "bg-gray-100 text-gray-700 border-gray-300";
       default:
         return "bg-gray-100 text-gray-700 border-gray-300";
     }
@@ -253,6 +259,18 @@ export default function CustomerDashboard() {
           </div>
         )}
       </div>
+
+      {/* Disputes */}
+      {dashboardData.disputes && dashboardData.disputes.length > 0 && (
+        <div>
+          <h2 className="text-2xl font-bold text-gray-800 mb-4">⚠️ Disputes</h2>
+          <div className="space-y-4">
+            {dashboardData.disputes.map((dispute: any) => (
+              <DisputeCard key={dispute.id} dispute={dispute} />
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Past Jobs */}
       {dashboardData.pastJobs.length > 0 && (
