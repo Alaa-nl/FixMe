@@ -1,0 +1,345 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Enums
+enum UserType {
+  CUSTOMER
+  FIXER
+  ADMIN
+}
+
+enum Timeline {
+  URGENT
+  THIS_WEEK
+  NO_RUSH
+}
+
+enum Mobility {
+  BRING_TO_FIXER
+  FIXER_COMES_TO_ME
+}
+
+enum RepairRequestStatus {
+  OPEN
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+  DISPUTED
+}
+
+enum OfferStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  WITHDRAWN
+}
+
+enum JobStatus {
+  SCHEDULED
+  IN_PROGRESS
+  COMPLETED
+  DISPUTED
+  REFUNDED
+}
+
+enum DisputeResolution {
+  PENDING
+  REFUNDED
+  RELEASED
+}
+
+enum PaymentStatus {
+  PENDING
+  HELD
+  RELEASED
+  REFUNDED
+}
+
+// Models
+model User {
+  id           String    @id @default(uuid())
+  email        String    @unique
+  passwordHash String?
+  name         String
+  avatarUrl    String?
+  phone        String?
+  locationLat  Float?
+  locationLng  Float?
+  city         String?
+  userType     UserType  @default(CUSTOMER)
+  provider     String?
+  providerId   String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  // Relations
+  fixerProfile        FixerProfile?
+  repairRequests      RepairRequest[]
+  offers              Offer[]
+  jobsAsCustomer      Job[]           @relation("CustomerJobs")
+  jobsAsFixer         Job[]           @relation("FixerJobs")
+  conversationsAsCustomer Conversation[] @relation("CustomerConversations")
+  conversationsAsFixer    Conversation[] @relation("FixerConversations")
+  messagesSent        Message[]
+  reviewsGiven        Review[]        @relation("ReviewsGiven")
+  reviewsReceived     Review[]        @relation("ReviewsReceived")
+  disputesOpened      Dispute[]
+  paymentsAsCustomer  Payment[]       @relation("CustomerPayments")
+  paymentsAsFixer     Payment[]       @relation("FixerPayments")
+  notifications       Notification[]
+
+  @@index([email])
+  @@index([userType])
+  @@index([city])
+}
+
+model FixerProfile {
+  id              String   @id @default(uuid())
+  userId          String   @unique
+  kvkNumber       String?
+  kvkVerified     Boolean  @default(false)
+  bio             String?  @db.Text
+  skills          String[]
+  serviceRadiusKm Int      @default(10)
+  minJobFee       Float?
+  averageRating   Float    @default(0)
+  totalJobs       Int      @default(0)
+  totalEarnings   Float    @default(0)
+  isActive        Boolean  @default(true)
+  verifiedBadge   Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([isActive])
+}
+
+model Category {
+  id          String    @id @default(uuid())
+  name        String    @unique
+  nameNl      String
+  iconUrl     String?
+  description String?
+  isActive    Boolean   @default(true)
+
+  // Relations
+  repairRequests RepairRequest[]
+
+  @@index([isActive])
+}
+
+model RepairRequest {
+  id           String              @id @default(uuid())
+  customerId   String
+  title        String
+  description  String              @db.Text
+  categoryId   String
+  photos       String[]
+  videoUrl     String?
+  locationLat  Float
+  locationLng  Float
+  city         String
+  address      String?
+  timeline     Timeline
+  mobility     Mobility
+  status       RepairRequestStatus @default(OPEN)
+  aiDiagnosis  Json?
+  createdAt    DateTime            @default(now())
+  updatedAt    DateTime            @updatedAt
+
+  // Relations
+  customer      User           @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  category      Category       @relation(fields: [categoryId], references: [id])
+  offers        Offer[]
+  jobs          Job[]
+  conversations Conversation[]
+
+  @@index([customerId])
+  @@index([categoryId])
+  @@index([status])
+  @@index([city])
+  @@index([createdAt])
+}
+
+model Offer {
+  id              String      @id @default(uuid())
+  repairRequestId String
+  fixerId         String
+  price           Float
+  estimatedTime   String
+  message         String      @db.Text
+  status          OfferStatus @default(PENDING)
+  createdAt       DateTime    @default(now())
+
+  // Relations
+  repairRequest RepairRequest @relation(fields: [repairRequestId], references: [id], onDelete: Cascade)
+  fixer         User          @relation(fields: [fixerId], references: [id], onDelete: Cascade)
+  jobs          Job[]
+
+  @@index([repairRequestId])
+  @@index([fixerId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model Job {
+  id              String     @id @default(uuid())
+  repairRequestId String
+  offerId         String
+  customerId      String
+  fixerId         String
+  agreedPrice     Float
+  platformFee     Float
+  fixerPayout     Float
+  status          JobStatus  @default(SCHEDULED)
+  startedAt       DateTime?
+  completedAt     DateTime?
+  createdAt       DateTime   @default(now())
+
+  // Relations
+  repairRequest RepairRequest @relation(fields: [repairRequestId], references: [id])
+  offer         Offer         @relation(fields: [offerId], references: [id])
+  customer      User          @relation("CustomerJobs", fields: [customerId], references: [id])
+  fixer         User          @relation("FixerJobs", fields: [fixerId], references: [id])
+  reviews       Review[]
+  disputes      Dispute[]
+  payments      Payment[]
+
+  @@index([repairRequestId])
+  @@index([offerId])
+  @@index([customerId])
+  @@index([fixerId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model Conversation {
+  id              String   @id @default(uuid())
+  repairRequestId String
+  customerId      String
+  fixerId         String
+  createdAt       DateTime @default(now())
+
+  // Relations
+  repairRequest RepairRequest @relation(fields: [repairRequestId], references: [id], onDelete: Cascade)
+  customer      User          @relation("CustomerConversations", fields: [customerId], references: [id])
+  fixer         User          @relation("FixerConversations", fields: [fixerId], references: [id])
+  messages      Message[]
+
+  @@index([repairRequestId])
+  @@index([customerId])
+  @@index([fixerId])
+}
+
+model Message {
+  id             String       @id @default(uuid())
+  conversationId String
+  senderId       String
+  content        String       @db.Text
+  photoUrl       String?
+  read           Boolean      @default(false)
+  createdAt      DateTime     @default(now())
+
+  // Relations
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  sender       User         @relation(fields: [senderId], references: [id])
+
+  @@index([conversationId])
+  @@index([senderId])
+  @@index([read])
+  @@index([createdAt])
+}
+
+model Review {
+  id         String   @id @default(uuid())
+  jobId      String
+  reviewerId String
+  reviewedId String
+  rating     Int
+  comment    String?  @db.Text
+  createdAt  DateTime @default(now())
+
+  // Relations
+  job      Job  @relation(fields: [jobId], references: [id])
+  reviewer User @relation("ReviewsGiven", fields: [reviewerId], references: [id])
+  reviewed User @relation("ReviewsReceived", fields: [reviewedId], references: [id])
+
+  @@index([jobId])
+  @@index([reviewerId])
+  @@index([reviewedId])
+  @@index([rating])
+}
+
+model Dispute {
+  id             String             @id @default(uuid())
+  jobId          String
+  openedById     String
+  reason         String             @db.Text
+  evidencePhotos String[]
+  resolution     DisputeResolution  @default(PENDING)
+  adminNotes     String?            @db.Text
+  resolvedAt     DateTime?
+  createdAt      DateTime           @default(now())
+
+  // Relations
+  job      Job  @relation(fields: [jobId], references: [id])
+  openedBy User @relation(fields: [openedById], references: [id])
+
+  @@index([jobId])
+  @@index([openedById])
+  @@index([resolution])
+}
+
+model Payment {
+  id                String        @id @default(uuid())
+  jobId             String
+  customerId        String
+  fixerId           String
+  amount            Float
+  platformFee       Float
+  fixerPayout       Float
+  paymentProviderId String?
+  status            PaymentStatus @default(PENDING)
+  createdAt         DateTime      @default(now())
+  releasedAt        DateTime?
+
+  // Relations
+  job      Job  @relation(fields: [jobId], references: [id])
+  customer User @relation("CustomerPayments", fields: [customerId], references: [id])
+  fixer    User @relation("FixerPayments", fields: [fixerId], references: [id])
+
+  @@index([jobId])
+  @@index([customerId])
+  @@index([fixerId])
+  @@index([status])
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String
+  type      String
+  title     String
+  message   String
+  read      Boolean  @default(false)
+  relatedId String?
+  createdAt DateTime @default(now())
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([read])
+  @@index([createdAt])
+}
