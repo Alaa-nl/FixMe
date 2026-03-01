@@ -9,6 +9,7 @@ import Button from "@/components/ui/Button";
 export default function Navbar() {
   const { data: session, status } = useSession();
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Close dropdown when clicking outside
@@ -27,6 +28,28 @@ export default function Navbar() {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [dropdownOpen]);
+
+  // Fetch unread messages count
+  useEffect(() => {
+    if (session) {
+      fetchUnreadCount();
+      // Poll every 30 seconds for updates
+      const interval = setInterval(fetchUnreadCount, 30000);
+      return () => clearInterval(interval);
+    }
+  }, [session]);
+
+  const fetchUnreadCount = async () => {
+    try {
+      const res = await fetch("/api/messages/unread");
+      if (res.ok) {
+        const data = await res.json();
+        setUnreadCount(data.unreadCount);
+      }
+    } catch (error) {
+      console.error("Error fetching unread count:", error);
+    }
+  };
 
   const getInitials = (name?: string | null) => {
     if (!name) return "U";
@@ -72,6 +95,11 @@ export default function Navbar() {
                 className="hidden md:flex p-2 text-gray-600 hover:bg-gray-100 rounded-full transition-colors relative"
               >
                 <MessageCircle className="w-6 h-6" />
+                {unreadCount > 0 && (
+                  <span className="absolute top-0 right-0 w-5 h-5 bg-primary text-white text-xs font-semibold rounded-full flex items-center justify-center">
+                    {unreadCount > 9 ? "9+" : unreadCount}
+                  </span>
+                )}
               </Link>
 
               {/* Notifications Icon - Hidden on mobile */}
