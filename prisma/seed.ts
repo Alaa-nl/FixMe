@@ -489,6 +489,173 @@ async function main() {
     }
   }
 
+  // Create some completed jobs and reviews
+  console.log("\n📝 Creating completed jobs and reviews...");
+
+  // First, we need to create some completed jobs
+  const completedJob1 = await prisma.job.create({
+    data: {
+      repairRequestId: allRequests[0].id,
+      offerId: (await prisma.offer.findFirst({ where: { fixerId: fixer1.id } }))!.id,
+      customerId: user1.id,
+      fixerId: fixer1.id,
+      agreedPrice: 75,
+      platformFee: 11.25,
+      fixerPayout: 63.75,
+      status: "COMPLETED",
+      startedAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000), // 7 days ago
+      completedAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000), // 5 days ago
+    },
+  });
+  console.log(`✅ Created completed job 1`);
+
+  const completedJob2 = await prisma.job.create({
+    data: {
+      repairRequestId: allRequests[1].id,
+      offerId: (await prisma.offer.findFirst({ where: { fixerId: fixer2.id } }))!.id,
+      customerId: user2.id,
+      fixerId: fixer2.id,
+      agreedPrice: 89,
+      platformFee: 13.35,
+      fixerPayout: 75.65,
+      status: "COMPLETED",
+      startedAt: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000), // 10 days ago
+      completedAt: new Date(Date.now() - 8 * 24 * 60 * 60 * 1000), // 8 days ago
+    },
+  });
+  console.log(`✅ Created completed job 2`);
+
+  // Add reviews for the completed jobs
+  await prisma.review.create({
+    data: {
+      jobId: completedJob1.id,
+      reviewerId: user1.id,
+      reviewedId: fixer1.id,
+      rating: 5,
+      comment: "Fixed my bike chain in 20 minutes. Very friendly and professional!",
+    },
+  });
+  console.log(`✅ Created review from user1 for fixer1`);
+
+  await prisma.review.create({
+    data: {
+      jobId: completedJob1.id,
+      reviewerId: fixer1.id,
+      reviewedId: user1.id,
+      rating: 5,
+      comment: "Great customer, clear communication and punctual!",
+    },
+  });
+  console.log(`✅ Created review from fixer1 for user1`);
+
+  await prisma.review.create({
+    data: {
+      jobId: completedJob2.id,
+      reviewerId: user2.id,
+      reviewedId: fixer2.id,
+      rating: 4,
+      comment: "Good job on the phone screen. Looks like new. Took a bit longer than expected but good result.",
+    },
+  });
+  console.log(`✅ Created review from user2 for fixer2`);
+
+  await prisma.review.create({
+    data: {
+      jobId: completedJob2.id,
+      reviewerId: fixer2.id,
+      reviewedId: user2.id,
+      rating: 5,
+      comment: "Nice person to work with, would fix for them again!",
+    },
+  });
+  console.log(`✅ Created review from fixer2 for user2`);
+
+  // Add a few more reviews for fixer1
+  const completedJob3 = await prisma.job.create({
+    data: {
+      repairRequestId: allRequests[2].id,
+      offerId: (await prisma.offer.findFirst({ where: { fixerId: fixer1.id, repairRequestId: allRequests[2].id } }))!.id,
+      customerId: user1.id,
+      fixerId: fixer1.id,
+      agreedPrice: 120,
+      platformFee: 18,
+      fixerPayout: 102,
+      status: "COMPLETED",
+      startedAt: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000),
+      completedAt: new Date(Date.now() - 12 * 24 * 60 * 60 * 1000),
+    },
+  });
+
+  await prisma.review.create({
+    data: {
+      jobId: completedJob3.id,
+      reviewerId: user1.id,
+      reviewedId: fixer1.id,
+      rating: 5,
+      comment: "Came on time, did the work quickly. Fair price. Highly recommend!",
+    },
+  });
+  console.log(`✅ Created additional review for fixer1`);
+
+  const completedJob4 = await prisma.job.create({
+    data: {
+      repairRequestId: allRequests[3].id,
+      offerId: (await prisma.offer.findFirst({ where: { fixerId: fixer1.id, repairRequestId: allRequests[3].id } }))!.id,
+      customerId: user2.id,
+      fixerId: fixer1.id,
+      agreedPrice: 95,
+      platformFee: 14.25,
+      fixerPayout: 80.75,
+      status: "COMPLETED",
+      startedAt: new Date(Date.now() - 20 * 24 * 60 * 60 * 1000),
+      completedAt: new Date(Date.now() - 18 * 24 * 60 * 60 * 1000),
+    },
+  });
+
+  await prisma.review.create({
+    data: {
+      jobId: completedJob4.id,
+      reviewerId: user2.id,
+      reviewedId: fixer1.id,
+      rating: 4,
+      comment: "Very knowledgeable and explained everything clearly. Good work!",
+    },
+  });
+  console.log(`✅ Created additional review for fixer1`);
+
+  // Update fixer profiles with calculated average ratings
+  const fixer1Reviews = await prisma.review.findMany({
+    where: { reviewedId: fixer1.id },
+    select: { rating: true },
+  });
+  const fixer1AvgRating = fixer1Reviews.reduce((sum, r) => sum + r.rating, 0) / fixer1Reviews.length;
+
+  await prisma.fixerProfile.update({
+    where: { userId: fixer1.id },
+    data: {
+      averageRating: fixer1AvgRating,
+      totalJobs: 3,
+      totalEarnings: 246.50,
+    },
+  });
+  console.log(`✅ Updated fixer1 profile with average rating: ${fixer1AvgRating.toFixed(1)}`);
+
+  const fixer2Reviews = await prisma.review.findMany({
+    where: { reviewedId: fixer2.id },
+    select: { rating: true },
+  });
+  const fixer2AvgRating = fixer2Reviews.reduce((sum, r) => sum + r.rating, 0) / fixer2Reviews.length;
+
+  await prisma.fixerProfile.update({
+    where: { userId: fixer2.id },
+    data: {
+      averageRating: fixer2AvgRating,
+      totalJobs: 1,
+      totalEarnings: 75.65,
+    },
+  });
+  console.log(`✅ Updated fixer2 profile with average rating: ${fixer2AvgRating.toFixed(1)}`);
+
   console.log("\n🎉 Seed completed successfully!");
 }
 

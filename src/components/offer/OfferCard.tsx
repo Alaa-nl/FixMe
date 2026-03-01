@@ -1,7 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import Button from "@/components/ui/Button";
+import StarRating from "@/components/review/StarRating";
 
 interface OfferCardProps {
   offer: {
@@ -81,11 +83,19 @@ export default function OfferCard({ offer, isRequestOwner, onAccept, onMessage }
             <h3 className="font-bold text-gray-800">{offer.fixer.name}</h3>
             {offer.fixer.fixerProfile && (
               <>
-                <span className="text-sm text-gray-600">
-                  ⭐ {offer.fixer.fixerProfile.averageRating.toFixed(1)}
-                </span>
+                <Link
+                  href={`/fixer/${offer.fixer.id}`}
+                  className="hover:opacity-80 transition-opacity"
+                  title="View profile and reviews"
+                >
+                  <StarRating
+                    rating={offer.fixer.fixerProfile.averageRating}
+                    size="sm"
+                    readOnly
+                  />
+                </Link>
                 <span className="text-sm text-gray-500">
-                  {offer.fixer.fixerProfile.totalJobs} jobs
+                  ({offer.fixer.fixerProfile.totalJobs} job{offer.fixer.fixerProfile.totalJobs !== 1 ? "s" : ""})
                 </span>
               </>
             )}

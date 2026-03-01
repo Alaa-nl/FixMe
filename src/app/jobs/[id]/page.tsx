@@ -6,6 +6,8 @@ import { getCategoryIcon } from "@/lib/categoryIcons";
 import { DiagnosisResult } from "@/lib/claude";
 import JobTimeline from "@/components/job/JobTimeline";
 import JobActions from "@/components/job/JobActions";
+import ReviewForm from "@/components/review/ReviewForm";
+import ReviewCard from "@/components/review/ReviewCard";
 
 interface JobPageProps {
   params: Promise<{ id: string }>;
@@ -232,6 +234,31 @@ export default async function JobPage({ params }: JobPageProps) {
                   </div>
                 </div>
               </Link>
+            )}
+
+            {/* Reviews Section (only for completed jobs) */}
+            {job.status === "COMPLETED" && (
+              <div>
+                <h2 className="text-2xl font-bold text-gray-800 mb-4">Reviews</h2>
+
+                {/* Check if current user has reviewed */}
+                {!job.reviews.some((r: any) => r.reviewerId === userId) ? (
+                  <ReviewForm
+                    jobId={job.id}
+                    reviewedUserName={otherPerson.name}
+                    onSuccess={() => window.location.reload()}
+                  />
+                ) : (
+                  <div className="space-y-4">
+                    {/* Show all reviews */}
+                    <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+                      {job.reviews.map((review: any) => (
+                        <ReviewCard key={review.id} review={review} />
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
             )}
           </div>
 
