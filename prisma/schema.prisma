@@ -76,6 +76,7 @@ model User {
   locationLng  Float?
   city         String?
   userType     UserType  @default(CUSTOMER)
+  isBanned     Boolean   @default(false)
   provider     String?
   providerId   String?
   createdAt    DateTime  @default(now())

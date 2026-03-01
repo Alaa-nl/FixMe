@@ -152,6 +152,22 @@ async function main() {
   });
   console.log(`✅ Created user: ${user2.name}`);
 
+  // Create admin user
+  const adminPasswordHash = await bcrypt.hash("admin123", 10);
+  const adminUser = await prisma.user.upsert({
+    where: { email: "admin@fixme.nl" },
+    update: {},
+    create: {
+      email: "admin@fixme.nl",
+      passwordHash: adminPasswordHash,
+      name: "Admin User",
+      avatarUrl: null,
+      city: "Amsterdam",
+      userType: "ADMIN",
+    },
+  });
+  console.log(`✅ Created admin user: ${adminUser.name}`);
+
   // Get all categories for reference
   const allCategories = await prisma.category.findMany();
   const categoryMap: Record<string, string> = {};
