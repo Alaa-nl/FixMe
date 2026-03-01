@@ -172,6 +172,7 @@ model Category {
   id          String    @id @default(uuid())
   name        String    @unique
   nameNl      String
+  slug        String    @unique
   iconUrl     String?
   description String?
   isActive    Boolean   @default(true)
@@ -180,6 +181,7 @@ model Category {
   repairRequests RepairRequest[]
 
   @@index([isActive])
+  @@index([slug])
 }
 
 model RepairRequest {

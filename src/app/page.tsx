@@ -1,24 +1,16 @@
 import Link from "next/link";
 import Button from "@/components/ui/Button";
+import { prisma } from "@/lib/db";
+import { getCategoryIcon } from "@/lib/categoryIcons";
 
-export default function Home() {
-  const categories = [
-    { name: "Bikes & Scooters", emoji: "🚲", slug: "bikes-scooters" },
-    { name: "Phones & Tablets", emoji: "📱", slug: "phones-tablets" },
-    { name: "Laptops & Computers", emoji: "💻", slug: "laptops-computers" },
-    { name: "Kitchen Appliances", emoji: "🍳", slug: "kitchen-appliances" },
-    { name: "Laundry Appliances", emoji: "👕", slug: "laundry-appliances" },
-    { name: "Home Electronics", emoji: "📺", slug: "home-electronics" },
-    { name: "Furniture", emoji: "🪑", slug: "furniture" },
-    { name: "Clothing & Shoes", emoji: "👗", slug: "clothing-shoes" },
-    { name: "Plumbing", emoji: "🚿", slug: "plumbing" },
-    { name: "Electrical", emoji: "💡", slug: "electrical" },
-    { name: "Musical Instruments", emoji: "🎸", slug: "musical-instruments" },
-    { name: "Garden & Outdoor", emoji: "🌿", slug: "garden-outdoor" },
-    { name: "Cameras & Optics", emoji: "📷", slug: "cameras-optics" },
-    { name: "Toys & Games", emoji: "🧸", slug: "toys-games" },
-    { name: "Other", emoji: "📦", slug: "other" },
-  ];
+export const dynamic = "force-dynamic";
+
+export default async function Home() {
+  // Fetch categories from database
+  const categories = await prisma.category.findMany({
+    where: { isActive: true },
+    orderBy: { name: "asc" },
+  });
 
   const recentRequests = [
     {
@@ -189,7 +181,7 @@ export default function Home() {
               >
                 <div className="text-center">
                   <div className="text-4xl md:text-5xl mb-3 group-hover:scale-110 transition-transform">
-                    {category.emoji}
+                    {getCategoryIcon(category.slug)}
                   </div>
                   <p className="text-sm md:text-base font-medium text-gray-700 group-hover:text-primary transition-colors">
                     {category.name}
