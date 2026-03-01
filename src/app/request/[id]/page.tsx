@@ -5,7 +5,7 @@ import { getCategoryIcon } from "@/lib/categoryIcons";
 import { timeAgo } from "@/lib/utils";
 import PhotoGallery from "@/components/request/PhotoGallery";
 import DiagnosisCard from "@/components/ai/DiagnosisCard";
-import OfferCard from "@/components/offer/OfferCard";
+import OffersList from "@/components/offer/OffersList";
 import OfferForm from "@/components/offer/OfferForm";
 import Link from "next/link";
 import Button from "@/components/ui/Button";
@@ -214,30 +214,7 @@ export default async function RequestPage({ params }: RequestPageProps) {
                   </p>
                 </div>
               ) : (
-                <div>
-                  {request.offers.map((offer) => (
-                    <OfferCard
-                      key={offer.id}
-                      offer={offer}
-                      isRequestOwner={isRequestOwner}
-                      onAccept={async (offerId) => {
-                        // This will be handled on the client side
-                        const res = await fetch(`/api/offers/${offerId}/accept`, {
-                          method: "POST",
-                        });
-                        if (res.ok) {
-                          window.location.reload();
-                        } else {
-                          alert("Failed to accept offer");
-                        }
-                      }}
-                      onMessage={(fixerId) => {
-                        // Navigate to messages
-                        window.location.href = `/messages?userId=${fixerId}`;
-                      }}
-                    />
-                  ))}
-                </div>
+                <OffersList offers={request.offers} isRequestOwner={isRequestOwner} />
               )}
             </div>
           </div>
