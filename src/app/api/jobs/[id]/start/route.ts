@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import { notifyAndEmail } from "@/lib/notifications";
 
 export async function POST(
   request: NextRequest,
@@ -21,6 +22,20 @@ export async function POST(
     // Fetch the job
     const job = await prisma.job.findUnique({
       where: { id },
+      include: {
+        fixer: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+        repairRequest: {
+          select: {
+            id: true,
+            title: true,
+          },
+        },
+      },
     });
 
     if (!job) {
@@ -54,6 +69,19 @@ export async function POST(
         startedAt: new Date(),
       },
     });
+
+    // Notify the customer
+    try {
+      await notifyAndEmail(
+        job.customerId,
+        "JOB_STARTED",
+        "Your repair has started",
+        `${job.fixer.name} has started working on ${job.repairRequest.title}`,
+        id
+      );
+    } catch (notifError) {
+      console.error("Failed to send notification:", notifError);
+    }
 
     return NextResponse.json(
       { message: "Job started successfully", job: updatedJob },

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useState, useEffect, useRef } from "react";
 import { Search, MessageCircle, Bell, User, LogOut, ChevronDown } from "lucide-react";
 import Button from "@/components/ui/Button";
+import NotificationBell from "@/components/layout/NotificationBell";
 
 export default function Navbar() {
   const { data: session, status } = useSession();
@@ -103,12 +104,9 @@ export default function Navbar() {
               </Link>
 
               {/* Notifications Icon - Hidden on mobile */}
-              <Link
-                href="#"
-                className="hidden md:flex p-2 text-gray-600 hover:bg-gray-100 rounded-full transition-colors relative"
-              >
-                <Bell className="w-6 h-6" />
-              </Link>
+              <div className="hidden md:block">
+                <NotificationBell />
+              </div>
 
               {/* Profile Dropdown */}
               <div className="relative" ref={dropdownRef}>

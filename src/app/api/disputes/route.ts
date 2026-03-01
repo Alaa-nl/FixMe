@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import { notifyAndEmail } from "@/lib/notifications";
 
 export async function POST(request: NextRequest) {
   try {
@@ -38,6 +39,12 @@ export async function POST(request: NextRequest) {
       where: { id: jobId },
       include: {
         disputes: true,
+        repairRequest: {
+          select: {
+            id: true,
+            title: true,
+          },
+        },
       },
     });
 
@@ -154,6 +161,19 @@ export async function POST(request: NextRequest) {
 
       return dispute;
     });
+
+    // Notify the fixer about the dispute
+    try {
+      await notifyAndEmail(
+        job.fixerId,
+        "DISPUTE_OPENED",
+        "A dispute was opened",
+        `${session.user.name} opened a dispute on ${job.repairRequest.title}. Our team will review it.`,
+        result.id
+      );
+    } catch (notifError) {
+      console.error("Failed to send notification:", notifError);
+    }
 
     return NextResponse.json(
       { message: "Dispute created successfully", dispute: result },

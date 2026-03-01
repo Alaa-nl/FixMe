@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import { createNotification } from "@/lib/notifications";
 
 // GET - Get all conversations for current user
 export async function GET(request: NextRequest) {
@@ -163,6 +164,27 @@ export async function POST(request: NextRequest) {
         },
       },
     });
+
+    // Notify the recipient (only in-app, not email)
+    try {
+      const recipientId = conversation.customerId === userId
+        ? conversation.fixerId
+        : conversation.customerId;
+
+      const truncatedMessage = content.length > 50
+        ? content.substring(0, 50) + "..."
+        : content;
+
+      await createNotification(
+        recipientId,
+        "NEW_MESSAGE",
+        `New message from ${session.user.name}`,
+        truncatedMessage,
+        conversationId
+      );
+    } catch (notifError) {
+      console.error("Failed to send notification:", notifError);
+    }
 
     return NextResponse.json(message, { status: 201 });
   } catch (error) {

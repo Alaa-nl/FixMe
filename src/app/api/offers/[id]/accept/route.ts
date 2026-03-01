@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import { notifyAndEmail } from "@/lib/notifications";
 
 export async function POST(
   request: NextRequest,
@@ -118,6 +119,49 @@ export async function POST(
 
       return { job, conversation, payment };
     });
+
+    // Notify the fixer whose offer was accepted
+    try {
+      await notifyAndEmail(
+        offer.fixerId,
+        "OFFER_ACCEPTED",
+        "Your offer was accepted!",
+        `${offer.repairRequest.customer.name} accepted your offer of €${agreedPrice} for ${offer.repairRequest.title}`,
+        result.job.id
+      );
+    } catch (notifError) {
+      console.error("Failed to send acceptance notification:", notifError);
+    }
+
+    // Notify all other fixers whose offers were rejected
+    try {
+      const rejectedOffers = await prisma.offer.findMany({
+        where: {
+          repairRequestId: offer.repairRequestId,
+          id: { not: offerId },
+          status: "REJECTED",
+        },
+        include: {
+          fixer: true,
+        },
+      });
+
+      for (const rejectedOffer of rejectedOffers) {
+        try {
+          await notifyAndEmail(
+            rejectedOffer.fixerId,
+            "OFFER_REJECTED",
+            "Offer not selected",
+            `Another fixer was chosen for ${offer.repairRequest.title}. Keep making offers!`,
+            offer.repairRequestId
+          );
+        } catch (err) {
+          console.error("Failed to notify rejected fixer:", err);
+        }
+      }
+    } catch (notifError) {
+      console.error("Failed to send rejection notifications:", notifError);
+    }
 
     return NextResponse.json(
       {

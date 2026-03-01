@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import { notifyAndEmail } from "@/lib/notifications";
 
 export async function POST(
   request: NextRequest,
@@ -23,6 +24,18 @@ export async function POST(
       where: { id },
       include: {
         payments: true,
+        customer: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+        repairRequest: {
+          select: {
+            id: true,
+            title: true,
+          },
+        },
       },
     });
 
@@ -100,6 +113,22 @@ export async function POST(
 
       return updatedJob;
     });
+
+    // Notify the fixer
+    try {
+      const payment = job.payments && job.payments.length > 0 ? job.payments[0] : null;
+      const payout = payment?.fixerPayout || job.agreedPrice * 0.85;
+
+      await notifyAndEmail(
+        job.fixerId,
+        "JOB_COMPLETED",
+        "Job confirmed complete!",
+        `${job.customer.name} confirmed the job is done. €${payout.toFixed(2)} will be sent to you.`,
+        id
+      );
+    } catch (notifError) {
+      console.error("Failed to send notification:", notifError);
+    }
 
     return NextResponse.json(
       { message: "Job completed successfully", job: result },

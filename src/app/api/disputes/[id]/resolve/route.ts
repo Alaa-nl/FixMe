@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import { notifyAndEmail } from "@/lib/notifications";
 
 export async function POST(
   request: NextRequest,
@@ -42,6 +43,12 @@ export async function POST(
         job: {
           include: {
             payments: true,
+            repairRequest: {
+              select: {
+                id: true,
+                title: true,
+              },
+            },
           },
         },
       },
@@ -135,6 +142,33 @@ export async function POST(
 
       return updatedDispute;
     });
+
+    // Notify both customer and fixer about the resolution
+    try {
+      const resolutionMessage = resolution === "REFUNDED"
+        ? `The dispute for ${dispute.job.repairRequest.title} has been resolved. Payment has been refunded to the customer.`
+        : `The dispute for ${dispute.job.repairRequest.title} has been resolved. Payment has been released to the fixer.`;
+
+      // Notify customer
+      await notifyAndEmail(
+        dispute.job.customerId,
+        "DISPUTE_RESOLVED",
+        "Dispute resolved",
+        resolutionMessage,
+        id
+      );
+
+      // Notify fixer
+      await notifyAndEmail(
+        dispute.job.fixerId,
+        "DISPUTE_RESOLVED",
+        "Dispute resolved",
+        resolutionMessage,
+        id
+      );
+    } catch (notifError) {
+      console.error("Failed to send notifications:", notifError);
+    }
 
     return NextResponse.json(
       { message: "Dispute resolved successfully", dispute: result },

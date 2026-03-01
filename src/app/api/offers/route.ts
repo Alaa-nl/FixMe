@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import { notifyAndEmail } from "@/lib/notifications";
 
 // POST - Create a new offer
 export async function POST(request: NextRequest) {
@@ -114,6 +115,20 @@ export async function POST(request: NextRequest) {
         },
       },
     });
+
+    // Notify the customer about the new offer
+    try {
+      await notifyAndEmail(
+        repairRequest.customerId,
+        "NEW_OFFER",
+        "New offer on your request",
+        `${user.name} offered €${price} for ${repairRequest.title}`,
+        repairRequestId
+      );
+    } catch (notifError) {
+      console.error("Failed to send notification:", notifError);
+      // Don't fail the request if notification fails
+    }
 
     return NextResponse.json(offer, { status: 201 });
   } catch (error) {
