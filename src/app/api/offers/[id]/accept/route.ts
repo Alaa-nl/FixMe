@@ -103,7 +103,20 @@ export async function POST(
         },
       });
 
-      return { job, conversation };
+      // Create a Payment record (simulating escrow)
+      const payment = await tx.payment.create({
+        data: {
+          jobId: job.id,
+          customerId: offer.repairRequest.customerId,
+          fixerId: offer.fixerId,
+          amount: agreedPrice,
+          platformFee,
+          fixerPayout,
+          status: "HELD",
+        },
+      });
+
+      return { job, conversation, payment };
     });
 
     return NextResponse.json(
