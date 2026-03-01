@@ -2,6 +2,7 @@ import Link from "next/link";
 import Button from "@/components/ui/Button";
 import { prisma } from "@/lib/db";
 import { getCategoryIcon } from "@/lib/categoryIcons";
+import RequestCard from "@/components/request/RequestCard";
 
 export const dynamic = "force-dynamic";
 
@@ -12,40 +13,31 @@ export default async function Home() {
     orderBy: { name: "asc" },
   });
 
-  const recentRequests = [
-    {
-      id: 1,
-      title: "Broken bike chain",
-      category: "Bikes & Scooters",
-      location: "Amsterdam West",
-      time: "2 hours ago",
-      offers: 3,
+  // Fetch recent repair requests
+  const recentRequests = await prisma.repairRequest.findMany({
+    where: { status: "OPEN" },
+    orderBy: { createdAt: "desc" },
+    take: 4,
+    include: {
+      category: {
+        select: {
+          name: true,
+          slug: true,
+        },
+      },
+      customer: {
+        select: {
+          name: true,
+          avatarUrl: true,
+        },
+      },
+      _count: {
+        select: {
+          offers: true,
+        },
+      },
     },
-    {
-      id: 2,
-      title: "iPhone screen cracked",
-      category: "Phones & Tablets",
-      location: "Rotterdam",
-      time: "5 hours ago",
-      offers: 7,
-    },
-    {
-      id: 3,
-      title: "Washing machine won't drain",
-      category: "Laundry Appliances",
-      location: "Utrecht Centrum",
-      time: "1 day ago",
-      offers: 5,
-    },
-    {
-      id: 4,
-      title: "Laptop keyboard not working",
-      category: "Laptops & Computers",
-      location: "Den Haag",
-      time: "2 days ago",
-      offers: 2,
-    },
-  ];
+  });
 
   const steps = [
     {
@@ -208,44 +200,24 @@ export default async function Home() {
             </Link>
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {recentRequests.map((request) => (
-              <Link
-                key={request.id}
-                href={`/requests/${request.id}`}
-                className="bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-lg transition-shadow group"
-              >
-                {/* Image Placeholder */}
-                <div className="aspect-video bg-gray-200 flex items-center justify-center text-4xl">
-                  🔧
-                </div>
-
-                {/* Content */}
-                <div className="p-4">
-                  <h3 className="font-semibold text-gray-800 mb-2 group-hover:text-primary transition-colors">
-                    {request.title}
-                  </h3>
-
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="inline-block px-2 py-1 bg-orange-100 text-primary text-xs font-medium rounded">
-                      {request.category}
-                    </span>
-                  </div>
-
-                  <div className="flex items-center justify-between text-sm text-gray-500">
-                    <span>📍 {request.location}</span>
-                  </div>
-
-                  <div className="flex items-center justify-between text-sm text-gray-500 mt-2">
-                    <span>{request.time}</span>
-                    <span className="font-medium text-primary">
-                      {request.offers} offers
-                    </span>
-                  </div>
-                </div>
+          {recentRequests.length === 0 ? (
+            <div className="text-center py-12">
+              <p className="text-gray-500 text-lg mb-4">
+                No repair requests yet.
+              </p>
+              <Link href="/post">
+                <Button variant="primary" size="lg">
+                  Post the first request
+                </Button>
               </Link>
-            ))}
-          </div>
+            </div>
+          ) : (
+            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {recentRequests.map((request) => (
+                <RequestCard key={request.id} request={request} />
+              ))}
+            </div>
+          )}
         </div>
       </section>
 
