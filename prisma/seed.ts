@@ -328,6 +328,167 @@ async function main() {
     console.log(`✅ Created repair request: ${request.title}`);
   }
 
+  // Create fake fixer users with FixerProfiles
+  console.log("\n🔧 Creating fake fixers...");
+
+  const fixer1 = await prisma.user.upsert({
+    where: { email: "jan@fixermail.com" },
+    update: {},
+    create: {
+      email: "jan@fixermail.com",
+      passwordHash,
+      name: "Jan de Reparateur",
+      avatarUrl: null,
+      city: "Amsterdam",
+      userType: "FIXER",
+    },
+  });
+  console.log(`✅ Created fixer: ${fixer1.name}`);
+
+  const fixer1Profile = await prisma.fixerProfile.upsert({
+    where: { userId: fixer1.id },
+    update: {},
+    create: {
+      userId: fixer1.id,
+      bio: "Experienced bike and electronics repair specialist with 10 years of experience. I can fix almost anything!",
+      skills: ["bikes-scooters", "phones-tablets", "laptops-computers", "home-electronics"],
+      serviceRadiusKm: 15,
+      minJobFee: 15,
+      averageRating: 4.8,
+      totalJobs: 52,
+      verifiedBadge: true,
+    },
+  });
+  console.log(`✅ Created fixer profile for ${fixer1.name}`);
+
+  const fixer2 = await prisma.user.upsert({
+    where: { email: "maria@fixermail.com" },
+    update: {},
+    create: {
+      email: "maria@fixermail.com",
+      passwordHash,
+      name: "Maria van der Berg",
+      avatarUrl: null,
+      city: "Rotterdam",
+      userType: "FIXER",
+    },
+  });
+  console.log(`✅ Created fixer: ${fixer2.name}`);
+
+  const fixer2Profile = await prisma.fixerProfile.upsert({
+    where: { userId: fixer2.id },
+    update: {},
+    create: {
+      userId: fixer2.id,
+      bio: "Appliance repair specialist. I fix washing machines, dishwashers, fridges, and more. Quick and reliable service.",
+      skills: ["kitchen-appliances", "laundry-appliances", "home-electronics", "plumbing"],
+      serviceRadiusKm: 20,
+      minJobFee: 25,
+      averageRating: 4.6,
+      totalJobs: 38,
+      verifiedBadge: false,
+    },
+  });
+  console.log(`✅ Created fixer profile for ${fixer2.name}`);
+
+  // Get all repair requests to add offers to
+  const allRequests = await prisma.repairRequest.findMany({
+    orderBy: { createdAt: "desc" },
+    take: 5,
+  });
+
+  // Create fake offers
+  console.log("\n💼 Creating fake offers...");
+
+  if (allRequests.length > 0) {
+    // Offer 1: Jan offers on the first request (bike chain)
+    await prisma.offer.create({
+      data: {
+        repairRequestId: allRequests[0].id,
+        fixerId: fixer1.id,
+        price: 35,
+        estimatedTime: "1 hour",
+        message:
+          "Hi! I'm Jan and I've been fixing bikes for over 10 years. A broken chain is a quick fix - I can come to you or you can drop it off at my workshop. I have the parts ready and can do it same day. Looking forward to helping you get back on the road!",
+        status: "PENDING",
+      },
+    });
+    console.log(`✅ Created offer for: ${allRequests[0].title}`);
+
+    // Offer 2: Maria offers on the washing machine request
+    const washingMachineRequest = allRequests.find((r) =>
+      r.title.toLowerCase().includes("washing machine")
+    );
+    if (washingMachineRequest) {
+      await prisma.offer.create({
+        data: {
+          repairRequestId: washingMachineRequest.id,
+          fixerId: fixer2.id,
+          price: 65,
+          estimatedTime: "2 hours",
+          message:
+            "Hello! I specialize in washing machine repairs. Based on your description, it sounds like the drain pump might be clogged or faulty. I can diagnose and fix it on-site. I'll bring all necessary tools and spare parts. Available this week.",
+          status: "PENDING",
+        },
+      });
+      console.log(`✅ Created offer for: ${washingMachineRequest.title}`);
+    }
+
+    // Offer 3: Jan offers on iPhone screen
+    const iphoneRequest = allRequests.find((r) =>
+      r.title.toLowerCase().includes("iphone")
+    );
+    if (iphoneRequest) {
+      await prisma.offer.create({
+        data: {
+          repairRequestId: iphoneRequest.id,
+          fixerId: fixer1.id,
+          price: 89,
+          estimatedTime: "45 minutes",
+          message:
+            "Hi! I can replace your iPhone 13 screen with a high-quality replacement. I use original quality parts and the repair is quick - usually done within 45 minutes. I offer a 6-month warranty on the screen. I can come to your location or you can visit my workshop.",
+          status: "PENDING",
+        },
+      });
+      console.log(`✅ Created offer for: ${iphoneRequest.title}`);
+    }
+
+    // Offer 4: Maria also offers on iPhone (competing offer)
+    if (iphoneRequest) {
+      await prisma.offer.create({
+        data: {
+          repairRequestId: iphoneRequest.id,
+          fixerId: fixer2.id,
+          price: 79,
+          estimatedTime: "1 hour",
+          message:
+            "Hello! I can replace your iPhone screen today. I have experience with all iPhone models and use quality replacement screens. Price includes parts and labor. Let me know if you have any questions!",
+          status: "PENDING",
+        },
+      });
+      console.log(`✅ Created competing offer for: ${iphoneRequest.title}`);
+    }
+
+    // Offer 5: Jan offers on laptop keyboard
+    const laptopRequest = allRequests.find((r) =>
+      r.title.toLowerCase().includes("laptop")
+    );
+    if (laptopRequest) {
+      await prisma.offer.create({
+        data: {
+          repairRequestId: laptopRequest.id,
+          fixerId: fixer1.id,
+          price: 45,
+          estimatedTime: "1.5 hours",
+          message:
+            "Hi! Sticky keyboard keys are usually fixable with a good cleaning. If the keyboard needs replacement, I can do that too. I'll diagnose it first and let you know the best solution. My price includes diagnosis and cleaning, or replacement if needed.",
+          status: "PENDING",
+        },
+      });
+      console.log(`✅ Created offer for: ${laptopRequest.title}`);
+    }
+  }
+
   console.log("\n🎉 Seed completed successfully!");
 }
 
