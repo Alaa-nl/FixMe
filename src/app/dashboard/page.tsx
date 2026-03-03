@@ -13,8 +13,8 @@ export default async function DashboardPage() {
   const userType = session.user.userType;
 
   return (
-    <div className="min-h-screen bg-gray-50 pt-20 pb-12">
-      <div className="max-w-7xl mx-auto px-4">
+    <div className="min-h-screen pt-20 pb-12">
+      <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8">
         {userType === "CUSTOMER" ? <CustomerDashboard /> : <FixerDashboard />}
       </div>
     </div>

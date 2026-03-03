@@ -5,8 +5,24 @@ import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { timeAgo } from "@/lib/utils";
 import { getCategoryIcon } from "@/lib/categoryIcons";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Separator } from "@/components/ui/separator";
 import Button from "@/components/ui/Button";
 import DisputeCard from "@/components/dispute/DisputeCard";
+import {
+  CheckCircle2,
+  Clock,
+  MessageSquare,
+  Wallet,
+  FileText,
+  Wrench,
+  AlertTriangle,
+  ArrowRight,
+  TrendingUp,
+} from "lucide-react";
 
 interface DashboardData {
   activeRequests: any[];
@@ -46,224 +62,283 @@ export default function CustomerDashboard() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <p className="text-gray-500">Loading dashboard...</p>
+      <div className="space-y-8">
+        <Skeleton className="h-16 w-3/4" />
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+          {[1, 2, 3, 4].map((i) => (
+            <Skeleton key={i} className="h-40" />
+          ))}
+        </div>
       </div>
     );
   }
 
   if (!dashboardData) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <p className="text-gray-500">Failed to load dashboard</p>
-      </div>
+      <Card className="border-destructive">
+        <CardContent className="flex items-center justify-center h-64">
+          <div className="text-center">
+            <AlertTriangle className="w-12 h-12 mx-auto mb-4 text-destructive" />
+            <p className="text-muted-foreground">Failed to load dashboard</p>
+          </div>
+        </CardContent>
+      </Card>
     );
   }
 
-  const getStatusBadge = (status: string) => {
+  const getStatusColor = (status: string) => {
     switch (status) {
       case "OPEN":
-        return "bg-orange-100 text-orange-700 border-orange-300";
+        return "default";
       case "IN_PROGRESS":
-        return "bg-blue-100 text-blue-700 border-blue-300";
+        return "secondary";
       case "COMPLETED":
-        return "bg-green-100 text-green-700 border-green-300";
+        return "outline";
       case "SCHEDULED":
-        return "bg-purple-100 text-purple-700 border-purple-300";
+        return "secondary";
       case "DISPUTED":
-        return "bg-red-100 text-red-700 border-red-300";
-      case "REFUNDED":
-        return "bg-gray-100 text-gray-700 border-gray-300";
+        return "destructive";
       default:
-        return "bg-gray-100 text-gray-700 border-gray-300";
+        return "outline";
     }
   };
 
+  const statCards = [
+    {
+      icon: FileText,
+      value: dashboardData.stats.activeRequestCount,
+      label: "Active Requests",
+      trend: "+12% this month",
+      gradient: "from-primary/20 to-primary/5",
+    },
+    {
+      icon: CheckCircle2,
+      value: dashboardData.stats.completedCount,
+      label: "Completed",
+      trend: "All time",
+      gradient: "from-secondary/20 to-secondary/5",
+    },
+    {
+      icon: MessageSquare,
+      value: dashboardData.stats.unreadMessages,
+      label: "Unread Messages",
+      trend: "Needs attention",
+      gradient: "from-accent/20 to-accent/5",
+    },
+    {
+      icon: Wallet,
+      value: `€${dashboardData.stats.moneySaved}`,
+      label: "Money Saved",
+      trend: "Keep fixing!",
+      gradient: "from-chart-3/20 to-chart-3/5",
+    },
+  ];
+
   return (
-    <div className="space-y-8">
-      {/* Welcome & Stats */}
-      <div>
-        <h1 className="text-3xl md:text-4xl font-bold text-gray-800 mb-6">
-          Welcome back, {session?.user?.name}!
-        </h1>
-
-        {/* Stat Cards */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="bg-white rounded-xl border border-gray-200 p-6">
-            <div className="text-4xl mb-2">📋</div>
-            <div className="text-3xl font-bold text-primary mb-1">
-              {dashboardData.stats.activeRequestCount}
-            </div>
-            <div className="text-sm text-gray-600">Active requests</div>
-          </div>
-
-          <div className="bg-white rounded-xl border border-gray-200 p-6">
-            <div className="text-4xl mb-2">✅</div>
-            <div className="text-3xl font-bold text-primary mb-1">
-              {dashboardData.stats.completedCount}
-            </div>
-            <div className="text-sm text-gray-600">Completed</div>
-          </div>
-
-          <div className="bg-white rounded-xl border border-gray-200 p-6">
-            <div className="text-4xl mb-2">💬</div>
-            <div className="text-3xl font-bold text-primary mb-1">
-              {dashboardData.stats.unreadMessages}
-            </div>
-            <div className="text-sm text-gray-600">Unread messages</div>
-          </div>
-
-          <div className="bg-white rounded-xl border border-gray-200 p-6">
-            <div className="text-4xl mb-2">💰</div>
-            <div className="text-3xl font-bold text-primary mb-1">
-              €{dashboardData.stats.moneySaved}
-            </div>
-            <div className="text-sm text-gray-600">Money saved</div>
-          </div>
+    <div className="space-y-10 animate-in fade-in duration-700">
+      {/* Welcome Section with atmospheric background */}
+      <div className="relative">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-secondary/10 rounded-3xl blur-3xl -z-10" />
+        <div className="space-y-2">
+          <h1 className="font-[family-name:var(--font-syne)] text-4xl md:text-6xl font-bold tracking-tight bg-gradient-to-br from-foreground to-foreground/70 bg-clip-text text-transparent">
+            Welcome back, {session?.user?.name?.split(" ")[0]}!
+          </h1>
+          <p className="text-lg text-muted-foreground font-medium">
+            Here's what's happening with your repairs today
+          </p>
         </div>
       </div>
 
-      {/* My Active Requests */}
-      <div>
-        <h2 className="text-2xl font-bold text-gray-800 mb-4">My active requests</h2>
-
-        {dashboardData.activeRequests.length === 0 ? (
-          <div className="bg-white rounded-xl border border-gray-200 p-8 text-center">
-            <div className="text-5xl mb-3">📝</div>
-            <p className="text-gray-600 mb-4">
-              You have no active requests. Post one now!
-            </p>
-            <Link href="/post">
-              <Button variant="primary" size="lg">
-                Post a request
-              </Button>
-            </Link>
-          </div>
-        ) : (
-          <>
-            <div className="space-y-4">
-              {dashboardData.activeRequests.map((request: any) => (
-                <Link
-                  key={request.id}
-                  href={`/request/${request.id}`}
-                  className="block bg-white rounded-xl border border-gray-200 p-4 hover:shadow-md transition-shadow"
-                >
-                  <div className="flex gap-4">
-                    {/* Thumbnail */}
-                    <div className="flex-shrink-0 w-20 h-20 bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden">
-                      {request.photos.length > 0 ? (
-                        <img
-                          src={request.photos[0]}
-                          alt={request.title}
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <span className="text-3xl">{getCategoryIcon(request.category.slug)}</span>
-                      )}
-                    </div>
-
-                    {/* Content */}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-start justify-between gap-2 mb-2">
-                        <h3 className="font-semibold text-gray-800 truncate">{request.title}</h3>
-                        <span
-                          className={`px-3 py-1 rounded-full text-xs font-semibold border ${getStatusBadge(
-                            request.status
-                          )}`}
-                        >
-                          {request.status.replace("_", " ")}
-                        </span>
-                      </div>
-
-                      <div className="flex items-center gap-2 mb-2">
-                        <span className="inline-flex items-center gap-1 px-2 py-1 bg-orange-50 text-primary text-xs font-medium rounded">
-                          <span>{getCategoryIcon(request.category.slug)}</span>
-                          <span>{request.category.name}</span>
-                        </span>
-                      </div>
-
-                      <div className="flex items-center justify-between text-sm text-gray-500">
-                        <span>{timeAgo(request.createdAt)}</span>
-                        <span className="font-medium text-primary">
-                          {request._count.offers}{" "}
-                          {request._count.offers === 1 ? "offer" : "offers"}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </Link>
-              ))}
-            </div>
-
-            <div className="mt-4 text-center">
-              <Link href="/my-requests" className="text-primary font-medium hover:underline">
-                View all my requests →
-              </Link>
-            </div>
-          </>
-        )}
+      {/* Stats Grid with glass morphism effect */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+        {statCards.map((stat, index) => (
+          <Card
+            key={index}
+            className="relative overflow-hidden border-2 hover:border-primary/50 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 group"
+          >
+            <div className={`absolute inset-0 bg-gradient-to-br ${stat.gradient} opacity-50 group-hover:opacity-70 transition-opacity`} />
+            <CardContent className="p-6 relative">
+              <div className="flex items-start justify-between mb-4">
+                <div className="p-3 rounded-xl bg-background/80 backdrop-blur-sm">
+                  <stat.icon className="w-6 h-6 text-primary" />
+                </div>
+                <TrendingUp className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+              </div>
+              <div className="space-y-1">
+                <div className="font-[family-name:var(--font-syne)] text-3xl md:text-4xl font-bold tracking-tight">
+                  {stat.value}
+                </div>
+                <div className="text-sm font-medium text-muted-foreground">
+                  {stat.label}
+                </div>
+                <div className="text-xs text-muted-foreground/70 flex items-center gap-1">
+                  <Clock className="w-3 h-3" />
+                  {stat.trend}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
       </div>
 
-      {/* Active Jobs */}
-      <div>
-        <h2 className="text-2xl font-bold text-gray-800 mb-4">Active jobs</h2>
+      {/* Active Requests Section */}
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <h2 className="font-[family-name:var(--font-syne)] text-3xl md:text-4xl font-bold tracking-tight">
+            My Active Requests
+          </h2>
+          {dashboardData.activeRequests.length > 0 && (
+            <Link
+              href="/my-requests"
+              className="text-sm font-medium text-primary hover:underline flex items-center gap-1 group"
+            >
+              View all
+              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+            </Link>
+          )}
+        </div>
 
-        {dashboardData.activeJobs.length === 0 ? (
-          <div className="bg-white rounded-xl border border-gray-200 p-6 text-center">
-            <p className="text-gray-600">No active jobs right now.</p>
-          </div>
+        {dashboardData.activeRequests.length === 0 ? (
+          <Card className="border-2 border-dashed">
+            <CardContent className="flex flex-col items-center justify-center py-16">
+              <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center mb-6">
+                <FileText className="w-10 h-10 text-primary" />
+              </div>
+              <h3 className="font-[family-name:var(--font-syne)] text-2xl font-bold mb-2">
+                No active requests yet
+              </h3>
+              <p className="text-muted-foreground mb-6 text-center max-w-md">
+                Start your repair journey by posting your first request. Our network of skilled fixers is ready to help!
+              </p>
+              <Link href="/post">
+                <Button variant="primary" size="lg" className="group">
+                  Post a Request
+                  <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+                </Button>
+              </Link>
+            </CardContent>
+          </Card>
         ) : (
-          <div className="space-y-4">
-            {dashboardData.activeJobs.map((job: any) => (
-              <Link
-                key={job.id}
-                href={`/jobs/${job.id}`}
-                className="block bg-white rounded-xl border border-gray-200 p-4 hover:shadow-md transition-shadow"
-              >
-                <div className="flex items-start justify-between gap-4">
-                  <div className="flex items-start gap-3 flex-1">
-                    {/* Fixer Avatar */}
-                    {job.fixer.avatarUrl ? (
-                      <img
-                        src={job.fixer.avatarUrl}
-                        alt={job.fixer.name}
-                        className="w-12 h-12 rounded-full object-cover"
-                      />
-                    ) : (
-                      <div className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center text-gray-600 font-semibold">
-                        {job.fixer.name.charAt(0).toUpperCase()}
+          <div className="grid gap-4">
+            {dashboardData.activeRequests.map((request: any, index: number) => (
+              <Link key={request.id} href={`/request/${request.id}`}>
+                <Card className="border-2 hover:border-primary/50 hover:shadow-xl transition-all duration-300 hover:-translate-y-1 group overflow-hidden">
+                  <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                  <CardContent className="p-6 relative">
+                    <div className="flex gap-6">
+                      {/* Thumbnail */}
+                      <div className="flex-shrink-0">
+                        <div className="w-24 h-24 rounded-2xl bg-muted overflow-hidden ring-2 ring-background group-hover:ring-primary/50 transition-all">
+                          {request.photos.length > 0 ? (
+                            <img
+                              src={request.photos[0]}
+                              alt={request.title}
+                              className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center text-4xl">
+                              {getCategoryIcon(request.category.slug)}
+                            </div>
+                          )}
+                        </div>
                       </div>
-                    )}
 
-                    <div className="flex-1">
-                      <h3 className="font-semibold text-gray-800">{job.repairRequest.title}</h3>
-                      <p className="text-sm text-gray-600">Fixer: {job.fixer.name}</p>
-                      <div className="mt-2 flex items-center gap-2">
-                        <span
-                          className={`px-3 py-1 rounded-full text-xs font-semibold border ${getStatusBadge(
-                            job.status
-                          )}`}
-                        >
-                          {job.status.replace("_", " ")}
-                        </span>
+                      {/* Content */}
+                      <div className="flex-1 min-w-0 space-y-3">
+                        <div className="flex items-start justify-between gap-4">
+                          <h3 className="font-[family-name:var(--font-syne)] text-xl font-bold group-hover:text-primary transition-colors">
+                            {request.title}
+                          </h3>
+                          <Badge variant={getStatusColor(request.status)}>
+                            {request.status.replace("_", " ")}
+                          </Badge>
+                        </div>
+
+                        <div className="flex items-center gap-3">
+                          <Badge variant="outline" className="gap-1">
+                            <span>{getCategoryIcon(request.category.slug)}</span>
+                            <span>{request.category.name}</span>
+                          </Badge>
+                        </div>
+
+                        <Separator />
+
+                        <div className="flex items-center justify-between text-sm">
+                          <span className="text-muted-foreground flex items-center gap-1">
+                            <Clock className="w-3.5 h-3.5" />
+                            {timeAgo(request.createdAt)}
+                          </span>
+                          <div className="font-semibold text-primary flex items-center gap-1">
+                            <Wrench className="w-4 h-4" />
+                            {request._count.offers} {request._count.offers === 1 ? "offer" : "offers"}
+                          </div>
+                        </div>
                       </div>
                     </div>
-                  </div>
-
-                  <div className="text-right">
-                    <div className="text-2xl font-bold text-primary">€{job.agreedPrice}</div>
-                  </div>
-                </div>
+                  </CardContent>
+                </Card>
               </Link>
             ))}
           </div>
         )}
       </div>
 
-      {/* Disputes */}
+      {/* Active Jobs Section */}
+      {dashboardData.activeJobs.length > 0 && (
+        <div className="space-y-6">
+          <h2 className="font-[family-name:var(--font-syne)] text-3xl md:text-4xl font-bold tracking-tight">
+            Active Jobs
+          </h2>
+
+          <div className="grid gap-4">
+            {dashboardData.activeJobs.map((job: any) => (
+              <Link key={job.id} href={`/jobs/${job.id}`}>
+                <Card className="border-2 hover:border-secondary/50 hover:shadow-xl transition-all duration-300 hover:-translate-y-1 group">
+                  <CardContent className="p-6">
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex items-start gap-4 flex-1">
+                        <Avatar className="w-14 h-14 ring-2 ring-background group-hover:ring-secondary/50 transition-all">
+                          <AvatarImage src={job.fixer.avatarUrl} alt={job.fixer.name} />
+                          <AvatarFallback className="bg-secondary text-secondary-foreground font-bold">
+                            {job.fixer.name.charAt(0).toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
+
+                        <div className="flex-1 space-y-2">
+                          <h3 className="font-[family-name:var(--font-syne)] text-lg font-bold">
+                            {job.repairRequest.title}
+                          </h3>
+                          <p className="text-sm text-muted-foreground">Fixer: {job.fixer.name}</p>
+                          <Badge variant={getStatusColor(job.status)}>
+                            {job.status.replace("_", " ")}
+                          </Badge>
+                        </div>
+                      </div>
+
+                      <div className="text-right">
+                        <div className="font-[family-name:var(--font-syne)] text-3xl font-bold text-primary">
+                          €{job.agreedPrice}
+                        </div>
+                        <div className="text-xs text-muted-foreground mt-1">Agreed price</div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Disputes Section */}
       {dashboardData.disputes && dashboardData.disputes.length > 0 && (
-        <div>
-          <h2 className="text-2xl font-bold text-gray-800 mb-4">⚠️ Disputes</h2>
+        <div className="space-y-6">
+          <div className="flex items-center gap-3">
+            <AlertTriangle className="w-8 h-8 text-destructive" />
+            <h2 className="font-[family-name:var(--font-syne)] text-3xl md:text-4xl font-bold tracking-tight">
+              Active Disputes
+            </h2>
+          </div>
           <div className="space-y-4">
             {dashboardData.disputes.map((dispute: any) => (
               <DisputeCard key={dispute.id} dispute={dispute} />
@@ -272,39 +347,66 @@ export default function CustomerDashboard() {
         </div>
       )}
 
-      {/* Past Jobs */}
+      {/* Past Jobs Section */}
       {dashboardData.pastJobs.length > 0 && (
-        <div>
-          <h2 className="text-2xl font-bold text-gray-800 mb-4">Past jobs</h2>
-          <div className="space-y-3">
-            {dashboardData.pastJobs.map((job: any) => (
-              <Link
-                key={job.id}
-                href={`/jobs/${job.id}`}
-                className="block bg-white rounded-xl border border-gray-200 p-4 hover:shadow-md transition-shadow"
-              >
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="font-medium text-gray-800">{job.repairRequest.title}</h3>
-                    <p className="text-sm text-gray-500">Fixer: {job.fixer.name}</p>
-                    {job.reviews.length > 0 && (
-                      <div className="text-sm text-gray-600 mt-1">
-                        ⭐ {job.reviews[0].rating}/5
+        <div className="space-y-6">
+          <div className="flex items-center justify-between">
+            <h2 className="font-[family-name:var(--font-syne)] text-3xl md:text-4xl font-bold tracking-tight">
+              Recent Completions
+            </h2>
+            <Link
+              href="/my-jobs"
+              className="text-sm font-medium text-primary hover:underline flex items-center gap-1 group"
+            >
+              View history
+              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+            </Link>
+          </div>
+
+          <div className="grid gap-3">
+            {dashboardData.pastJobs.slice(0, 3).map((job: any) => (
+              <Link key={job.id} href={`/jobs/${job.id}`}>
+                <Card className="border hover:border-primary/30 hover:shadow-md transition-all duration-200 group">
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex-1">
+                        <h3 className="font-semibold group-hover:text-primary transition-colors">
+                          {job.repairRequest.title}
+                        </h3>
+                        <p className="text-sm text-muted-foreground">
+                          Fixer: {job.fixer.name}
+                        </p>
+                        {job.reviews.length > 0 && (
+                          <div className="flex items-center gap-1 mt-1">
+                            {Array.from({ length: 5 }).map((_, i) => (
+                              <span
+                                key={i}
+                                className={
+                                  i < job.reviews[0].rating
+                                    ? "text-primary"
+                                    : "text-muted"
+                                }
+                              >
+                                ★
+                              </span>
+                            ))}
+                            <span className="text-xs text-muted-foreground ml-1">
+                              {job.reviews[0].rating}/5
+                            </span>
+                          </div>
+                        )}
                       </div>
-                    )}
-                  </div>
-                  <div className="text-right">
-                    <div className="font-semibold text-gray-800">€{job.agreedPrice}</div>
-                    <div className="text-xs text-gray-500">{timeAgo(job.completedAt)}</div>
-                  </div>
-                </div>
+                      <div className="text-right">
+                        <div className="font-bold text-lg">€{job.agreedPrice}</div>
+                        <div className="text-xs text-muted-foreground">
+                          {timeAgo(job.completedAt)}
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
               </Link>
             ))}
-          </div>
-          <div className="mt-4 text-center">
-            <Link href="/my-jobs" className="text-primary font-medium hover:underline">
-              View all →
-            </Link>
           </div>
         </div>
       )}
