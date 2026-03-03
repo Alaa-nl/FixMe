@@ -137,6 +137,34 @@ export default async function RequestPage({ params }: RequestPageProps) {
                 </span>
               </div>
 
+              {/* Status Banner */}
+              {request.status !== "OPEN" && (
+                <div className={`mb-6 px-4 py-3 rounded-lg border-2 ${
+                  request.status === "IN_PROGRESS"
+                    ? "bg-blue-50 border-blue-200 text-blue-800"
+                    : request.status === "COMPLETED"
+                    ? "bg-green-50 border-green-200 text-green-800"
+                    : request.status === "CANCELLED"
+                    ? "bg-gray-50 border-gray-200 text-gray-800"
+                    : "bg-yellow-50 border-yellow-200 text-yellow-800"
+                }`}>
+                  <div className="flex items-center gap-2">
+                    <span className="font-semibold">
+                      {request.status === "IN_PROGRESS" && "🔧 In Progress"}
+                      {request.status === "COMPLETED" && "✅ Completed"}
+                      {request.status === "CANCELLED" && "❌ Cancelled"}
+                      {request.status === "DISPUTED" && "⚠️ Disputed"}
+                    </span>
+                    <span className="text-sm">
+                      {request.status === "IN_PROGRESS" && "An offer has been accepted and work is underway"}
+                      {request.status === "COMPLETED" && "This repair has been completed"}
+                      {request.status === "CANCELLED" && "This request has been cancelled"}
+                      {request.status === "DISPUTED" && "This job is under dispute"}
+                    </span>
+                  </div>
+                </div>
+              )}
+
               {/* Title */}
               <h1 className="text-3xl md:text-4xl font-bold text-gray-800 mb-4">
                 {request.title}
@@ -159,7 +187,7 @@ export default async function RequestPage({ params }: RequestPageProps) {
                   <p className="text-sm text-gray-700">
                     Posted by <span className="font-semibold">{request.customer.name}</span>
                   </p>
-                  <p className="text-xs text-gray-500">{timeAgo(request.createdAt)}</p>
+                  <p className="text-xs text-gray-500" suppressHydrationWarning>{timeAgo(request.createdAt)}</p>
                 </div>
               </div>
 
@@ -214,7 +242,11 @@ export default async function RequestPage({ params }: RequestPageProps) {
                   </p>
                 </div>
               ) : (
-                <OffersList offers={request.offers} isRequestOwner={isRequestOwner} />
+                <OffersList
+                  offers={request.offers}
+                  isRequestOwner={isRequestOwner}
+                  requestStatus={request.status}
+                />
               )}
             </div>
           </div>

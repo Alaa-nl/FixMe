@@ -9,6 +9,7 @@ interface OffersListProps {
     price: number;
     estimatedTime: string;
     message: string;
+    status: string;
     createdAt: Date | string;
     fixer: {
       id: string;
@@ -22,9 +23,10 @@ interface OffersListProps {
     };
   }>;
   isRequestOwner: boolean;
+  requestStatus: string;
 }
 
-export default function OffersList({ offers, isRequestOwner }: OffersListProps) {
+export default function OffersList({ offers, isRequestOwner, requestStatus }: OffersListProps) {
   const router = useRouter();
 
   const handleAccept = async (offerId: string) => {
@@ -56,6 +58,7 @@ export default function OffersList({ offers, isRequestOwner }: OffersListProps) 
           key={offer.id}
           offer={offer}
           isRequestOwner={isRequestOwner}
+          requestStatus={requestStatus}
           onAccept={handleAccept}
           onMessage={handleMessage}
         />

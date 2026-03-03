@@ -1,19 +1,19 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import StarRating from "./StarRating";
 
 interface ReviewFormProps {
   jobId: string;
   reviewedUserName: string;
-  onSuccess: () => void;
 }
 
 export default function ReviewForm({
   jobId,
   reviewedUserName,
-  onSuccess,
 }: ReviewFormProps) {
+  const router = useRouter();
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -71,7 +71,7 @@ export default function ReviewForm({
       if (res.ok) {
         setShowSuccess(true);
         setTimeout(() => {
-          onSuccess();
+          router.refresh();
         }, 2000);
       } else {
         const data = await res.json();

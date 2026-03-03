@@ -8,6 +8,7 @@ interface RequestCardProps {
     title: string;
     photos: string[];
     city: string;
+    status?: string;
     timeline: "URGENT" | "THIS_WEEK" | "NO_RUSH";
     createdAt: Date | string;
     category: {
@@ -63,16 +64,37 @@ export default function RequestCard({ request }: RequestCardProps) {
           </div>
         )}
 
-        {/* Timeline Badge */}
-        {timelineBadge.text && (
-          <div className="absolute top-3 right-3">
+        {/* Badges */}
+        <div className="absolute top-3 right-3 flex flex-col gap-2 items-end">
+          {/* Status Badge */}
+          {request.status && request.status !== "OPEN" && (
+            <span
+              className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                request.status === "IN_PROGRESS"
+                  ? "bg-blue-500 text-white"
+                  : request.status === "COMPLETED"
+                  ? "bg-green-500 text-white"
+                  : request.status === "CANCELLED"
+                  ? "bg-gray-500 text-white"
+                  : "bg-yellow-500 text-white"
+              }`}
+            >
+              {request.status === "IN_PROGRESS" && "In Progress"}
+              {request.status === "COMPLETED" && "Completed"}
+              {request.status === "CANCELLED" && "Cancelled"}
+              {request.status === "DISPUTED" && "Disputed"}
+            </span>
+          )}
+
+          {/* Timeline Badge */}
+          {timelineBadge.text && (
             <span
               className={`px-3 py-1 rounded-full text-xs font-semibold ${timelineBadge.color}`}
             >
               {timelineBadge.text}
             </span>
-          </div>
-        )}
+          )}
+        </div>
       </div>
 
       {/* Body */}
@@ -98,7 +120,7 @@ export default function RequestCard({ request }: RequestCardProps) {
 
         {/* Bottom Row */}
         <div className="flex items-center justify-between text-sm text-gray-500">
-          <span>{timeAgo(request.createdAt)}</span>
+          <span suppressHydrationWarning>{timeAgo(request.createdAt)}</span>
           <span className="font-medium text-primary">
             {request._count.offers === 0
               ? "No offers yet"

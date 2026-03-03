@@ -257,7 +257,6 @@ export default async function JobPage({ params }: JobPageProps) {
                   <ReviewForm
                     jobId={job.id}
                     reviewedUserName={otherPerson.name}
-                    onSuccess={() => window.location.reload()}
                   />
                 ) : (
                   <div className="space-y-4">
@@ -302,7 +301,6 @@ export default async function JobPage({ params }: JobPageProps) {
                         48)) && (
                     <DisputeForm
                       jobId={job.id}
-                      onSuccess={() => window.location.reload()}
                     />
                   )
                 )}

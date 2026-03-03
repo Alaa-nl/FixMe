@@ -1,11 +1,11 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import Button from "@/components/ui/Button";
 
 interface DisputeFormProps {
   jobId: string;
-  onSuccess: () => void;
 }
 
 const COMMON_REASONS = [
@@ -16,7 +16,8 @@ const COMMON_REASONS = [
   "Other issue",
 ];
 
-export default function DisputeForm({ jobId, onSuccess }: DisputeFormProps) {
+export default function DisputeForm({ jobId }: DisputeFormProps) {
+  const router = useRouter();
   const [selectedReason, setSelectedReason] = useState<string>("");
   const [description, setDescription] = useState("");
   const [photos, setPhotos] = useState<File[]>([]);
@@ -97,7 +98,7 @@ export default function DisputeForm({ jobId, onSuccess }: DisputeFormProps) {
       // Clean up preview URLs
       photoPreviewUrls.forEach((url) => URL.revokeObjectURL(url));
 
-      onSuccess();
+      router.refresh();
     } catch (err: any) {
       setError(err.message);
     } finally {

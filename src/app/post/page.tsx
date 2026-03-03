@@ -183,37 +183,46 @@ export default function PostPage() {
     setError("");
 
     try {
-      // In a real app, you would:
-      // 1. Upload photos to cloud storage (S3, Cloudinary, etc.)
-      // 2. Get the URLs
-      // 3. Create the repair request with those URLs and the diagnosis data
+      console.log("🚀 Submitting repair request...");
 
-      // For now, we'll just simulate success
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      // For now, we're using base64 encoded photos directly
+      // In production, you would upload to cloud storage (S3, Cloudinary, etc.)
+      const res = await fetch("/api/requests", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title,
+          description,
+          categoryId: selectedCategoryId,
+          photos: photos, // base64 encoded photos
+          city,
+          // TODO: Get actual coordinates from geocoding API
+          // For now using Amsterdam coordinates as default
+          locationLat: 52.3676,
+          locationLng: 4.9041,
+          timeline,
+          mobility,
+          aiDiagnosis: diagnosis,
+        }),
+      });
 
-      // TODO: Create repair request in database
-      // const res = await fetch("/api/repair-requests", {
-      //   method: "POST",
-      //   headers: { "Content-Type": "application/json" },
-      //   body: JSON.stringify({
-      //     title,
-      //     description,
-      //     categoryId: selectedCategoryId,
-      //     photos: photoUrls, // URLs from cloud storage
-      //     city,
-      //     locationLat: 52.3676, // TODO: Get from geocoding
-      //     locationLng: 4.9041,
-      //     timeline,
-      //     mobility,
-      //     aiDiagnosis: diagnosis,
-      //   }),
-      // });
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.error || "Failed to submit request");
+      }
 
-      // Redirect to success page or request details
+      const createdRequest = await res.json();
+      console.log("✅ Request created:", createdRequest.id);
+
+      // Redirect to dashboard
       router.push("/dashboard");
     } catch (err) {
-      console.error("Error submitting request:", err);
-      setError("Failed to submit request. Please try again.");
+      console.error("❌ Error submitting request:", err);
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Failed to submit request. Please try again."
+      );
     } finally {
       setIsSubmitting(false);
     }

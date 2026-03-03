@@ -185,7 +185,7 @@ async function main() {
       description:
         "My bike chain broke while cycling to work this morning. The chain is completely snapped and needs to be replaced. The bike is a standard city bike.",
       categoryId: categoryMap["bikes-scooters"],
-      photos: ["/uploads/placeholder.jpg"],
+      photos: ["/uploads/placeholder.svg"],
       city: "Amsterdam",
       locationLat: 52.3676,
       locationLng: 4.9041,
@@ -198,7 +198,7 @@ async function main() {
       description:
         "I dropped my iPhone 13 and the screen is badly cracked. The phone still works but the glass is shattered. Need screen replacement.",
       categoryId: categoryMap["phones-tablets"],
-      photos: ["/uploads/placeholder.jpg", "/uploads/placeholder.jpg"],
+      photos: ["/uploads/placeholder.svg", "/uploads/placeholder.svg"],
       city: "Amsterdam",
       locationLat: 52.3676,
       locationLng: 4.9041,
@@ -211,7 +211,7 @@ async function main() {
       description:
         "My washing machine completes the wash cycle but doesn't spin to drain the water. The clothes come out soaking wet. It's a Bosch model about 5 years old.",
       categoryId: categoryMap["laundry-appliances"],
-      photos: ["/uploads/placeholder.jpg"],
+      photos: ["/uploads/placeholder.svg"],
       city: "Rotterdam",
       locationLat: 51.9244,
       locationLng: 4.4777,
@@ -224,7 +224,7 @@ async function main() {
       description:
         "One of the legs on my wooden kitchen table has become loose and wobbly. It needs to be tightened or reattached properly.",
       categoryId: categoryMap["furniture"],
-      photos: ["/uploads/placeholder.jpg", "/uploads/placeholder.jpg"],
+      photos: ["/uploads/placeholder.svg", "/uploads/placeholder.svg"],
       city: "Utrecht",
       locationLat: 52.0907,
       locationLng: 5.1214,
@@ -237,7 +237,7 @@ async function main() {
       description:
         "Several keys on my Dell laptop keyboard are sticky and not responding properly. I think something was spilled on it. Keys affected: A, S, D, and spacebar.",
       categoryId: categoryMap["laptops-computers"],
-      photos: ["/uploads/placeholder.jpg"],
+      photos: ["/uploads/placeholder.svg"],
       city: "Amsterdam",
       locationLat: 52.3676,
       locationLng: 4.9041,
@@ -250,7 +250,7 @@ async function main() {
       description:
         "My microwave turns on and the turntable spins, but it's not heating the food at all. It's a Samsung microwave, about 3 years old.",
       categoryId: categoryMap["kitchen-appliances"],
-      photos: ["/uploads/placeholder.jpg"],
+      photos: ["/uploads/placeholder.svg"],
       city: "Rotterdam",
       locationLat: 51.9244,
       locationLng: 4.4777,
@@ -263,7 +263,7 @@ async function main() {
       description:
         "My LG smart TV won't turn on. There's a red light blinking on the front panel. I've tried unplugging it and plugging it back in but no luck.",
       categoryId: categoryMap["home-electronics"],
-      photos: ["/uploads/placeholder.jpg", "/uploads/placeholder.jpg"],
+      photos: ["/uploads/placeholder.svg", "/uploads/placeholder.svg"],
       city: "Utrecht",
       locationLat: 52.0907,
       locationLng: 5.1214,
@@ -276,7 +276,7 @@ async function main() {
       description:
         "The tap in my kitchen sink has started leaking from the base. It drips constantly even when turned off completely. Wastes a lot of water.",
       categoryId: categoryMap["plumbing"],
-      photos: ["/uploads/placeholder.jpg"],
+      photos: ["/uploads/placeholder.svg"],
       city: "Amsterdam",
       locationLat: 52.3676,
       locationLng: 4.9041,
@@ -289,7 +289,7 @@ async function main() {
       description:
         "The zipper on my winter jacket is broken - it comes apart even when fully zipped up. The jacket is otherwise in perfect condition.",
       categoryId: categoryMap["clothing-shoes"],
-      photos: ["/uploads/placeholder.jpg"],
+      photos: ["/uploads/placeholder.svg"],
       city: "Rotterdam",
       locationLat: 51.9244,
       locationLng: 4.4777,
@@ -302,7 +302,7 @@ async function main() {
       description:
         "My electric guitar makes a buzzing sound when I play certain notes. I think it might be the frets or the strings need adjustment.",
       categoryId: categoryMap["musical-instruments"],
-      photos: ["/uploads/placeholder.jpg", "/uploads/placeholder.jpg"],
+      photos: ["/uploads/placeholder.svg", "/uploads/placeholder.svg"],
       city: "Utrecht",
       locationLat: 52.0907,
       locationLng: 5.1214,
@@ -315,7 +315,7 @@ async function main() {
       description:
         "My petrol lawn mower won't start. I've checked the fuel and it's full. The pull cord works but the engine doesn't fire up.",
       categoryId: categoryMap["garden-outdoor"],
-      photos: ["/uploads/placeholder.jpg"],
+      photos: ["/uploads/placeholder.svg"],
       city: "Amsterdam",
       locationLat: 52.3676,
       locationLng: 4.9041,
@@ -328,7 +328,7 @@ async function main() {
       description:
         "One of the wheels on my office chair has broken off. The chair tilts to one side and is unusable. Need the wheel replaced.",
       categoryId: categoryMap["furniture"],
-      photos: ["/uploads/placeholder.jpg"],
+      photos: ["/uploads/placeholder.svg"],
       city: "Amsterdam",
       locationLat: 52.3676,
       locationLng: 4.9041,

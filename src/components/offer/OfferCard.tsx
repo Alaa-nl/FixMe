@@ -11,6 +11,7 @@ interface OfferCardProps {
     price: number;
     estimatedTime: string;
     message: string;
+    status: string;
     createdAt: Date | string;
     fixer: {
       id: string;
@@ -24,13 +25,17 @@ interface OfferCardProps {
     };
   };
   isRequestOwner?: boolean;
+  requestStatus?: string;
   onAccept?: (offerId: string) => void;
   onMessage?: (fixerId: string) => void;
 }
 
-export default function OfferCard({ offer, isRequestOwner, onAccept, onMessage }: OfferCardProps) {
+export default function OfferCard({ offer, isRequestOwner, requestStatus, onAccept, onMessage }: OfferCardProps) {
   const [showFullMessage, setShowFullMessage] = useState(false);
   const [isAccepting, setIsAccepting] = useState(false);
+
+  // Determine if the Accept button should be shown
+  const canAccept = isRequestOwner && requestStatus === "OPEN" && offer.status === "PENDING";
 
   const handleAccept = async () => {
     if (!onAccept) return;
@@ -122,27 +127,64 @@ export default function OfferCard({ offer, isRequestOwner, onAccept, onMessage }
         <div className="flex-shrink-0 flex flex-col items-end justify-between gap-3">
           <div className="text-right">
             <div className="text-3xl font-bold text-primary">€{offer.price}</div>
+
+            {/* Status Badge */}
+            {offer.status === "ACCEPTED" && (
+              <div className="mt-2 inline-flex items-center gap-1 px-3 py-1 bg-green-100 border border-green-300 text-green-800 text-sm font-semibold rounded-full">
+                <span>✓</span>
+                <span>Accepted</span>
+              </div>
+            )}
+            {offer.status === "REJECTED" && (
+              <div className="mt-2 inline-flex items-center gap-1 px-3 py-1 bg-gray-100 border border-gray-300 text-gray-600 text-sm font-medium rounded-full">
+                <span>✕</span>
+                <span>Not selected</span>
+              </div>
+            )}
+            {offer.status === "WITHDRAWN" && (
+              <div className="mt-2 inline-flex items-center gap-1 px-3 py-1 bg-yellow-100 border border-yellow-300 text-yellow-800 text-sm font-medium rounded-full">
+                <span>⎌</span>
+                <span>Withdrawn</span>
+              </div>
+            )}
           </div>
 
           {isRequestOwner && (
             <div className="flex flex-col gap-2 w-full md:w-auto">
-              <Button
-                variant="primary"
-                size="sm"
-                onClick={handleAccept}
-                disabled={isAccepting}
-                className="w-full md:w-auto"
-              >
-                {isAccepting ? "Accepting..." : "Accept offer"}
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => onMessage?.(offer.fixer.id)}
-                className="w-full md:w-auto"
-              >
-                Message
-              </Button>
+              {canAccept ? (
+                <>
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    onClick={handleAccept}
+                    disabled={isAccepting}
+                    className="w-full md:w-auto"
+                  >
+                    {isAccepting ? "Accepting..." : "Accept offer"}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => onMessage?.(offer.fixer.id)}
+                    className="w-full md:w-auto"
+                  >
+                    Message
+                  </Button>
+                </>
+              ) : offer.status === "PENDING" && requestStatus !== "OPEN" ? (
+                <div className="text-sm text-gray-600 text-center">
+                  Request no longer accepting offers
+                </div>
+              ) : offer.status === "ACCEPTED" ? (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => onMessage?.(offer.fixer.id)}
+                  className="w-full md:w-auto"
+                >
+                  Message fixer
+                </Button>
+              ) : null}
             </div>
           )}
         </div>
