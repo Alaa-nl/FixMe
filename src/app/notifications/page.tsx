@@ -6,7 +6,7 @@ import { redirect } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { Bell } from "lucide-react";
 import { timeAgo } from "@/lib/utils";
-import Button from "@/components/ui/Button";
+import Button from "@/components/ui/button";
 
 interface Notification {
   id: string;

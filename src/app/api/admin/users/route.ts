@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireAdminAPI } from "@/lib/adminAuth";
 import { prisma } from "@/lib/db";
+import { hasPermission } from "@/lib/checkPermission";
+import { auth } from "@/lib/auth";
+import bcrypt from "bcryptjs";
 
 export async function GET(request: NextRequest) {
   // Check admin authorization
@@ -8,8 +11,20 @@ export async function GET(request: NextRequest) {
   if (authError) return authError;
 
   try {
+    const session = await auth();
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    // Check permission
+    const canView = await hasPermission(session.user.id, "users.view");
+    if (!canView) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
     const { searchParams } = new URL(request.url);
     const search = searchParams.get("search") || "";
+    const email = searchParams.get("email") || "";
     const userType = searchParams.get("userType") || "";
     const page = parseInt(searchParams.get("page") || "1");
     const limit = parseInt(searchParams.get("limit") || "20");
@@ -18,7 +33,10 @@ export async function GET(request: NextRequest) {
     // Build where clause
     const where: any = {};
 
-    if (search) {
+    if (email) {
+      // Exact email search
+      where.email = { equals: email, mode: "insensitive" };
+    } else if (search) {
       where.OR = [
         { name: { contains: search, mode: "insensitive" } },
         { email: { contains: search, mode: "insensitive" } },
@@ -157,6 +175,115 @@ export async function PATCH(request: NextRequest) {
     console.error("Error updating user:", error);
     return NextResponse.json(
       { error: "Failed to update user" },
+      { status: 500 }
+    );
+  }
+}
+
+// POST /api/admin/users - Create new user
+export async function POST(request: NextRequest) {
+  try {
+    const session = await auth();
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    // Check permission
+    const canCreate = await hasPermission(session.user.id, "users.create");
+    if (!canCreate) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
+    const body = await request.json();
+    const {
+      name,
+      email,
+      password,
+      userType,
+      city,
+      phone,
+      locationLat,
+      locationLng,
+      // Fixer specific fields
+      kvkNumber,
+      skills,
+      serviceRadiusKm,
+      minJobFee,
+      bio,
+      sendWelcomeEmail,
+    } = body;
+
+    // Validate required fields
+    if (!name || !email || !password || !userType) {
+      return NextResponse.json(
+        { error: "name, email, password, and userType are required" },
+        { status: 400 }
+      );
+    }
+
+    // Check if email already exists
+    const existingUser = await prisma.user.findUnique({
+      where: { email: email.toLowerCase() },
+    });
+
+    if (existingUser) {
+      return NextResponse.json(
+        { error: "User with this email already exists" },
+        { status: 400 }
+      );
+    }
+
+    // Hash password
+    const passwordHash = await bcrypt.hash(password, 10);
+
+    // Create user with optional fixer profile
+    const userData: any = {
+      name,
+      email: email.toLowerCase(),
+      passwordHash,
+      userType,
+      city,
+      phone,
+      locationLat: locationLat ? parseFloat(locationLat) : null,
+      locationLng: locationLng ? parseFloat(locationLng) : null,
+    };
+
+    // If creating a fixer, add fixer profile
+    if (userType === "FIXER") {
+      userData.fixerProfile = {
+        create: {
+          kvkNumber: kvkNumber || null,
+          kvkVerified: false,
+          bio: bio || null,
+          skills: skills || [],
+          serviceRadiusKm: serviceRadiusKm ? parseInt(serviceRadiusKm) : 10,
+          minJobFee: minJobFee ? parseFloat(minJobFee) : null,
+          isActive: true,
+        },
+      };
+    }
+
+    const user = await prisma.user.create({
+      data: userData,
+      include: {
+        fixerProfile: true,
+      },
+    });
+
+    // TODO: Send welcome email if sendWelcomeEmail is true
+    // You can implement email sending here
+
+    return NextResponse.json(
+      {
+        user,
+        message: "User created successfully",
+      },
+      { status: 201 }
+    );
+  } catch (error: any) {
+    console.error("Error creating user:", error);
+    return NextResponse.json(
+      { error: error.message || "Failed to create user" },
       { status: 500 }
     );
   }

@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
-import Button from "@/components/ui/Button";
+import Button from "@/components/ui/button";
 import DiagnosisLoading from "@/components/ai/DiagnosisLoading";
 import DiagnosisCard from "@/components/ai/DiagnosisCard";
 import { DiagnosisResult } from "@/lib/claude";

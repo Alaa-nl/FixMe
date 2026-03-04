@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
-import Button from "@/components/ui/Button";
+import Button from "@/components/ui/button";
 import DisputeCard from "@/components/dispute/DisputeCard";
 import {
   CheckCircle2,

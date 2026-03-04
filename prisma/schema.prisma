@@ -99,6 +99,11 @@ model User {
   notifications       Notification[]
   accounts            Account[]
   sessions            Session[]
+  staffMember         StaffMember?
+  createdRoles        StaffRole[]     @relation("RoleCreator")
+  voucherRedemptions  VoucherRedemption[]
+  credits             UserCredit[]
+  adminLogs           AdminLog[]
 
   @@index([email])
   @@index([userType])
@@ -386,5 +391,157 @@ model Notification {
 
   @@index([userId])
   @@index([read])
+  @@index([createdAt])
+}
+
+// Staff Management Models
+model StaffRole {
+  id           String   @id @default(uuid())
+  name         String   // "Dispute Manager", "Content Editor", "Finance Officer", etc.
+  description  String?
+  permissions  Json     // Array of permission strings
+  createdBy    String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relations
+  creator      User          @relation("RoleCreator", fields: [createdBy], references: [id])
+  staffMembers StaffMember[]
+
+  @@index([name])
+  @@index([createdBy])
+}
+
+model StaffMember {
+  id        String   @id @default(uuid())
+  userId    String   @unique
+  roleId    String
+  isActive  Boolean  @default(true)
+  notes     String?  // "Hired for summer", "Part-time", etc.
+  createdBy String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  user User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role StaffRole @relation(fields: [roleId], references: [id])
+
+  @@index([userId])
+  @@index([roleId])
+  @@index([isActive])
+}
+
+// Platform Settings Model
+model PlatformSettings {
+  id                    String   @id @default("default")
+  commissionPercentage  Float    @default(15)
+  minJobFee             Float    @default(0)
+  maxJobFee             Float?
+  autoReleaseHours      Int      @default(48)
+  maxPhotosPerRequest   Int      @default(5)
+  maxVideoSeconds       Int      @default(60)
+  maxOffersPerRequest   Int      @default(20)
+  disputeWindowHours    Int      @default(48)
+  reviewEditDays        Int      @default(7)
+  accountDeletionDays   Int      @default(30)
+  requireKvk            Boolean  @default(true)
+  allowUnverifiedFixers Boolean  @default(true)
+  minFixerRating        Float    @default(0)
+  activeCities          Json     @default("[\"Amsterdam\"]")
+  notificationSettings  Json     @default("{\"welcome\":true,\"newOffer\":true,\"offerAccepted\":true,\"jobCompleted\":true,\"reviewReceived\":true,\"disputeUpdates\":true}")
+  updatedAt             DateTime @updatedAt
+  updatedBy             String?
+}
+
+// Voucher & Credit Models
+model Voucher {
+  id              String              @id @default(uuid())
+  code            String              @unique
+  type            String              // "percentage" or "fixed"
+  value           Float               // 10 (means 10% or €10 depending on type)
+  maxUses         Int?                // null = unlimited
+  usedCount       Int                 @default(0)
+  minOrderValue   Float?              // minimum repair price to use this voucher
+  validFrom       DateTime            @default(now())
+  validUntil      DateTime?
+  isActive        Boolean             @default(true)
+  createdBy       String
+  applicableTo    String              @default("all") // "all", "customers", "fixers"
+  description     String?
+  createdAt       DateTime            @default(now())
+
+  // Relations
+  redemptions VoucherRedemption[]
+
+  @@index([code])
+  @@index([isActive])
+  @@index([createdBy])
+}
+
+model VoucherRedemption {
+  id        String   @id @default(uuid())
+  voucherId String
+  userId    String
+  jobId     String?
+  amount    Float    // actual discount amount applied
+  createdAt DateTime @default(now())
+
+  // Relations
+  voucher Voucher @relation(fields: [voucherId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([voucherId])
+  @@index([userId])
+  @@index([jobId])
+  @@index([createdAt])
+}
+
+model UserCredit {
+  id        String   @id @default(uuid())
+  userId    String
+  amount    Float    // positive = credit added, negative = credit used
+  balance   Float    // running balance after this transaction
+  reason    String   // "Admin gift", "Refund bonus", "Voucher reward", etc.
+  createdBy String?  // admin who added it
+  createdAt DateTime @default(now())
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([createdAt])
+}
+
+// Site Content Model (CMS)
+model SiteContent {
+  id        String   @id // "hero_title", "hero_subtitle", "hero_image", etc.
+  section   String   // "homepage", "how_it_works", "footer", etc.
+  type      String   // "text", "image", "html"
+  value     String   @db.Text // the actual content (text string or image URL)
+  label     String   // human-readable label: "Homepage Hero Title"
+  updatedAt DateTime @updatedAt
+  updatedBy String?
+
+  @@index([section])
+  @@index([type])
+}
+
+// Admin Activity Log Model
+model AdminLog {
+  id         String   @id @default(uuid())
+  userId     String   // who did this action
+  action     String   // "banned_user", "resolved_dispute", "changed_commission", etc.
+  target     String?  // the ID of the affected record
+  targetType String?  // "user", "job", "dispute", "setting", etc.
+  details    Json?    // any extra info about what changed
+  ipAddress  String?
+  createdAt  DateTime @default(now())
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([action])
+  @@index([targetType])
   @@index([createdAt])
 }

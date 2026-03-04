@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
@@ -16,6 +16,11 @@ import {
   Menu,
   X,
   LogOut,
+  Shield,
+  Ticket,
+  Euro,
+  FileText,
+  ScrollText,
 } from "lucide-react";
 
 interface AdminSidebarProps {
@@ -24,22 +29,145 @@ interface AdminSidebarProps {
     email?: string | null;
     avatarUrl?: string | null;
   };
+  permissions: string[];
+  isSuperAdmin: boolean;
 }
 
-const navigation = [
-  { name: "Dashboard", href: "/admin", icon: BarChart3 },
-  { name: "Users", href: "/admin/users", icon: Users },
-  { name: "Jobs", href: "/admin/jobs", icon: Briefcase },
-  { name: "Disputes", href: "/admin/disputes", icon: AlertTriangle },
-  { name: "Payments", href: "/admin/payments", icon: CreditCard },
-  { name: "Categories", href: "/admin/categories", icon: FolderOpen },
-  { name: "Settings", href: "/admin/settings", icon: Settings },
-  { name: "Back to App", href: "/", icon: Home },
+// Navigation items with required permissions
+const allNavigationItems = [
+  {
+    name: "Dashboard",
+    href: "/admin",
+    icon: BarChart3,
+    requiredPermission: null, // Always visible
+    badge: null,
+  },
+  {
+    name: "Users",
+    href: "/admin/users",
+    icon: Users,
+    requiredPermission: "users.view",
+    badge: null,
+  },
+  {
+    name: "Jobs & Requests",
+    href: "/admin/jobs",
+    icon: Briefcase,
+    requiredPermission: "jobs.view",
+    badge: null,
+  },
+  {
+    name: "Disputes",
+    href: "/admin/disputes",
+    icon: AlertTriangle,
+    requiredPermission: "disputes.view",
+    badge: "pending_disputes", // Will show count of pending disputes
+  },
+  {
+    name: "Finance",
+    href: "/admin/payments",
+    icon: CreditCard,
+    requiredPermission: "finance.view",
+    badge: null,
+  },
+  {
+    name: "Vouchers",
+    href: "/admin/vouchers",
+    icon: Ticket,
+    requiredPermission: "finance.vouchers",
+    badge: null,
+  },
+  {
+    name: "Credits",
+    href: "/admin/credits",
+    icon: Euro,
+    requiredPermission: "finance.adjust",
+    badge: null,
+  },
+  {
+    name: "Categories",
+    href: "/admin/categories",
+    icon: FolderOpen,
+    requiredPermission: "categories.view",
+    badge: null,
+  },
+  {
+    name: "Website Content",
+    href: "/admin/content",
+    icon: FileText,
+    requiredPermission: "content.edit",
+    badge: null,
+  },
+  {
+    name: "Staff & Roles",
+    href: "/admin/staff",
+    icon: Shield,
+    requiredPermission: "staff.view",
+    badge: null,
+  },
+  {
+    name: "Platform Settings",
+    href: "/admin/settings",
+    icon: Settings,
+    requiredPermission: "settings.view",
+    badge: null,
+  },
+  {
+    name: "Activity Log",
+    href: "/admin/logs",
+    icon: ScrollText,
+    requiredPermission: "superadmin", // Only super admins can view
+    badge: null,
+  },
+  {
+    name: "Back to App",
+    href: "/",
+    icon: Home,
+    requiredPermission: null, // Always visible
+    badge: null,
+  },
 ];
 
-export default function AdminSidebar({ user }: AdminSidebarProps) {
+export default function AdminSidebar({
+  user,
+  permissions,
+  isSuperAdmin,
+}: AdminSidebarProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [badgeCounts, setBadgeCounts] = useState<Record<string, number>>({});
   const pathname = usePathname();
+
+  // Fetch badge counts on mount
+  useEffect(() => {
+    const fetchBadgeCounts = async () => {
+      try {
+        // Fetch pending disputes count
+        const response = await fetch("/api/admin/disputes/count");
+        if (response.ok) {
+          const data = await response.json();
+          setBadgeCounts({ pending_disputes: data.count || 0 });
+        }
+      } catch (error) {
+        console.error("Error fetching badge counts:", error);
+      }
+    };
+
+    fetchBadgeCounts();
+  }, []);
+
+  // Filter navigation items based on permissions
+  const navigation = useMemo(() => {
+    return allNavigationItems.filter((item) => {
+      // Always show items without permission requirement
+      if (!item.requiredPermission) return true;
+
+      // Super admins see everything
+      if (isSuperAdmin) return true;
+
+      // Check if user has the required permission
+      return permissions.includes(item.requiredPermission);
+    });
+  }, [permissions, isSuperAdmin]);
 
   const isActive = (href: string) => {
     if (href === "/admin") {
@@ -83,7 +211,7 @@ export default function AdminSidebar({ user }: AdminSidebarProps) {
             <div className="flex items-center gap-3">
               <h1 className="text-2xl font-bold text-white">FixMe</h1>
               <span className="px-2 py-1 bg-orange-500 text-white text-xs font-bold rounded">
-                ADMIN
+                {isSuperAdmin ? "ADMIN" : "STAFF"}
               </span>
             </div>
           </div>
@@ -107,6 +235,11 @@ export default function AdminSidebar({ user }: AdminSidebarProps) {
                 >
                   <Icon size={20} />
                   <span className="font-medium">{item.name}</span>
+                  {item.badge && badgeCounts[item.badge] > 0 && (
+                    <span className="ml-auto px-2 py-0.5 bg-red-500 text-white text-xs font-bold rounded-full">
+                      {badgeCounts[item.badge]}
+                    </span>
+                  )}
                 </Link>
               );
             })}

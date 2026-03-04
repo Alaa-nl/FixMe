@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { timeAgo } from "@/lib/utils";
-import Button from "@/components/ui/Button";
+import Button from "@/components/ui/button";
 
 interface DisputeDetailProps {
   disputeId: string;

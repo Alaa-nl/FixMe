@@ -1,65 +1,23 @@
-import React from "react";
+import * as React from "react"
 
-interface InputProps {
-  label?: string;
-  name: string;
-  type?: string;
-  placeholder?: string;
-  value: string;
-  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  error?: string;
-  required?: boolean;
-  icon?: React.ReactNode;
-  className?: string;
-}
+import { cn } from "@/lib/utils"
 
-export default function Input({
-  label,
-  name,
-  type = "text",
-  placeholder,
-  value,
-  onChange,
-  error,
-  required = false,
-  icon,
-  className = "",
-}: InputProps) {
-  return (
-    <div className={`w-full ${className}`}>
-      {label && (
-        <label
-          htmlFor={name}
-          className="block text-sm font-medium text-gray-700 mb-2"
-        >
-          {label}
-          {required && <span className="text-red-500 ml-1">*</span>}
-        </label>
-      )}
-      <div className="relative">
-        {icon && (
-          <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
-            {icon}
-          </div>
+const Input = React.forwardRef<HTMLInputElement, React.ComponentProps<"input">>(
+  ({ className, type, ...props }, ref) => {
+    return (
+      <input
+        type={type}
+        className={cn(
+          "flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm",
+          className
         )}
-        <input
-          id={name}
-          name={name}
-          type={type}
-          value={value}
-          onChange={onChange}
-          placeholder={placeholder}
-          required={required}
-          className={`w-full rounded-lg border px-4 py-3 text-base transition-all duration-200 ${
-            icon ? "pl-10" : ""
-          } ${
-            error
-              ? "border-red-500 focus:border-red-500 focus:ring-red-500"
-              : "border-gray-300 focus:border-primary focus:ring-primary"
-          } focus:outline-none focus:ring-2 focus:ring-opacity-50`}
-        />
-      </div>
-      {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
-    </div>
-  );
-}
+        ref={ref}
+        {...props}
+      />
+    )
+  }
+)
+Input.displayName = "Input"
+
+export { Input }
+export default Input

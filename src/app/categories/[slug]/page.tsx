@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { prisma } from "@/lib/db";
 import { getCategoryIcon } from "@/lib/categoryIcons";
-import Button from "@/components/ui/Button";
+import Button from "@/components/ui/button";
 
 export const dynamic = "force-dynamic";
 

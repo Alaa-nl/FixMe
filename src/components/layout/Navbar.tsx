@@ -4,7 +4,7 @@ import { useSession, signOut } from "next-auth/react";
 import Link from "next/link";
 import { useState, useEffect, useRef } from "react";
 import { Search, MessageCircle, Bell, User, LogOut, ChevronDown } from "lucide-react";
-import Button from "@/components/ui/Button";
+import Button from "@/components/ui/button";
 import NotificationBell from "@/components/layout/NotificationBell";
 
 export default function Navbar() {

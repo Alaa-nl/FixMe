@@ -1,9 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Search } from "lucide-react";
+import { Search, UserPlus } from "lucide-react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 export default function AdminUsersPage() {
+  const router = useRouter();
   const [users, setUsers] = useState<any[]>([]);
   const [search, setSearch] = useState("");
   const [userType, setUserType] = useState("");
@@ -66,7 +69,15 @@ export default function AdminUsersPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-3xl md:text-4xl font-bold text-gray-800">Users</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-3xl md:text-4xl font-bold text-gray-800">Users</h1>
+        <Link href="/admin/users/new">
+          <button className="flex items-center gap-2 px-4 py-2 bg-[#FF6B35] text-white rounded-lg hover:bg-[#FF6B35]/90 font-medium transition-colors">
+            <UserPlus size={20} />
+            Create User
+          </button>
+        </Link>
+      </div>
 
       {/* Filters */}
       <div className="bg-white rounded-xl border border-gray-200 p-4">
@@ -120,7 +131,11 @@ export default function AdminUsersPage() {
             </thead>
             <tbody className="divide-y divide-gray-200">
               {users.map((user) => (
-                <tr key={user.id} className="hover:bg-gray-50">
+                <tr
+                  key={user.id}
+                  onClick={() => router.push(`/admin/users/${user.id}`)}
+                  className="hover:bg-gray-50 cursor-pointer"
+                >
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center gap-3">
                       {user.avatarUrl ? (
@@ -155,7 +170,7 @@ export default function AdminUsersPage() {
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm">
-                    <div className="flex gap-2">
+                    <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
                       {user.fixerProfile && !user.fixerProfile.kvkVerified && (
                         <button
                           onClick={() => handleAction(user.id, "verify")}

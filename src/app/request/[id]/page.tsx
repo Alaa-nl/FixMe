@@ -8,7 +8,7 @@ import DiagnosisCard from "@/components/ai/DiagnosisCard";
 import OffersList from "@/components/offer/OffersList";
 import OfferForm from "@/components/offer/OfferForm";
 import Link from "next/link";
-import Button from "@/components/ui/Button";
+import Button from "@/components/ui/button";
 import { DiagnosisResult } from "@/lib/claude";
 
 export const dynamic = "force-dynamic";

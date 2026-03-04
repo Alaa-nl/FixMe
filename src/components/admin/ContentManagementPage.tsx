@@ -1,0 +1,359 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import {
+  FileText,
+  Image as ImageIcon,
+  Code,
+  Loader2,
+  Save,
+  RotateCcw,
+  Check,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { toast } from "sonner";
+
+interface ContentItem {
+  id: string;
+  section: string;
+  type: string;
+  value: string;
+  label: string;
+  updatedAt: string;
+  updatedBy: string | null;
+}
+
+export default function ContentManagementPage() {
+  const [content, setContent] = useState<Record<string, ContentItem[]>>({});
+  const [loading, setLoading] = useState(true);
+  const [selectedSection, setSelectedSection] = useState<string>("");
+  const [editingItem, setEditingItem] = useState<ContentItem | null>(null);
+  const [editValue, setEditValue] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [savedItemId, setSavedItemId] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetchContent();
+  }, []);
+
+  const fetchContent = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch("/api/admin/content");
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to fetch content");
+      }
+
+      setContent(data.content || {});
+
+      // Select first section by default
+      const sections = Object.keys(data.content || {});
+      if (sections.length > 0 && !selectedSection) {
+        setSelectedSection(sections[0]);
+      }
+    } catch (error: any) {
+      toast.error(error.message || "Failed to load content");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleEdit = (item: ContentItem) => {
+    setEditingItem(item);
+    setEditValue(item.value);
+    setSavedItemId(null);
+  };
+
+  const handleSave = async () => {
+    if (!editingItem) return;
+
+    setSaving(true);
+    try {
+      const response = await fetch(`/api/admin/content/${editingItem.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ value: editValue }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to save content");
+      }
+
+      toast.success("Content saved successfully");
+      setSavedItemId(editingItem.id);
+
+      // Update local state
+      const updatedContent = { ...content };
+      const sectionItems = updatedContent[editingItem.section];
+      const itemIndex = sectionItems.findIndex((i) => i.id === editingItem.id);
+      if (itemIndex !== -1) {
+        sectionItems[itemIndex] = { ...editingItem, value: editValue };
+      }
+      setContent(updatedContent);
+
+      setEditingItem(null);
+      setEditValue("");
+
+      // Clear saved indicator after 2 seconds
+      setTimeout(() => setSavedItemId(null), 2000);
+    } catch (error: any) {
+      toast.error(error.message || "Failed to save content");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleReset = async (item: ContentItem) => {
+    if (!confirm(`Reset "${item.label}" to default value?`)) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/admin/content/reset/${item.id}`, {
+        method: "POST",
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to reset content");
+      }
+
+      toast.success("Content reset to default");
+      fetchContent();
+      setEditingItem(null);
+    } catch (error: any) {
+      toast.error(error.message || "Failed to reset content");
+    }
+  };
+
+  const getIcon = (type: string) => {
+    switch (type) {
+      case "image":
+        return <ImageIcon size={16} className="text-purple-600" />;
+      case "html":
+        return <Code size={16} className="text-blue-600" />;
+      default:
+        return <FileText size={16} className="text-gray-600" />;
+    }
+  };
+
+  const getSectionLabel = (section: string) => {
+    return section
+      .split("_")
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(" ");
+  };
+
+  const sections = Object.keys(content);
+  const currentItems = content[selectedSection] || [];
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div>
+        <h1 className="text-3xl font-bold text-gray-900">
+          Content Management
+        </h1>
+        <p className="mt-2 text-gray-600">
+          Edit marketing text and images across the website
+        </p>
+      </div>
+
+      {loading ? (
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="animate-spin text-gray-400" size={32} />
+        </div>
+      ) : (
+        <div className="grid lg:grid-cols-4 gap-6">
+          {/* Sections Sidebar */}
+          <div className="lg:col-span-1">
+            <div className="bg-white rounded-xl border p-4">
+              <h2 className="font-bold text-gray-900 mb-3">Sections</h2>
+              <div className="space-y-1">
+                {sections.map((section) => (
+                  <button
+                    key={section}
+                    onClick={() => {
+                      setSelectedSection(section);
+                      setEditingItem(null);
+                    }}
+                    className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${
+                      selectedSection === section
+                        ? "bg-[#FF6B35] text-white font-medium"
+                        : "text-gray-700 hover:bg-gray-100"
+                    }`}
+                  >
+                    {getSectionLabel(section)}
+                    <span className="ml-2 text-xs opacity-75">
+                      ({content[section].length})
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Content Editor */}
+          <div className="lg:col-span-3">
+            <div className="bg-white rounded-xl border">
+              <div className="p-6 border-b">
+                <h2 className="text-xl font-bold text-gray-900">
+                  {getSectionLabel(selectedSection)}
+                </h2>
+                <p className="text-sm text-gray-600 mt-1">
+                  {currentItems.length} items
+                </p>
+              </div>
+
+              <div className="p-6 space-y-4">
+                {currentItems.length === 0 ? (
+                  <div className="text-center py-8 text-gray-500">
+                    No content items in this section
+                  </div>
+                ) : (
+                  currentItems.map((item) => (
+                    <div
+                      key={item.id}
+                      className={`border rounded-lg p-4 transition-colors ${
+                        editingItem?.id === item.id
+                          ? "border-[#FF6B35] bg-orange-50"
+                          : "border-gray-200 hover:border-gray-300"
+                      }`}
+                    >
+                      <div className="flex items-start justify-between mb-2">
+                        <div className="flex items-center gap-2">
+                          {getIcon(item.type)}
+                          <Label className="font-semibold text-gray-900">
+                            {item.label}
+                          </Label>
+                          {savedItemId === item.id && (
+                            <span className="flex items-center gap-1 text-xs text-green-600 font-medium">
+                              <Check size={14} />
+                              Saved
+                            </span>
+                          )}
+                        </div>
+                        <div className="flex gap-2">
+                          {editingItem?.id === item.id ? (
+                            <>
+                              <Button
+                                onClick={handleSave}
+                                disabled={saving}
+                                size="sm"
+                                className="bg-[#FF6B35] hover:bg-[#FF6B35]/90"
+                              >
+                                {saving ? (
+                                  <Loader2 className="animate-spin" size={14} />
+                                ) : (
+                                  <Save size={14} />
+                                )}
+                              </Button>
+                              <Button
+                                onClick={() => {
+                                  setEditingItem(null);
+                                  setEditValue("");
+                                }}
+                                size="sm"
+                                variant="outline"
+                              >
+                                Cancel
+                              </Button>
+                            </>
+                          ) : (
+                            <>
+                              <Button
+                                onClick={() => handleEdit(item)}
+                                size="sm"
+                                variant="outline"
+                              >
+                                Edit
+                              </Button>
+                              <Button
+                                onClick={() => handleReset(item)}
+                                size="sm"
+                                variant="outline"
+                                title="Reset to default"
+                              >
+                                <RotateCcw size={14} />
+                              </Button>
+                            </>
+                          )}
+                        </div>
+                      </div>
+
+                      {editingItem?.id === item.id ? (
+                        <div className="mt-2">
+                          {item.type === "text" && editValue.length <= 100 ? (
+                            <Input
+                              value={editValue}
+                              onChange={(e) => setEditValue(e.target.value)}
+                              className="font-mono text-sm"
+                            />
+                          ) : (
+                            <textarea
+                              value={editValue}
+                              onChange={(e) => setEditValue(e.target.value)}
+                              rows={item.type === "html" ? 8 : 4}
+                              className="w-full px-3 py-2 border border-gray-300 rounded-md font-mono text-sm focus:outline-none focus:ring-2 focus:ring-[#FF6B35]"
+                            />
+                          )}
+                          <p className="text-xs text-gray-500 mt-1">
+                            {item.type === "image"
+                              ? "Enter image URL or path"
+                              : `${editValue.length} characters`}
+                          </p>
+                        </div>
+                      ) : (
+                        <div className="mt-2">
+                          {item.type === "image" ? (
+                            <div>
+                              <div className="text-sm text-gray-600 font-mono mb-2">
+                                {item.value}
+                              </div>
+                              {item.value && (
+                                <img
+                                  src={item.value}
+                                  alt={item.label}
+                                  className="max-w-xs rounded-lg border"
+                                  onError={(e) => {
+                                    (e.target as HTMLImageElement).style.display =
+                                      "none";
+                                  }}
+                                />
+                              )}
+                            </div>
+                          ) : (
+                            <div className="text-sm text-gray-700 whitespace-pre-wrap">
+                              {item.value}
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      <div className="mt-2 text-xs text-gray-500">
+                        ID: <code className="font-mono">{item.id}</code>
+                        {item.updatedAt && (
+                          <span className="ml-3">
+                            Last updated:{" "}
+                            {new Date(item.updatedAt).toLocaleString()}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}

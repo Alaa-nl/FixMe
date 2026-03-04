@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { Plus } from "lucide-react";
 
 export default function AdminJobsPage() {
   const [jobs, setJobs] = useState<any[]>([]);
@@ -40,7 +41,15 @@ export default function AdminJobsPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-3xl font-bold text-gray-800">Jobs</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-3xl font-bold text-gray-800">Jobs & Repair Requests</h1>
+        <Link href="/admin/jobs/new">
+          <button className="flex items-center gap-2 px-4 py-2 bg-[#FF6B35] text-white rounded-lg hover:bg-[#FF6B35]/90 font-medium transition-colors">
+            <Plus size={20} />
+            Create Request
+          </button>
+        </Link>
+      </div>
 
       {/* Filters */}
       <div className="bg-white rounded-xl border p-4">

@@ -5,6 +5,7 @@ import SessionProvider from "@/components/SessionProvider";
 import Navbar from "@/components/layout/Navbar";
 import BottomNav from "@/components/layout/BottomNav";
 import Footer from "@/components/layout/Footer";
+import { Toaster } from "@/components/ui/sonner";
 
 const dmSans = DM_Sans({
   subsets: ["latin"],
@@ -92,6 +93,7 @@ export default function RootLayout({
           </main>
           <Footer />
           <BottomNav />
+          <Toaster />
         </SessionProvider>
       </body>
     </html>
