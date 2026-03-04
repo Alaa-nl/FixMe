@@ -298,9 +298,9 @@ export default function CustomerDashboard() {
                     <div className="flex items-start justify-between gap-4">
                       <div className="flex items-start gap-4 flex-1">
                         <Avatar className="w-14 h-14 ring-2 ring-background group-hover:ring-secondary/50 transition-all">
-                          <AvatarImage src={job.fixer.avatarUrl} alt={job.fixer.name} />
+                          <AvatarImage src={job.fixer?.avatarUrl || "/default-avatar.svg"} alt={job.fixer?.name || "Fixer"} />
                           <AvatarFallback className="bg-secondary text-secondary-foreground font-bold">
-                            {job.fixer.name.charAt(0).toUpperCase()}
+                            {job.fixer?.name?.charAt(0)?.toUpperCase() || "F"}
                           </AvatarFallback>
                         </Avatar>
 

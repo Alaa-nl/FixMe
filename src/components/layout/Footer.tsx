@@ -2,47 +2,137 @@ import Link from "next/link";
 
 export default function Footer() {
   return (
-    <footer className="hidden md:block bg-gray-100 border-t border-gray-200 mt-auto">
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-          {/* Logo */}
-          <div className="flex items-center gap-2">
-            <Link href="/" className="text-xl font-bold text-primary">
-              FixMe
-            </Link>
+    <footer className="hidden md:block bg-[#1B4965] text-white mt-auto">
+      <div className="max-w-7xl mx-auto px-4 py-12">
+        {/* Logo and Slogan */}
+        <div className="mb-8">
+          <Link href="/" className="inline-block">
+            <h2 className="text-3xl font-bold mb-2">FixMe</h2>
+          </Link>
+          <p className="text-blue-200 text-lg">Don't throw it away. Fix it.</p>
+        </div>
+
+        {/* Links Grid */}
+        <div className="grid grid-cols-3 gap-8 mb-8">
+          {/* For Customers */}
+          <div>
+            <h3 className="font-bold text-lg mb-4">For Customers</h3>
+            <ul className="space-y-2">
+              <li>
+                <Link
+                  href="/post"
+                  className="text-blue-100 hover:text-white transition-colors"
+                >
+                  Post a Request
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/browse"
+                  className="text-blue-100 hover:text-white transition-colors"
+                >
+                  Browse Requests
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/how-it-works"
+                  className="text-blue-100 hover:text-white transition-colors"
+                >
+                  How It Works
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/categories"
+                  className="text-blue-100 hover:text-white transition-colors"
+                >
+                  Categories
+                </Link>
+              </li>
+            </ul>
           </div>
 
-          {/* Links */}
-          <div className="flex flex-wrap items-center justify-center gap-6 text-sm">
-            <Link
-              href="/how-it-works"
-              className="text-gray-600 hover:text-primary transition-colors"
-            >
-              How it works
-            </Link>
-            <Link
-              href="/categories"
-              className="text-gray-600 hover:text-primary transition-colors"
-            >
-              Categories
-            </Link>
-            <Link
-              href="/terms"
-              className="text-gray-600 hover:text-primary transition-colors"
-            >
-              Terms
-            </Link>
-            <Link
-              href="/privacy"
-              className="text-gray-600 hover:text-primary transition-colors"
-            >
-              Privacy
-            </Link>
+          {/* For Fixers */}
+          <div>
+            <h3 className="font-bold text-lg mb-4">For Fixers</h3>
+            <ul className="space-y-2">
+              <li>
+                <Link
+                  href="/register"
+                  className="text-blue-100 hover:text-white transition-colors"
+                >
+                  Become a Fixer
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/browse"
+                  className="text-blue-100 hover:text-white transition-colors"
+                >
+                  Find Jobs
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/how-it-works"
+                  className="text-blue-100 hover:text-white transition-colors"
+                >
+                  How to Get Started
+                </Link>
+              </li>
+            </ul>
           </div>
 
-          {/* Copyright */}
-          <div className="text-sm text-gray-500">
-            © 2025 FixMe. All rights reserved.
+          {/* Company */}
+          <div>
+            <h3 className="font-bold text-lg mb-4">Company</h3>
+            <ul className="space-y-2">
+              <li>
+                <Link
+                  href="/how-it-works"
+                  className="text-blue-100 hover:text-white transition-colors"
+                >
+                  About FixMe
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/terms"
+                  className="text-blue-100 hover:text-white transition-colors"
+                >
+                  Terms & Conditions
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/privacy"
+                  className="text-blue-100 hover:text-white transition-colors"
+                >
+                  Privacy Policy
+                </Link>
+              </li>
+              <li>
+                <a
+                  href="mailto:info@fixme.nl"
+                  className="text-blue-100 hover:text-white transition-colors"
+                >
+                  Contact Us
+                </a>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        {/* Bottom Bar */}
+        <div className="border-t border-blue-800 pt-6">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+            <p className="text-blue-200 text-sm">
+              © 2026 FixMe B.V. All rights reserved.
+            </p>
+            <p className="text-blue-200 text-sm">
+              Made with ❤️ in Amsterdam, Netherlands
+            </p>
           </div>
         </div>
       </div>

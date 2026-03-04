@@ -21,25 +21,34 @@ interface ReviewCardProps {
 }
 
 export default function ReviewCard({ review }: ReviewCardProps) {
+  // Handle missing reviewer data
+  if (!review.reviewer) {
+    return (
+      <div className="bg-white rounded-lg border-b border-gray-200 last:border-0 p-4">
+        <p className="text-gray-500 text-sm">Review data not available</p>
+      </div>
+    );
+  }
+
   return (
     <div className="bg-white rounded-lg border-b border-gray-200 last:border-0 p-4">
       {/* Top Row: Avatar + Name + Date */}
       <div className="flex items-start gap-3 mb-3">
-        {review.reviewer.avatarUrl ? (
+        {review.reviewer?.avatarUrl ? (
           <img
             src={review.reviewer.avatarUrl}
-            alt={review.reviewer.name}
+            alt={review.reviewer?.name || "User"}
             className="w-9 h-9 rounded-full object-cover"
           />
         ) : (
           <div className="w-9 h-9 rounded-full bg-gray-200 flex items-center justify-center text-gray-600 font-semibold text-sm">
-            {review.reviewer.name.charAt(0).toUpperCase()}
+            {review.reviewer?.name?.charAt(0)?.toUpperCase() || "?"}
           </div>
         )}
 
         <div className="flex-1">
           <div className="flex items-center justify-between">
-            <p className="font-semibold text-gray-800">{review.reviewer.name}</p>
+            <p className="font-semibold text-gray-800">{review.reviewer?.name || "Unknown"}</p>
             <p className="text-xs text-gray-500">{timeAgo(review.createdAt)}</p>
           </div>
 
@@ -56,7 +65,7 @@ export default function ReviewCard({ review }: ReviewCardProps) {
       )}
 
       {/* Job Title */}
-      {review.job && (
+      {review.job?.repairRequest && (
         <p className="text-xs text-gray-500">
           For: {review.job.repairRequest.title}
         </p>

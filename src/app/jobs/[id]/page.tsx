@@ -68,7 +68,26 @@ export default async function JobPage({ params }: JobPageProps) {
         },
       },
       payments: true,
-      reviews: true,
+      reviews: {
+        include: {
+          reviewer: {
+            select: {
+              id: true,
+              name: true,
+              avatarUrl: true,
+            },
+          },
+          job: {
+            select: {
+              repairRequest: {
+                select: {
+                  title: true,
+                },
+              },
+            },
+          },
+        },
+      },
       disputes: {
         include: {
           openedBy: {
