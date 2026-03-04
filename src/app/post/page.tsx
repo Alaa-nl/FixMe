@@ -3,10 +3,21 @@
 import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import dynamic from "next/dynamic";
 import Button from "@/components/ui/Button";
 import DiagnosisLoading from "@/components/ai/DiagnosisLoading";
 import DiagnosisCard from "@/components/ai/DiagnosisCard";
 import { DiagnosisResult } from "@/lib/claude";
+
+// Dynamically import LocationPicker with SSR disabled
+const LocationPicker = dynamic(() => import("@/components/map/LocationPicker"), {
+  ssr: false,
+  loading: () => (
+    <div className="h-[300px] md:h-[400px] bg-gray-100 rounded-lg animate-pulse flex items-center justify-center">
+      <span className="text-gray-400">Loading map...</span>
+    </div>
+  ),
+});
 
 interface Category {
   id: string;
@@ -29,6 +40,9 @@ export default function PostPage() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [city, setCity] = useState("");
+  const [address, setAddress] = useState("");
+  const [locationLat, setLocationLat] = useState(52.3676);
+  const [locationLng, setLocationLng] = useState(4.9041);
   const [timeline, setTimeline] = useState<"URGENT" | "THIS_WEEK" | "NO_RUSH">("THIS_WEEK");
   const [mobility, setMobility] = useState<"BRING_TO_FIXER" | "FIXER_COMES_TO_ME">("BRING_TO_FIXER");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -196,10 +210,9 @@ export default function PostPage() {
           categoryId: selectedCategoryId,
           photos: photos, // base64 encoded photos
           city,
-          // TODO: Get actual coordinates from geocoding API
-          // For now using Amsterdam coordinates as default
-          locationLat: 52.3676,
-          locationLng: 4.9041,
+          address,
+          locationLat,
+          locationLng,
           timeline,
           mobility,
           aiDiagnosis: diagnosis,
@@ -451,19 +464,47 @@ export default function PostPage() {
               ></textarea>
             </div>
 
-            {/* City */}
+            {/* Location */}
             <div className="mb-6">
               <label className="block text-sm font-semibold text-gray-700 mb-2">
-                City *
+                Location *
               </label>
-              <input
-                type="text"
-                value={city}
-                onChange={(e) => setCity(e.target.value)}
-                placeholder="e.g. Amsterdam"
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-                required
+              <p className="text-sm text-gray-600 mb-3">
+                Click on the map or search for your address
+              </p>
+              <LocationPicker
+                onLocationSelect={(location) => {
+                  setCity(location.city);
+                  setAddress(location.address);
+                  setLocationLat(location.lat);
+                  setLocationLng(location.lng);
+                }}
+                initialLat={locationLat}
+                initialLng={locationLng}
+                initialAddress={address}
               />
+              {/* Fallback text input */}
+              <details className="mt-3">
+                <summary className="text-sm text-gray-600 cursor-pointer hover:text-gray-800">
+                  Or enter manually
+                </summary>
+                <div className="mt-3 space-y-3">
+                  <input
+                    type="text"
+                    value={city}
+                    onChange={(e) => setCity(e.target.value)}
+                    placeholder="City (e.g. Amsterdam)"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-sm"
+                  />
+                  <input
+                    type="text"
+                    value={address}
+                    onChange={(e) => setAddress(e.target.value)}
+                    placeholder="Street address (optional)"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-sm"
+                  />
+                </div>
+              </details>
             </div>
 
             {/* Timeline */}

@@ -1,8 +1,19 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import dynamic from "next/dynamic";
 import RequestCard from "@/components/request/RequestCard";
-import { Search } from "lucide-react";
+import { Search, List, Map } from "lucide-react";
+
+// Dynamically import MapView with SSR disabled
+const MapView = dynamic(() => import("@/components/map/MapView"), {
+  ssr: false,
+  loading: () => (
+    <div className="h-[calc(100vh-200px)] md:h-[calc(100vh-180px)] bg-gray-100 rounded-lg animate-pulse flex items-center justify-center">
+      <span className="text-gray-400">Loading map...</span>
+    </div>
+  ),
+});
 
 interface Category {
   id: string;
@@ -15,6 +26,8 @@ interface RepairRequest {
   title: string;
   photos: string[];
   city: string;
+  locationLat: number;
+  locationLng: number;
   timeline: "URGENT" | "THIS_WEEK" | "NO_RUSH";
   createdAt: string;
   category: {
@@ -28,9 +41,14 @@ interface RepairRequest {
   _count: {
     offers: number;
   };
+  aiDiagnosis?: {
+    estimatedCostMin?: number;
+    estimatedCostMax?: number;
+  };
 }
 
 export default function BrowsePage() {
+  const [viewMode, setViewMode] = useState<"list" | "map">("list");
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedQuery, setDebouncedQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
@@ -316,15 +334,61 @@ export default function BrowsePage() {
           </div>
         </div>
 
-        {/* Results Count */}
-        <div className="mb-6">
+        {/* View Toggle and Results Count */}
+        <div className="mb-6 flex items-center justify-between">
           <p className="text-gray-600">
             {isLoading ? "Loading..." : `${total} repair requests found`}
           </p>
+
+          {/* List/Map Toggle */}
+          <div className="flex items-center gap-2 bg-white border border-gray-300 rounded-lg p-1">
+            <button
+              onClick={() => setViewMode("list")}
+              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors flex items-center gap-2 ${
+                viewMode === "list"
+                  ? "bg-primary text-white"
+                  : "text-gray-700 hover:bg-gray-100"
+              }`}
+            >
+              <List className="w-4 h-4" />
+              List
+            </button>
+            <button
+              onClick={() => setViewMode("map")}
+              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors flex items-center gap-2 ${
+                viewMode === "map"
+                  ? "bg-primary text-white"
+                  : "text-gray-700 hover:bg-gray-100"
+              }`}
+            >
+              <Map className="w-4 h-4" />
+              Map
+            </button>
+          </div>
         </div>
 
-        {/* Results Grid */}
-        {isLoading ? (
+        {/* Results - List or Map View */}
+        {viewMode === "map" ? (
+          isLoading ? (
+            <div className="h-[calc(100vh-200px)] md:h-[calc(100vh-180px)] bg-gray-100 rounded-lg animate-pulse flex items-center justify-center">
+              <span className="text-gray-400">Loading map...</span>
+            </div>
+          ) : requests.length === 0 ? (
+            <div className="bg-white rounded-xl p-12 text-center shadow-sm border border-gray-200">
+              <div className="max-w-md mx-auto">
+                <div className="text-6xl mb-4">🗺️</div>
+                <h3 className="text-xl font-semibold text-gray-800 mb-3">
+                  No locations to show
+                </h3>
+                <p className="text-gray-600">
+                  Try different filters to see repair requests on the map
+                </p>
+              </div>
+            </div>
+          ) : (
+            <MapView requests={requests} />
+          )
+        ) : isLoading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {[...Array(6)].map((_, i) => (
               <div

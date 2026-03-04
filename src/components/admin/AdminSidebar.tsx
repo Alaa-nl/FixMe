@@ -11,6 +11,8 @@ import {
   AlertTriangle,
   CreditCard,
   FolderOpen,
+  Settings,
+  Home,
   Menu,
   X,
   LogOut,
@@ -31,6 +33,8 @@ const navigation = [
   { name: "Disputes", href: "/admin/disputes", icon: AlertTriangle },
   { name: "Payments", href: "/admin/payments", icon: CreditCard },
   { name: "Categories", href: "/admin/categories", icon: FolderOpen },
+  { name: "Settings", href: "/admin/settings", icon: Settings },
+  { name: "Back to App", href: "/", icon: Home },
 ];
 
 export default function AdminSidebar({ user }: AdminSidebarProps) {
