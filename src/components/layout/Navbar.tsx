@@ -52,6 +52,18 @@ export default function Navbar() {
     }
   };
 
+  // Expose refresh function globally for other components to use
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      (window as any).refreshUnreadCount = fetchUnreadCount;
+    }
+    return () => {
+      if (typeof window !== "undefined") {
+        delete (window as any).refreshUnreadCount;
+      }
+    };
+  }, []);
+
   const getInitials = (name?: string | null) => {
     if (!name) return "U";
     return name.charAt(0).toUpperCase();

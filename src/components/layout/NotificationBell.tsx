@@ -75,6 +75,18 @@ export default function NotificationBell() {
     }
   };
 
+  // Expose refresh function globally for other components to use
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      (window as any).refreshNotifications = fetchNotifications;
+    }
+    return () => {
+      if (typeof window !== "undefined") {
+        delete (window as any).refreshNotifications;
+      }
+    };
+  }, []);
+
   const markAllAsRead = async () => {
     try {
       setIsLoading(true);
