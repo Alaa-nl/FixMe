@@ -18,6 +18,11 @@ export async function GET(
     const userId = session.user.id;
     const { conversationId } = await params;
 
+    // Get pagination params
+    const { searchParams } = new URL(request.url);
+    const limit = parseInt(searchParams.get("limit") || "50");
+    const before = searchParams.get("before"); // message ID to fetch messages before
+
     // Get the conversation
     const conversation = await prisma.conversation.findUnique({
       where: { id: conversationId },
@@ -63,10 +68,24 @@ export async function GET(
       );
     }
 
-    // Get all messages in this conversation
+    // Get messages in this conversation with pagination
+    const whereClause: any = { conversationId };
+
+    // If 'before' is specified, get messages before that message's createdAt
+    if (before) {
+      const beforeMessage = await prisma.message.findUnique({
+        where: { id: before },
+        select: { createdAt: true },
+      });
+      if (beforeMessage) {
+        whereClause.createdAt = { lt: beforeMessage.createdAt };
+      }
+    }
+
     const messages = await prisma.message.findMany({
-      where: { conversationId },
-      orderBy: { createdAt: "asc" },
+      where: whereClause,
+      orderBy: { createdAt: "desc" },
+      take: limit,
       include: {
         sender: {
           select: {
@@ -77,6 +96,12 @@ export async function GET(
         },
       },
     });
+
+    // Reverse to get chronological order
+    messages.reverse();
+
+    // Check if there are more messages
+    const hasMore = messages.length === limit;
 
     // Mark all unread messages from the other user as read
     await prisma.message.updateMany({
@@ -104,6 +129,7 @@ export async function GET(
           repairRequest: conversation.repairRequest,
         },
         messages,
+        hasMore,
       },
       { status: 200 }
     );
