@@ -53,7 +53,11 @@ enum JobStatus {
 
 enum DisputeResolution {
   PENDING
+  FIXER_OFFERED
+  FIXER_REJECTED
+  ESCALATED
   REFUNDED
+  PARTIAL_REFUND
   RELEASED
 }
 
@@ -164,6 +168,7 @@ model FixerProfile {
   totalEarnings   Float    @default(0)
   isActive        Boolean  @default(true)
   verifiedBadge   Boolean  @default(false)
+  availability    Json?    // e.g. [{ day: "MON", startTime: "09:00", endTime: "17:00" }]
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
@@ -230,6 +235,7 @@ model Offer {
   price           Float
   estimatedTime   String
   message         String      @db.Text
+  suggestedTimes  Json?       // Array of ISO date strings: ["2026-03-10T09:00:00Z", ...]
   status          OfferStatus @default(PENDING)
   createdAt       DateTime    @default(now())
 
@@ -254,6 +260,7 @@ model Job {
   platformFee     Float
   fixerPayout     Float
   status          JobStatus  @default(SCHEDULED)
+  scheduledAt     DateTime?
   startedAt       DateTime?
   completedAt     DateTime?
   createdAt       DateTime   @default(now())
@@ -342,6 +349,21 @@ model Dispute {
   adminNotes     String?            @db.Text
   resolvedAt     DateTime?
   createdAt      DateTime           @default(now())
+
+  // Fixer response
+  fixerResponseType   String?
+  fixerRefundAmount   Float?
+  fixerMessage        String?            @db.Text
+  fixerRespondedAt    DateTime?
+
+  // Customer response to fixer offer
+  customerAccepted    Boolean?
+  customerMessage     String?            @db.Text
+  customerRespondedAt DateTime?
+
+  // Escalation tracking
+  escalatedAt         DateTime?
+  escalationReason    String?
 
   // Relations
   job      Job  @relation(fields: [jobId], references: [id])

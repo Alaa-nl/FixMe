@@ -2,9 +2,11 @@ import { DiagnosisResult } from "@/lib/claude";
 
 interface DiagnosisCardProps {
   diagnosis: DiagnosisResult;
+  userType?: string;
 }
 
-export default function DiagnosisCard({ diagnosis }: DiagnosisCardProps) {
+export default function DiagnosisCard({ diagnosis, userType }: DiagnosisCardProps) {
+  const showPrice = userType === "FIXER";
   // Get confidence badge color
   const getConfidenceColor = (confidence: string) => {
     switch (confidence) {
@@ -123,13 +125,15 @@ export default function DiagnosisCard({ diagnosis }: DiagnosisCardProps) {
         </span>
       </div>
 
-      {/* Estimated cost */}
-      <div className="mb-6">
-        <h4 className="font-semibold text-gray-700 mb-2">Estimated cost</h4>
-        <p className="text-3xl md:text-4xl font-bold text-primary">
-          €{diagnosis.estimatedCostMin} — €{diagnosis.estimatedCostMax}
-        </p>
-      </div>
+      {/* Estimated cost — only visible to logged-in fixers */}
+      {showPrice && (
+        <div className="mb-6">
+          <h4 className="font-semibold text-gray-700 mb-2">Estimated cost</h4>
+          <p className="text-3xl md:text-4xl font-bold text-primary">
+            €{diagnosis.estimatedCostMin} — €{diagnosis.estimatedCostMax}
+          </p>
+        </div>
+      )}
 
       {/* Our advice */}
       <div className="mb-6">

@@ -27,6 +27,7 @@ interface RepairRequest {
 
 interface MapViewProps {
   requests: RepairRequest[];
+  userType?: string;
 }
 
 // Custom orange marker icon
@@ -71,7 +72,7 @@ function FitBounds({ requests }: { requests: RepairRequest[] }) {
   return null;
 }
 
-export default function MapView({ requests }: MapViewProps) {
+export default function MapView({ requests, userType }: MapViewProps) {
   // Default center (Netherlands)
   const defaultCenter: [number, number] = [52.1326, 5.2913];
 
@@ -120,8 +121,8 @@ export default function MapView({ requests }: MapViewProps) {
                       {request.category.name}
                     </p>
 
-                    {/* Price range */}
-                    {request.aiDiagnosis?.estimatedCostMin && request.aiDiagnosis?.estimatedCostMax && (
+                    {/* Price range — only visible to fixers */}
+                    {userType === "FIXER" && request.aiDiagnosis?.estimatedCostMin && request.aiDiagnosis?.estimatedCostMax && (
                       <p className="text-sm text-primary font-semibold mb-2">
                         €{request.aiDiagnosis.estimatedCostMin} - €{request.aiDiagnosis.estimatedCostMax}
                       </p>

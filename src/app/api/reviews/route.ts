@@ -125,32 +125,24 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // Recalculate average rating for the reviewed user
-    const allReviews = await prisma.review.findMany({
-      where: {
-        reviewedId,
-      },
-      select: {
-        rating: true,
-      },
+    // Recalculate average rating and total reviews for the reviewed user
+    const stats = await prisma.review.aggregate({
+      where: { reviewedId },
+      _avg: { rating: true },
+      _count: { rating: true },
     });
 
-    const averageRating = allReviews.reduce((sum, r) => sum + r.rating, 0) / allReviews.length;
+    const averageRating = stats._avg.rating ?? 0;
+    const totalReviews = stats._count.rating;
 
-    // Update fixer profile if the reviewed user is a fixer
-    const reviewedUser = await prisma.user.findUnique({
-      where: { id: reviewedId },
-      include: { fixerProfile: true },
+    // Update fixer profile if one exists (updateMany is a safe no-op otherwise)
+    await prisma.fixerProfile.updateMany({
+      where: { userId: reviewedId },
+      data: {
+        averageRating,
+        totalJobs: totalReviews,
+      },
     });
-
-    if (reviewedUser?.fixerProfile) {
-      await prisma.fixerProfile.update({
-        where: { userId: reviewedId },
-        data: {
-          averageRating,
-        },
-      });
-    }
 
     // Notify the reviewed user
     try {

@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import Toggle from "@/components/ui/Toggle";
 import Modal from "@/components/ui/Modal";
 import { ChevronDown, ChevronUp } from "lucide-react";
+import PasswordInput from "@/components/ui/password-input";
 
 export default function SettingsPage() {
   const { data: session, status } = useSession();
@@ -220,8 +221,7 @@ export default function SettingsPage() {
                       <label className="block text-sm font-medium text-gray-700 mb-1">
                         Current password
                       </label>
-                      <input
-                        type="password"
+                      <PasswordInput
                         value={currentPassword}
                         onChange={(e) => setCurrentPassword(e.target.value)}
                         required
@@ -233,8 +233,7 @@ export default function SettingsPage() {
                       <label className="block text-sm font-medium text-gray-700 mb-1">
                         New password
                       </label>
-                      <input
-                        type="password"
+                      <PasswordInput
                         value={newPassword}
                         onChange={(e) => setNewPassword(e.target.value)}
                         required
@@ -247,8 +246,7 @@ export default function SettingsPage() {
                       <label className="block text-sm font-medium text-gray-700 mb-1">
                         Confirm new password
                       </label>
-                      <input
-                        type="password"
+                      <PasswordInput
                         value={confirmPassword}
                         onChange={(e) => setConfirmPassword(e.target.value)}
                         required

@@ -1,13 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
-import { writeFile } from "fs/promises";
+import { writeFile, mkdir } from "fs/promises";
 import { join } from "path";
 import { randomUUID } from "crypto";
+import sharp from "sharp";
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/gif", "image/webp"];
 const ALLOWED_VIDEO_TYPES = ["video/mp4", "video/quicktime"];
 const ALLOWED_TYPES = [...ALLOWED_IMAGE_TYPES, ...ALLOWED_VIDEO_TYPES];
+
+const IMAGE_MAX_WIDTH = 1200;
+const IMAGE_QUALITY = 80;
 
 export async function POST(request: NextRequest) {
   try {
@@ -45,25 +49,37 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Get file extension
-    const extension = file.name.split(".").pop() || "jpg";
-    const filename = `${randomUUID()}.${extension}`;
-
     // Convert file to buffer
     const bytes = await file.arrayBuffer();
-    const buffer = Buffer.from(bytes);
+    const rawBuffer = Buffer.from(bytes);
+
+    // Determine output filename — images always saved as .webp after compression
+    const isImage = ALLOWED_IMAGE_TYPES.includes(file.type);
+    let outputBuffer: Buffer;
+    let filename: string;
+
+    if (isImage) {
+      // Resize and compress images
+      outputBuffer = await sharp(rawBuffer)
+        .resize({ width: IMAGE_MAX_WIDTH, withoutEnlargement: true })
+        .webp({ quality: IMAGE_QUALITY })
+        .toBuffer();
+
+      filename = `${randomUUID()}.webp`;
+    } else {
+      // Videos: keep original format
+      outputBuffer = rawBuffer;
+      const extension = file.name.split(".").pop() || "mp4";
+      filename = `${randomUUID()}.${extension}`;
+    }
 
     // Create uploads directory if it doesn't exist
     const uploadsDir = join(process.cwd(), "public", "uploads");
-    try {
-      await writeFile(join(uploadsDir, ".gitkeep"), "");
-    } catch (error) {
-      // Directory might already exist, that's fine
-    }
+    await mkdir(uploadsDir, { recursive: true });
 
-    // Save file to public/uploads
+    // Save file
     const filePath = join(uploadsDir, filename);
-    await writeFile(filePath, buffer);
+    await writeFile(filePath, outputBuffer);
 
     // Return the public URL
     const url = `/uploads/${filename}`;

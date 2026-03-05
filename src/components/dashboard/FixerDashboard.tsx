@@ -5,12 +5,15 @@ import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { timeAgo } from "@/lib/utils";
 import RequestCard from "@/components/request/RequestCard";
+import DisputeCard from "@/components/dispute/DisputeCard";
+import { AlertTriangle } from "lucide-react";
 
 interface DashboardData {
   nearbyRequests: any[];
   activeJobs: any[];
   myOffers: any[];
   recentEarnings: any[];
+  disputes: any[];
   stats: {
     activeJobCount: number;
     completedCount: number;
@@ -121,6 +124,25 @@ export default function FixerDashboard() {
         </div>
       </div>
 
+      {/* Active Disputes */}
+      {dashboardData.disputes && dashboardData.disputes.length > 0 && (
+        <div className="space-y-4">
+          <div className="flex items-center gap-3">
+            <AlertTriangle className="w-6 h-6 text-red-500" />
+            <h2 className="text-2xl font-bold text-gray-800">Active Disputes</h2>
+          </div>
+          <div className="space-y-4">
+            {dashboardData.disputes.map((dispute: any) => (
+              <DisputeCard
+                key={dispute.id}
+                dispute={dispute}
+                currentUserId={session?.user?.id}
+              />
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Nearby Requests */}
       <div>
         <h2 className="text-2xl font-bold text-gray-800 mb-4">Nearby requests</h2>
@@ -156,29 +178,33 @@ export default function FixerDashboard() {
         ) : (
           <div className="space-y-4">
             {dashboardData.activeJobs.map((job: any) => (
-              <Link
+              <div
                 key={job.id}
-                href={`/jobs/${job.id}`}
-                className="block bg-white rounded-xl border border-gray-200 p-4 hover:shadow-md transition-shadow"
+                className="relative bg-white rounded-xl border border-gray-200 p-4 hover:shadow-md transition-shadow"
               >
+                <Link href={`/jobs/${job.id}`} className="absolute inset-0 z-0" aria-label={job.repairRequest.title} />
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex items-start gap-3 flex-1">
-                    {/* Customer Avatar */}
-                    {job.customer.avatarUrl ? (
-                      <img
-                        src={job.customer.avatarUrl}
-                        alt={job.customer.name}
-                        className="w-12 h-12 rounded-full object-cover"
-                      />
-                    ) : (
-                      <div className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center text-gray-600 font-semibold">
-                        {job.customer.name.charAt(0).toUpperCase()}
-                      </div>
-                    )}
+                    {/* Customer Avatar — links to profile */}
+                    <Link href={`/profile/${job.customer.id}`} className="relative z-10 shrink-0">
+                      {job.customer.avatarUrl ? (
+                        <img
+                          src={job.customer.avatarUrl}
+                          alt={job.customer.name}
+                          className="w-12 h-12 rounded-full object-cover hover:ring-2 hover:ring-primary transition-all"
+                        />
+                      ) : (
+                        <div className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center text-gray-600 font-semibold hover:ring-2 hover:ring-primary transition-all">
+                          {job.customer.name.charAt(0).toUpperCase()}
+                        </div>
+                      )}
+                    </Link>
 
                     <div className="flex-1">
                       <h3 className="font-semibold text-gray-800">{job.repairRequest.title}</h3>
-                      <p className="text-sm text-gray-600">Customer: {job.customer.name}</p>
+                      <Link href={`/profile/${job.customer.id}`} className="relative z-10 text-sm text-gray-600 hover:text-primary transition-colors">
+                        Customer: {job.customer.name}
+                      </Link>
                       <div className="mt-2 flex items-center gap-2">
                         <span
                           className={`px-3 py-1 rounded-full text-xs font-semibold border ${getStatusBadge(
@@ -195,7 +221,7 @@ export default function FixerDashboard() {
                     <div className="text-2xl font-bold text-primary">€{job.agreedPrice}</div>
                   </div>
                 </div>
-              </Link>
+              </div>
             ))}
           </div>
         )}

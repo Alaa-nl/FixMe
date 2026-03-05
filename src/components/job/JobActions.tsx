@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { FileDown } from "lucide-react";
 
 interface JobActionsProps {
   job: {
@@ -211,6 +212,17 @@ export default function JobActions({
             </div>
           )}
         </>
+      )}
+
+      {/* DOWNLOAD INVOICE — both parties, completed jobs */}
+      {job.status === "COMPLETED" && (
+        <button
+          onClick={() => window.open(`/api/jobs/${job.id}/invoice`, "_blank")}
+          className="w-full flex items-center justify-center gap-2 px-4 py-2.5 border-2 border-gray-200 text-gray-700 rounded-lg font-medium hover:border-primary hover:text-primary transition-colors"
+        >
+          <FileDown className="w-4 h-4" />
+          Download invoice
+        </button>
       )}
     </div>
   );

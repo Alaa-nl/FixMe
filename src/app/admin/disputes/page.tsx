@@ -28,10 +28,12 @@ export default function AdminDisputesPage() {
       setDisputes(data.disputes || []);
       setTotalPages(data.totalPages || 1);
 
-      // Fetch pending count
+      // Count disputes needing admin attention
       if (!resolution) {
-        const pending = data.disputes.filter((d: any) => d.resolution === "PENDING");
-        setPendingCount(pending.length);
+        const needsAttention = data.disputes.filter((d: any) =>
+          ["PENDING", "FIXER_REJECTED", "ESCALATED"].includes(d.resolution)
+        );
+        setPendingCount(needsAttention.length);
       }
     }
   };
@@ -50,7 +52,7 @@ export default function AdminDisputesPage() {
       {/* Filters */}
       <div className="bg-white rounded-xl border p-4">
         <div className="flex gap-2 flex-wrap">
-          {["All", "PENDING", "REFUNDED", "RELEASED"].map((r) => (
+          {["All", "PENDING", "FIXER_OFFERED", "FIXER_REJECTED", "ESCALATED", "REFUNDED", "PARTIAL_REFUND", "RELEASED"].map((r) => (
             <button
               key={r}
               onClick={() => { setResolution(r === "All" ? "" : r); setPage(1); }}

@@ -355,7 +355,7 @@ export default function PostPage() {
               <div className="mt-6">
                 {isAnalyzing && <DiagnosisLoading />}
                 {diagnosis && !isAnalyzing && (
-                  <DiagnosisCard diagnosis={diagnosis} />
+                  <DiagnosisCard diagnosis={diagnosis} userType={session?.user?.userType} />
                 )}
               </div>
             )}

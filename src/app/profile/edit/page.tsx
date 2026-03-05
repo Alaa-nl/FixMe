@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { Camera, CheckCircle } from "lucide-react";
+import AvailabilityEditor, { AvailabilitySlot } from "@/components/profile/AvailabilityEditor";
 
 export default function EditProfilePage() {
   const { data: session, status } = useSession();
@@ -29,6 +30,7 @@ export default function EditProfilePage() {
   const [serviceRadiusKm, setServiceRadiusKm] = useState(10);
   const [minJobFee, setMinJobFee] = useState(10);
   const [isActive, setIsActive] = useState(true);
+  const [availability, setAvailability] = useState<AvailabilitySlot[]>([]);
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -61,6 +63,7 @@ export default function EditProfilePage() {
           setServiceRadiusKm(profile.serviceRadiusKm || 10);
           setMinJobFee(profile.minJobFee || 10);
           setIsActive(profile.isActive ?? true);
+          setAvailability(profile.availability ?? []);
         }
       }
     } catch (error) {
@@ -145,6 +148,15 @@ export default function EditProfilePage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(updateData),
       });
+
+      // Save availability separately for fixers
+      if (user?.userType === "FIXER") {
+        await fetch("/api/profile/availability", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ availability }),
+        });
+      }
 
       if (res.ok) {
         setMessage("Profile updated successfully!");
@@ -392,6 +404,14 @@ export default function EditProfilePage() {
                     } peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-orange-300 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-full peer-checked:after:border-white`}
                   ></div>
                 </label>
+              </div>
+
+              {/* Availability */}
+              <div className="pt-4 border-t">
+                <AvailabilityEditor
+                  slots={availability}
+                  onChange={setAvailability}
+                />
               </div>
             </div>
           )}

@@ -43,6 +43,9 @@ export default async function JobPage({ params }: JobPageProps) {
           name: true,
           email: true,
           avatarUrl: true,
+          _count: {
+            select: { reviewsReceived: true, jobsAsCustomer: true, jobsAsFixer: true },
+          },
         },
       },
       fixer: {
@@ -56,6 +59,9 @@ export default async function JobPage({ params }: JobPageProps) {
               averageRating: true,
               totalJobs: true,
             },
+          },
+          _count: {
+            select: { reviewsReceived: true, jobsAsCustomer: true, jobsAsFixer: true },
           },
         },
       },
@@ -128,7 +134,9 @@ export default async function JobPage({ params }: JobPageProps) {
       case "SCHEDULED":
         return {
           bg: "bg-blue-500",
-          text: "🗓 Job Scheduled — waiting for the fixer to start",
+          text: job.scheduledAt
+            ? `🗓 Scheduled for ${new Date(job.scheduledAt).toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" })} at ${new Date(job.scheduledAt).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })}`
+            : "🗓 Job Scheduled — waiting for the fixer to start",
         };
       case "IN_PROGRESS":
         return {
@@ -234,9 +242,13 @@ export default async function JobPage({ params }: JobPageProps) {
                       <strong>Problem:</strong> {aiDiagnosis.problemDiagnosis}
                     </p>
                     <p className="text-purple-700">
-                      <strong>Difficulty:</strong> {aiDiagnosis.repairDifficulty} •{" "}
-                      <strong>Estimated:</strong> €{aiDiagnosis.estimatedCostMin}-€
-                      {aiDiagnosis.estimatedCostMax}
+                      <strong>Difficulty:</strong> {aiDiagnosis.repairDifficulty}
+                      {isFixer && (
+                        <>
+                          {" "}• <strong>Estimated:</strong> €{aiDiagnosis.estimatedCostMin}-€
+                          {aiDiagnosis.estimatedCostMax}
+                        </>
+                      )}
                     </p>
                   </div>
                 </div>
@@ -290,28 +302,32 @@ export default async function JobPage({ params }: JobPageProps) {
               </div>
             )}
 
-            {/* Dispute Section */}
-            {isCustomer && (
+            {/* Dispute Section — visible to both customer and fixer */}
+            {(isCustomer || isFixer) && (
               <div>
                 {job.disputes && job.disputes.length > 0 ? (
                   /* Show existing dispute */
-                  <div className="bg-red-50 border-l-4 border-red-500 p-6 rounded-lg">
-                    <h3 className="text-xl font-bold text-red-900 mb-2">
-                      ⚠️ Dispute open
+                  <div className={`${isFixer && job.disputes[0].resolution === "PENDING" ? "bg-yellow-50 border-l-4 border-yellow-500" : "bg-red-50 border-l-4 border-red-500"} p-6 rounded-lg`}>
+                    <h3 className={`text-xl font-bold ${isFixer && job.disputes[0].resolution === "PENDING" ? "text-yellow-900" : "text-red-900"} mb-2`}>
+                      {isFixer && job.disputes[0].resolution === "PENDING"
+                        ? "A customer opened a dispute — your response is needed"
+                        : "Dispute open"}
                     </h3>
-                    <p className="text-red-800 mb-4">
-                      A dispute has been opened for this job. The payment is on hold
-                      pending admin review.
+                    <p className={`${isFixer && job.disputes[0].resolution === "PENDING" ? "text-yellow-800" : "text-red-800"} mb-4`}>
+                      {isFixer && job.disputes[0].resolution === "PENDING"
+                        ? "Please review the dispute and respond with your decision within 48 hours."
+                        : "A dispute has been opened for this job. The payment is on hold."}
                     </p>
                     <Link
                       href={`/disputes/${job.disputes[0].id}`}
-                      className="inline-block px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium"
+                      className={`inline-block px-4 py-2 ${isFixer && job.disputes[0].resolution === "PENDING" ? "bg-yellow-600 hover:bg-yellow-700" : "bg-red-600 hover:bg-red-700"} text-white rounded-lg transition-colors font-medium`}
                     >
-                      View dispute details
+                      {isFixer && job.disputes[0].resolution === "PENDING" ? "Respond to dispute" : "View dispute details"}
                     </Link>
                   </div>
                 ) : (
-                  /* Show dispute form option if eligible */
+                  /* Show dispute form option for customers only */
+                  isCustomer &&
                   (job.status === "IN_PROGRESS" ||
                     (job.status === "COMPLETED" &&
                       job.completedAt &&
@@ -358,49 +374,84 @@ export default async function JobPage({ params }: JobPageProps) {
                 {/* Fixer Info */}
                 <div className="mb-3">
                   <p className="text-xs text-gray-500 mb-1">Fixer</p>
-                  <div className="flex items-center gap-2">
+                  <Link href={`/profile/${job.fixer.id}`} className="flex items-center gap-2 group">
                     {job.fixer.avatarUrl ? (
                       <img
                         src={job.fixer.avatarUrl}
                         alt={job.fixer.name}
-                        className="w-10 h-10 rounded-full object-cover"
+                        className="w-10 h-10 rounded-full object-cover group-hover:ring-2 group-hover:ring-primary transition-all"
                       />
                     ) : (
-                      <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-600 font-semibold">
+                      <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-600 font-semibold group-hover:ring-2 group-hover:ring-primary transition-all">
                         {job.fixer.name.charAt(0).toUpperCase()}
                       </div>
                     )}
                     <div>
-                      <p className="font-medium text-gray-800">{job.fixer.name}</p>
-                      {job.fixer.fixerProfile && (
-                        <p className="text-xs text-gray-600">
-                          ⭐ {job.fixer.fixerProfile.averageRating.toFixed(1)} •{" "}
-                          {job.fixer.fixerProfile.totalJobs} jobs
-                        </p>
-                      )}
+                      <p className="font-medium text-gray-800 group-hover:text-primary transition-colors">{job.fixer.name}</p>
+                      <p className="text-xs text-gray-500">
+                        {job.fixer.fixerProfile && (
+                          <>⭐ {job.fixer.fixerProfile.averageRating.toFixed(1)} · </>
+                        )}
+                        {job.fixer._count.reviewsReceived} review{job.fixer._count.reviewsReceived !== 1 ? "s" : ""}
+                        {" · "}
+                        {job.fixer._count.jobsAsCustomer + job.fixer._count.jobsAsFixer} job{(job.fixer._count.jobsAsCustomer + job.fixer._count.jobsAsFixer) !== 1 ? "s" : ""}
+                      </p>
                     </div>
-                  </div>
+                  </Link>
                 </div>
 
                 {/* Customer Info */}
                 <div className="mb-3">
                   <p className="text-xs text-gray-500 mb-1">Customer</p>
-                  <div className="flex items-center gap-2">
+                  <Link href={`/profile/${job.customer.id}`} className="flex items-center gap-2 group">
                     {job.customer.avatarUrl ? (
                       <img
                         src={job.customer.avatarUrl}
                         alt={job.customer.name}
-                        className="w-10 h-10 rounded-full object-cover"
+                        className="w-10 h-10 rounded-full object-cover group-hover:ring-2 group-hover:ring-primary transition-all"
                       />
                     ) : (
-                      <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-600 font-semibold">
+                      <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-600 font-semibold group-hover:ring-2 group-hover:ring-primary transition-all">
                         {job.customer.name.charAt(0).toUpperCase()}
                       </div>
                     )}
-                    <p className="font-medium text-gray-800">{job.customer.name}</p>
-                  </div>
+                    <div>
+                      <p className="font-medium text-gray-800 group-hover:text-primary transition-colors">{job.customer.name}</p>
+                      <p className="text-xs text-gray-500">
+                        {job.customer._count.reviewsReceived} review{job.customer._count.reviewsReceived !== 1 ? "s" : ""}
+                        {" · "}
+                        {job.customer._count.jobsAsCustomer + job.customer._count.jobsAsFixer} job{(job.customer._count.jobsAsCustomer + job.customer._count.jobsAsFixer) !== 1 ? "s" : ""}
+                      </p>
+                    </div>
+                  </Link>
                 </div>
               </div>
+
+              {/* Scheduled Appointment */}
+              {job.scheduledAt && (
+                <div className="border-t border-gray-200 pt-4 mb-4">
+                  <div className="flex items-start gap-3 p-3 bg-blue-50 rounded-lg border border-blue-100">
+                    <span className="text-xl mt-0.5">🗓</span>
+                    <div>
+                      <p className="text-sm font-semibold text-blue-900">Scheduled appointment</p>
+                      <p className="text-sm text-blue-800 mt-0.5">
+                        {new Date(job.scheduledAt).toLocaleDateString("en-GB", {
+                          weekday: "long",
+                          day: "numeric",
+                          month: "long",
+                          year: "numeric",
+                        })}
+                      </p>
+                      <p className="text-sm font-medium text-blue-700">
+                        {new Date(job.scheduledAt).toLocaleTimeString("en-GB", {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
 
               <div className="border-t border-gray-200 pt-4 mb-4">
                 {/* Job Status */}

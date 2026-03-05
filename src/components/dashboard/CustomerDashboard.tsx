@@ -228,7 +228,7 @@ export default function CustomerDashboard() {
                     <div className="flex gap-6">
                       {/* Thumbnail */}
                       <div className="flex-shrink-0">
-                        <div className="w-24 h-24 rounded-2xl bg-muted overflow-hidden ring-2 ring-background group-hover:ring-primary/50 transition-all">
+                        <div className="w-20 h-20 rounded-2xl bg-muted overflow-hidden ring-2 ring-background group-hover:ring-primary/50 transition-all">
                           {request.photos.length > 0 ? (
                             <img
                               src={request.photos[0]}
@@ -236,7 +236,7 @@ export default function CustomerDashboard() {
                               className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                             />
                           ) : (
-                            <div className="w-full h-full flex items-center justify-center text-4xl">
+                            <div className="w-full h-full flex items-center justify-center text-3xl">
                               {getCategoryIcon(request.category.slug)}
                             </div>
                           )}
@@ -292,23 +292,28 @@ export default function CustomerDashboard() {
 
           <div className="grid gap-4">
             {dashboardData.activeJobs.map((job: any) => (
-              <Link key={job.id} href={`/jobs/${job.id}`}>
+              <div key={job.id} className="relative">
+                <Link href={`/jobs/${job.id}`} className="absolute inset-0 z-0 rounded-xl" aria-label={job.repairRequest.title} />
                 <Card className="border-2 hover:border-secondary/50 hover:shadow-xl transition-all duration-300 hover:-translate-y-1 group">
                   <CardContent className="p-6">
                     <div className="flex items-start justify-between gap-4">
                       <div className="flex items-start gap-4 flex-1">
-                        <Avatar className="w-14 h-14 ring-2 ring-background group-hover:ring-secondary/50 transition-all">
-                          <AvatarImage src={job.fixer?.avatarUrl || "/default-avatar.svg"} alt={job.fixer?.name || "Fixer"} />
-                          <AvatarFallback className="bg-secondary text-secondary-foreground font-bold">
-                            {job.fixer?.name?.charAt(0)?.toUpperCase() || "F"}
-                          </AvatarFallback>
-                        </Avatar>
+                        <Link href={`/profile/${job.fixer.id}`} className="relative z-10 shrink-0">
+                          <Avatar className="w-14 h-14 ring-2 ring-background hover:ring-primary transition-all">
+                            <AvatarImage src={job.fixer?.avatarUrl || "/default-avatar.svg"} alt={job.fixer?.name || "Fixer"} />
+                            <AvatarFallback className="bg-secondary text-secondary-foreground font-bold">
+                              {job.fixer?.name?.charAt(0)?.toUpperCase() || "F"}
+                            </AvatarFallback>
+                          </Avatar>
+                        </Link>
 
                         <div className="flex-1 space-y-2">
                           <h3 className="font-[family-name:var(--font-syne)] text-lg font-bold">
                             {job.repairRequest.title}
                           </h3>
-                          <p className="text-sm text-muted-foreground">Fixer: {job.fixer.name}</p>
+                          <Link href={`/profile/${job.fixer.id}`} className="relative z-10 text-sm text-muted-foreground hover:text-primary transition-colors block w-fit">
+                            Fixer: {job.fixer.name}
+                          </Link>
                           <Badge variant={getStatusColor(job.status)}>
                             {job.status.replace("_", " ")}
                           </Badge>
@@ -324,7 +329,7 @@ export default function CustomerDashboard() {
                     </div>
                   </CardContent>
                 </Card>
-              </Link>
+              </div>
             ))}
           </div>
         </div>
@@ -341,7 +346,7 @@ export default function CustomerDashboard() {
           </div>
           <div className="space-y-4">
             {dashboardData.disputes.map((dispute: any) => (
-              <DisputeCard key={dispute.id} dispute={dispute} />
+              <DisputeCard key={dispute.id} dispute={dispute} currentUserId={session?.user?.id} />
             ))}
           </div>
         </div>

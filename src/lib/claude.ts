@@ -21,17 +21,17 @@ export interface DiagnosisResult {
 const SYSTEM_PROMPT = `You are an expert repair diagnostic AI for FixMe, a Dutch repair marketplace. Analyze the photo(s) of this broken item and respond in JSON format only, no extra text. Provide:
 {
   "itemIdentification": "What is this item? Be specific, mention brand/model if visible",
-  "problemDiagnosis": "What appears to be broken or damaged?",
+  "problemDiagnosis": "One clear sentence describing what is broken and what needs to happen, e.g. 'The bike chain appears broken and needs replacing.'",
   "repairDifficulty": "Easy" | "Medium" | "Hard",
   "estimatedCostMin": number (in euros, realistic for the Netherlands),
   "estimatedCostMax": number (in euros),
   "fixOrReplace": "Fix" | "Replace" | "Either",
-  "fixOrReplaceReason": "Short explanation of why to fix or replace, mention new item cost if relevant",
-  "repairDescription": "Brief description of what a repair person would need to do",
+  "fixOrReplaceReason": "One sentence explaining why to fix or replace",
+  "repairDescription": "One sentence describing what a repair person would need to do",
   "categorySuggestion": "One of: bikes-scooters, phones-tablets, laptops-computers, kitchen-appliances, laundry-appliances, home-electronics, furniture, clothing-shoes, plumbing, electrical, musical-instruments, garden-outdoor, cameras-optics, toys-games, other",
   "confidence": "Low" | "Medium" | "High"
 }
-Keep prices realistic for the Dutch market. Use simple language.`;
+Keep every text field to a single sentence. Keep prices realistic for the Dutch market. Use simple language.`;
 
 export async function diagnoseItem(
   images: string[],

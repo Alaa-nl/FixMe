@@ -1,6 +1,8 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, Suspense } from "react";
+import { useSession } from "next-auth/react";
+import { useSearchParams } from "next/navigation";
 import dynamic from "next/dynamic";
 import RequestCard from "@/components/request/RequestCard";
 import { Search, List, Map } from "lucide-react";
@@ -41,16 +43,30 @@ interface RepairRequest {
   _count: {
     offers: number;
   };
-  aiDiagnosis?: {
-    estimatedCostMin?: number;
-    estimatedCostMax?: number;
-  };
+  distanceKm?: number;
 }
 
-export default function BrowsePage() {
+interface FixerLocation {
+  lat: number;
+  lng: number;
+  radiusKm: number;
+}
+
+export default function BrowsePageWrapper() {
+  return (
+    <Suspense fallback={<div className="flex-1 bg-gray-50 flex items-center justify-center"><div className="animate-spin h-10 w-10 border-4 border-primary border-t-transparent rounded-full" /></div>}>
+      <BrowsePage />
+    </Suspense>
+  );
+}
+
+function BrowsePage() {
+  const { data: session } = useSession();
+  const searchParams = useSearchParams();
+  const initialQuery = searchParams.get("q") || "";
   const [viewMode, setViewMode] = useState<"list" | "map">("list");
-  const [searchQuery, setSearchQuery] = useState("");
-  const [debouncedQuery, setDebouncedQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState(initialQuery);
+  const [debouncedQuery, setDebouncedQuery] = useState(initialQuery);
   const [selectedCategory, setSelectedCategory] = useState("");
   const [selectedTimeline, setSelectedTimeline] = useState("");
   const [selectedMobility, setSelectedMobility] = useState("");
@@ -58,11 +74,21 @@ export default function BrowsePage() {
   const [sort, setSort] = useState("newest");
   const [page, setPage] = useState(1);
 
+  // Sync search state with URL params (e.g. navigating from navbar search)
+  useEffect(() => {
+    const urlQuery = searchParams.get("q") || "";
+    if (urlQuery && urlQuery !== searchQuery) {
+      setSearchQuery(urlQuery);
+      setDebouncedQuery(urlQuery);
+    }
+  }, [searchParams]);
+
   const [categories, setCategories] = useState<Category[]>([]);
   const [requests, setRequests] = useState<RepairRequest[]>([]);
   const [total, setTotal] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
+  const [fixerLocation, setFixerLocation] = useState<FixerLocation | null>(null);
 
   // Debounce search query
   useEffect(() => {
@@ -90,6 +116,30 @@ export default function BrowsePage() {
     fetchCategories();
   }, []);
 
+  // Fetch fixer location for distance filtering
+  useEffect(() => {
+    if (session?.user?.userType !== "FIXER") return;
+
+    const fetchFixerLocation = async () => {
+      try {
+        const res = await fetch("/api/profile/location");
+        if (res.ok) {
+          const data = await res.json();
+          if (data.lat && data.lng) {
+            setFixerLocation({
+              lat: data.lat,
+              lng: data.lng,
+              radiusKm: data.radiusKm || 0,
+            });
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching fixer location:", error);
+      }
+    };
+    fetchFixerLocation();
+  }, [session?.user?.userType]);
+
   // Fetch repair requests
   const fetchRequests = useCallback(async () => {
     setIsLoading(true);
@@ -105,6 +155,15 @@ export default function BrowsePage() {
       if (selectedMobility) params.append("mobility", selectedMobility);
       if (selectedCity) params.append("city", selectedCity);
 
+      // Pass fixer location for distance calculation and radius filtering
+      if (fixerLocation) {
+        params.append("fixerLat", fixerLocation.lat.toString());
+        params.append("fixerLng", fixerLocation.lng.toString());
+        if (fixerLocation.radiusKm > 0) {
+          params.append("fixerRadiusKm", fixerLocation.radiusKm.toString());
+        }
+      }
+
       const res = await fetch(`/api/requests/search?${params.toString()}`);
       if (res.ok) {
         const data = await res.json();
@@ -117,7 +176,7 @@ export default function BrowsePage() {
     } finally {
       setIsLoading(false);
     }
-  }, [debouncedQuery, selectedCategory, selectedTimeline, selectedMobility, selectedCity, sort, page]);
+  }, [debouncedQuery, selectedCategory, selectedTimeline, selectedMobility, selectedCity, sort, page, fixerLocation]);
 
   useEffect(() => {
     fetchRequests();
@@ -322,6 +381,7 @@ export default function BrowsePage() {
               >
                 <option value="newest">Newest first</option>
                 <option value="oldest">Oldest first</option>
+                {fixerLocation && <option value="nearest">Nearest first</option>}
               </select>
             </div>
 
@@ -386,7 +446,7 @@ export default function BrowsePage() {
               </div>
             </div>
           ) : (
-            <MapView requests={requests} />
+            <MapView requests={requests} userType={session?.user?.userType} />
           )
         ) : isLoading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

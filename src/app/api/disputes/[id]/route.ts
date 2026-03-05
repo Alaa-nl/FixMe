@@ -84,7 +84,9 @@ export async function GET(
       );
     }
 
-    return NextResponse.json({ dispute }, { status: 200 });
+    const userRole = isAdmin ? "admin" : isFixer ? "fixer" : "customer";
+
+    return NextResponse.json({ dispute, userRole }, { status: 200 });
   } catch (error) {
     console.error("Error fetching dispute:", error);
     return NextResponse.json(

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import { haversineDistance } from "@/lib/geo";
 
 export async function GET(request: NextRequest) {
   try {
@@ -29,34 +30,61 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Fetch nearby requests (6 most recent OPEN requests)
-    const nearbyRequests = await prisma.repairRequest.findMany({
-      where: {
-        status: "OPEN",
-      },
+    // Fetch nearby requests — filter by service radius if fixer has a location
+    const hasLocation = user.locationLat != null && user.locationLng != null;
+    const radiusKm = user.fixerProfile?.serviceRadiusKm;
+
+    const allOpenRequests = await prisma.repairRequest.findMany({
+      where: { status: "OPEN" },
       orderBy: { createdAt: "desc" },
-      take: 6,
+      ...(hasLocation && radiusKm ? {} : { take: 6 }),
       include: {
         category: {
-          select: {
-            name: true,
-            slug: true,
-          },
+          select: { name: true, slug: true },
         },
         customer: {
-          select: {
-            id: true,
-            name: true,
-            avatarUrl: true,
-          },
+          select: { id: true, name: true, avatarUrl: true },
         },
         _count: {
-          select: {
-            offers: true,
-          },
+          select: { offers: true },
         },
       },
     });
+
+    let nearbyRequests;
+    if (hasLocation && radiusKm) {
+      // Compute distance, filter by radius, sort by distance, take 6
+      nearbyRequests = allOpenRequests
+        .map((req) => ({
+          ...req,
+          distanceKm: haversineDistance(
+            user.locationLat!,
+            user.locationLng!,
+            req.locationLat,
+            req.locationLng
+          ),
+        }))
+        .filter((req) => req.distanceKm <= radiusKm)
+        .sort((a, b) => a.distanceKm - b.distanceKm)
+        .slice(0, 6);
+    } else if (hasLocation) {
+      // Has location but no radius — show all with distance, sorted by distance
+      nearbyRequests = allOpenRequests
+        .map((req) => ({
+          ...req,
+          distanceKm: haversineDistance(
+            user.locationLat!,
+            user.locationLng!,
+            req.locationLat,
+            req.locationLng
+          ),
+        }))
+        .sort((a, b) => a.distanceKm - b.distanceKm)
+        .slice(0, 6);
+    } else {
+      // No location — show most recent (already limited to 6 by query)
+      nearbyRequests = allOpenRequests;
+    }
 
     // Fetch active jobs (SCHEDULED or IN_PROGRESS)
     const activeJobs = await prisma.job.findMany({
@@ -117,6 +145,33 @@ export async function GET(request: NextRequest) {
       },
     });
 
+    // Fetch active disputes on fixer's jobs
+    const disputes = await prisma.dispute.findMany({
+      where: {
+        job: { fixerId: userId },
+        resolution: { in: ["PENDING", "FIXER_OFFERED", "FIXER_REJECTED", "ESCALATED"] },
+      },
+      orderBy: { createdAt: "desc" },
+      include: {
+        job: {
+          include: {
+            repairRequest: {
+              select: { id: true, title: true },
+            },
+            customer: {
+              select: { id: true, name: true, avatarUrl: true },
+            },
+            fixer: {
+              select: { id: true, name: true, avatarUrl: true },
+            },
+          },
+        },
+        openedBy: {
+          select: { id: true, name: true, avatarUrl: true },
+        },
+      },
+    });
+
     // Calculate stats
     const activeJobCount = activeJobs.length;
     const completedCount = user.fixerProfile?.totalJobs || 0;
@@ -136,6 +191,7 @@ export async function GET(request: NextRequest) {
         activeJobs,
         myOffers,
         recentEarnings,
+        disputes,
         stats,
       },
       { status: 200 }

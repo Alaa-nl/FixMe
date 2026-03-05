@@ -168,7 +168,7 @@ export async function POST(request: NextRequest) {
         job.fixerId,
         "DISPUTE_OPENED",
         "A dispute was opened",
-        `${session.user.name} opened a dispute on ${job.repairRequest.title}. Our team will review it.`,
+        `${session.user.name} opened a dispute on "${job.repairRequest.title}". You have 48 hours to respond.`,
         result.id
       );
     } catch (notifError) {

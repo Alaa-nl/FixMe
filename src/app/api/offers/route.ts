@@ -30,7 +30,7 @@ export async function POST(request: NextRequest) {
 
     // Parse request body
     const body = await request.json();
-    const { repairRequestId, price, estimatedTime, message } = body;
+    const { repairRequestId, price, estimatedTime, message, suggestedTimes } = body;
 
     // Validate inputs
     if (!repairRequestId || !price || !estimatedTime || !message) {
@@ -52,6 +52,25 @@ export async function POST(request: NextRequest) {
         { error: "Message must be at least 20 characters" },
         { status: 400 }
       );
+    }
+
+    // Validate suggestedTimes if provided
+    if (suggestedTimes) {
+      if (!Array.isArray(suggestedTimes) || suggestedTimes.length < 1 || suggestedTimes.length > 5) {
+        return NextResponse.json(
+          { error: "Please suggest 1-5 appointment times" },
+          { status: 400 }
+        );
+      }
+      const now = new Date();
+      for (const t of suggestedTimes) {
+        if (isNaN(new Date(t).getTime()) || new Date(t) <= now) {
+          return NextResponse.json(
+            { error: "All suggested times must be valid future dates" },
+            { status: 400 }
+          );
+        }
+      }
     }
 
     // Check if repair request exists and is OPEN
@@ -96,6 +115,7 @@ export async function POST(request: NextRequest) {
         price,
         estimatedTime,
         message,
+        suggestedTimes: suggestedTimes || undefined,
         status: "PENDING",
       },
       include: {

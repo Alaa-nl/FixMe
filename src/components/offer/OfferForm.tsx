@@ -2,25 +2,58 @@
 
 import { useState } from "react";
 import Button from "@/components/ui/button";
+import { Calendar, Plus, X, Clock } from "lucide-react";
 
 interface OfferFormProps {
   repairRequestId: string;
   onSuccess?: () => void;
 }
 
+function formatSlotPreview(iso: string): string {
+  const d = new Date(iso);
+  return d.toLocaleString("en-GB", {
+    weekday: "short",
+    day: "numeric",
+    month: "short",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
+// Get minimum datetime for the input (now + 2 hours)
+function getMinDatetime(): string {
+  const d = new Date(Date.now() + 2 * 60 * 60 * 1000);
+  d.setMinutes(0, 0, 0);
+  return d.toISOString().slice(0, 16);
+}
+
 export default function OfferForm({ repairRequestId, onSuccess }: OfferFormProps) {
   const [price, setPrice] = useState("");
   const [estimatedTime, setEstimatedTime] = useState("");
   const [message, setMessage] = useState("");
+  const [suggestedTimes, setSuggestedTimes] = useState<string[]>([]);
+  const [newTimeSlot, setNewTimeSlot] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
+
+  const addTimeSlot = () => {
+    if (!newTimeSlot) return;
+    const iso = new Date(newTimeSlot).toISOString();
+    if (suggestedTimes.includes(iso)) return;
+    if (suggestedTimes.length >= 5) return;
+    setSuggestedTimes([...suggestedTimes, iso]);
+    setNewTimeSlot("");
+  };
+
+  const removeTimeSlot = (idx: number) => {
+    setSuggestedTimes(suggestedTimes.filter((_, i) => i !== idx));
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
 
-    // Validation
     const priceNum = parseFloat(price);
     if (isNaN(priceNum) || priceNum <= 0) {
       setError("Please enter a valid price");
@@ -50,6 +83,7 @@ export default function OfferForm({ repairRequestId, onSuccess }: OfferFormProps
           price: priceNum,
           estimatedTime: estimatedTime.trim(),
           message: message.trim(),
+          suggestedTimes: suggestedTimes.length > 0 ? suggestedTimes : undefined,
         }),
       });
 
@@ -62,8 +96,8 @@ export default function OfferForm({ repairRequestId, onSuccess }: OfferFormProps
       setPrice("");
       setEstimatedTime("");
       setMessage("");
+      setSuggestedTimes([]);
 
-      // Call onSuccess callback or reload page
       if (onSuccess) {
         onSuccess();
       } else {
@@ -135,6 +169,62 @@ export default function OfferForm({ repairRequestId, onSuccess }: OfferFormProps
           />
         </div>
 
+        {/* Suggested Appointment Times */}
+        <div>
+          <label className="flex items-center gap-1.5 text-sm font-semibold text-gray-700 mb-2">
+            <Calendar className="w-4 h-4" />
+            Suggest appointment times
+          </label>
+          <p className="text-xs text-gray-500 mb-3">
+            Suggest up to 5 time slots so the customer can pick one
+          </p>
+
+          {/* Existing time slots */}
+          {suggestedTimes.length > 0 && (
+            <div className="space-y-2 mb-3">
+              {suggestedTimes.map((t, i) => (
+                <div
+                  key={i}
+                  className="flex items-center justify-between px-3 py-2 bg-orange-50 border border-orange-200 rounded-lg"
+                >
+                  <span className="flex items-center gap-2 text-sm font-medium text-gray-800">
+                    <Clock className="w-3.5 h-3.5 text-primary" />
+                    {formatSlotPreview(t)}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => removeTimeSlot(i)}
+                    className="text-gray-400 hover:text-red-500 transition-colors"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Add new time slot */}
+          {suggestedTimes.length < 5 && (
+            <div className="flex gap-2">
+              <input
+                type="datetime-local"
+                value={newTimeSlot}
+                onChange={(e) => setNewTimeSlot(e.target.value)}
+                min={getMinDatetime()}
+                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+              />
+              <button
+                type="button"
+                onClick={addTimeSlot}
+                disabled={!newTimeSlot}
+                className="px-3 py-2 bg-gray-100 hover:bg-gray-200 border border-gray-300 rounded-lg text-gray-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                <Plus className="w-4 h-4" />
+              </button>
+            </div>
+          )}
+        </div>
+
         {/* Message Textarea */}
         <div>
           <label className="block text-sm font-semibold text-gray-700 mb-2">
@@ -164,8 +254,6 @@ export default function OfferForm({ repairRequestId, onSuccess }: OfferFormProps
         {/* Submit Button */}
         <Button
           type="submit"
-          variant="primary"
-          size="lg"
           disabled={isSubmitting}
           className="w-full"
         >

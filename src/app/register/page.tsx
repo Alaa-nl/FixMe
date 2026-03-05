@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Button from "@/components/ui/button";
 import Input from "@/components/ui/input";
+import PasswordInput from "@/components/ui/password-input";
 import { useSession } from "next-auth/react";
 import { useEffect } from "react";
 
@@ -179,16 +180,22 @@ export default function RegisterPage() {
             required
           />
 
-          <Input
-            label="Password"
-            name="password"
-            type="password"
-            placeholder="Minimum 8 characters"
-            value={formData.password}
-            onChange={handleChange}
-            error={errors.password}
-            required
-          />
+          <div>
+            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+              Password
+            </label>
+            <PasswordInput
+              id="password"
+              name="password"
+              placeholder="Minimum 8 characters"
+              value={formData.password}
+              onChange={handleChange}
+              required
+            />
+            {errors.password && (
+              <p className="mt-1 text-sm text-red-600">{errors.password}</p>
+            )}
+          </div>
 
           {/* User Type Selector */}
           <div>

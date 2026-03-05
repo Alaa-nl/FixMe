@@ -3,15 +3,26 @@
 import { useSession, signOut } from "next-auth/react";
 import Link from "next/link";
 import { useState, useEffect, useRef } from "react";
+import { useRouter } from "next/navigation";
 import { Search, MessageCircle, Bell, User, LogOut, ChevronDown } from "lucide-react";
 import Button from "@/components/ui/button";
 import NotificationBell from "@/components/layout/NotificationBell";
 
 export default function Navbar() {
   const { data: session, status } = useSession();
+  const router = useRouter();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [navSearchQuery, setNavSearchQuery] = useState("");
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  const handleNavSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    const q = navSearchQuery.trim();
+    if (!q) return;
+    router.push(`/browse?q=${encodeURIComponent(q)}`);
+    setNavSearchQuery("");
+  };
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -78,16 +89,18 @@ export default function Navbar() {
         </Link>
 
         {/* Search Bar - Hidden on mobile, visible on md+ */}
-        <div className="hidden md:flex flex-1 max-w-xl">
+        <form onSubmit={handleNavSearch} className="hidden md:flex flex-1 max-w-xl">
           <div className="relative w-full">
             <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
             <input
               type="text"
+              value={navSearchQuery}
+              onChange={(e) => setNavSearchQuery(e.target.value)}
               placeholder="Search for repairs..."
               className="w-full pl-12 pr-4 py-2.5 bg-gray-100 rounded-full focus:outline-none focus:ring-2 focus:ring-primary focus:bg-white transition-all"
             />
           </div>
-        </div>
+        </form>
 
         {/* Right Side Actions */}
         <div className="flex items-center gap-3">

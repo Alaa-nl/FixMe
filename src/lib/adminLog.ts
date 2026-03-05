@@ -68,6 +68,9 @@ export const AdminActions = {
   DISPUTE_RESOLVED: "resolved_dispute",
   DISPUTE_REFUNDED: "refunded_dispute",
   DISPUTE_RELEASED: "released_dispute",
+  DISPUTE_PARTIAL_REFUND: "partial_refund_dispute",
+  DISPUTE_ESCALATED: "escalated_dispute",
+  DISPUTE_ADMIN_OVERRIDE: "admin_override_dispute",
 
   // Settings management
   SETTINGS_UPDATED: "updated_platform_settings",

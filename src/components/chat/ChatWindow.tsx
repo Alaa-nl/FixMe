@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
-import { ArrowLeft, Send, Paperclip, X } from "lucide-react";
+import { ArrowLeft, Send, Paperclip, X, ChevronDown } from "lucide-react";
 import ChatBubble from "./ChatBubble";
 
 interface Message {
@@ -57,9 +57,12 @@ export default function ChatWindow({ conversationId }: ChatWindowProps) {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [filePreview, setFilePreview] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [newMessageCount, setNewMessageCount] = useState(0);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messageAreaRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const isNearBottomRef = useRef(true);
+  const prevMessageCountRef = useRef(0);
 
   // Fetch messages on mount - check cache first
   useEffect(() => {
@@ -68,11 +71,14 @@ export default function ChatWindow({ conversationId }: ChatWindowProps) {
       // Use cache if less than 30 seconds old
       setConversationData(cached.data);
       setMessages(cached.messages);
+      prevMessageCountRef.current = cached.messages.length;
       setIsLoading(false);
+      // Scroll to bottom on mount
+      requestAnimationFrame(() => scrollToBottom("instant"));
       // Fetch fresh data in background
       fetchMessages(true);
     } else {
-      fetchMessages();
+      fetchMessages(false, true);
     }
   }, [conversationId]);
 
@@ -106,12 +112,43 @@ export default function ChatWindow({ conversationId }: ChatWindowProps) {
     };
   }, [conversationId]);
 
-  // Auto-scroll to bottom when messages change
+  // Track scroll position to know if user is near the bottom
   useEffect(() => {
-    scrollToBottom();
+    const el = messageAreaRef.current;
+    if (!el) return;
+
+    const handleScroll = () => {
+      const threshold = 80;
+      const atBottom = el.scrollHeight - el.scrollTop - el.clientHeight < threshold;
+      isNearBottomRef.current = atBottom;
+      if (atBottom) {
+        setNewMessageCount(0);
+      }
+    };
+
+    el.addEventListener("scroll", handleScroll, { passive: true });
+    return () => el.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  // Smart auto-scroll: only scroll when user is already at the bottom
+  useEffect(() => {
+    const prevCount = prevMessageCountRef.current;
+    const currentCount = messages.length;
+    prevMessageCountRef.current = currentCount;
+
+    if (currentCount <= prevCount) return; // no new messages (or initial load handled elsewhere)
+
+    const incomingCount = currentCount - prevCount;
+
+    if (isNearBottomRef.current) {
+      scrollToBottom();
+    } else if (prevCount > 0) {
+      // User scrolled up — show indicator instead
+      setNewMessageCount((n) => n + incomingCount);
+    }
   }, [messages]);
 
-  const fetchMessages = async (silent = false) => {
+  const fetchMessages = async (silent = false, scrollAfter = false) => {
     try {
       if (!silent) setIsLoading(true);
 
@@ -122,12 +159,23 @@ export default function ChatWindow({ conversationId }: ChatWindowProps) {
         setMessages(data.messages);
         setHasMore(data.hasMore || false);
 
+        // On initial load, seed the ref so the smart-scroll effect
+        // doesn't treat every message as "new"
+        if (scrollAfter) {
+          prevMessageCountRef.current = data.messages.length;
+        }
+
         // Update cache
         conversationCache.set(conversationId, {
           data,
           messages: data.messages,
           timestamp: Date.now(),
         });
+
+        // Scroll to bottom on initial load
+        if (scrollAfter) {
+          requestAnimationFrame(() => scrollToBottom("instant"));
+        }
 
         // Mark related notifications as read and refresh unread counts
         if (!silent) {
@@ -179,8 +227,10 @@ export default function ChatWindow({ conversationId }: ChatWindowProps) {
     }
   };
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  const scrollToBottom = (behavior: ScrollBehavior = "smooth") => {
+    messagesEndRef.current?.scrollIntoView({ behavior });
+    isNearBottomRef.current = true;
+    setNewMessageCount(0);
   };
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -443,29 +493,31 @@ export default function ChatWindow({ conversationId }: ChatWindowProps) {
   const messageGroups = groupMessagesByDate(messages);
 
   return (
-    <div className="h-full flex flex-col bg-white">
+    <div className="h-full flex flex-col bg-white relative">
       {/* Header */}
       <div className="border-b bg-white px-4 py-3 flex items-center gap-3">
         <Link href="/messages" className="md:hidden">
           <ArrowLeft className="w-6 h-6 text-gray-600" />
         </Link>
 
-        {conversationData.conversation.otherUser.avatarUrl ? (
-          <img
-            src={conversationData.conversation.otherUser.avatarUrl}
-            alt={conversationData.conversation.otherUser.name}
-            className="w-10 h-10 rounded-full object-cover"
-          />
-        ) : (
-          <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-600 font-semibold">
-            {conversationData.conversation.otherUser.name.charAt(0).toUpperCase()}
-          </div>
-        )}
+        <Link href={`/profile/${conversationData.conversation.otherUser.id}`} className="shrink-0">
+          {conversationData.conversation.otherUser.avatarUrl ? (
+            <img
+              src={conversationData.conversation.otherUser.avatarUrl}
+              alt={conversationData.conversation.otherUser.name}
+              className="w-10 h-10 rounded-full object-cover hover:ring-2 hover:ring-primary transition-all"
+            />
+          ) : (
+            <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-600 font-semibold hover:ring-2 hover:ring-primary transition-all">
+              {conversationData.conversation.otherUser.name.charAt(0).toUpperCase()}
+            </div>
+          )}
+        </Link>
 
         <div className="flex-1 min-w-0">
-          <h2 className="font-semibold text-gray-800 truncate">
+          <Link href={`/profile/${conversationData.conversation.otherUser.id}`} className="font-semibold text-gray-800 truncate hover:text-primary transition-colors block">
             {conversationData.conversation.otherUser.name}
-          </h2>
+          </Link>
           <Link
             href={`/request/${conversationData.conversation.repairRequest.id}`}
             className="text-xs text-primary hover:underline truncate block"
@@ -519,6 +571,19 @@ export default function ChatWindow({ conversationId }: ChatWindowProps) {
         ))}
         <div ref={messagesEndRef} />
       </div>
+
+      {/* New messages indicator */}
+      {newMessageCount > 0 && (
+        <button
+          onClick={() => scrollToBottom()}
+          className="absolute bottom-28 md:bottom-20 left-1/2 -translate-x-1/2 z-10 flex items-center gap-1.5 px-4 py-2 bg-primary text-white text-sm font-medium rounded-full shadow-lg hover:bg-orange-600 transition-colors animate-in fade-in slide-in-from-bottom-2"
+        >
+          <ChevronDown className="w-4 h-4" />
+          {newMessageCount === 1
+            ? "1 new message"
+            : `${newMessageCount} new messages`}
+        </button>
+      )}
 
       {/* Input Area */}
       <div className="border-t bg-white p-4 fixed bottom-16 md:bottom-0 left-0 right-0 md:relative">

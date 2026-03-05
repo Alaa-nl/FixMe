@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import Button from "@/components/ui/button";
 import StarRating from "@/components/review/StarRating";
+import { Clock, Calendar } from "lucide-react";
 
 interface OfferCardProps {
   offer: {
@@ -11,6 +12,7 @@ interface OfferCardProps {
     price: number;
     estimatedTime: string;
     message: string;
+    suggestedTimes?: string[] | null;
     status: string;
     createdAt: Date | string;
     fixer: {
@@ -26,22 +28,36 @@ interface OfferCardProps {
   };
   isRequestOwner?: boolean;
   requestStatus?: string;
-  onAccept?: (offerId: string) => void;
+  onAccept?: (offerId: string, scheduledAt?: string) => void;
   onMessage?: (fixerId: string) => void;
+  onCounterPropose?: (offerId: string, fixerId: string, fixerName: string) => void;
 }
 
-export default function OfferCard({ offer, isRequestOwner, requestStatus, onAccept, onMessage }: OfferCardProps) {
+function formatSlot(iso: string): string {
+  const d = new Date(iso);
+  return d.toLocaleString("en-GB", {
+    weekday: "short",
+    day: "numeric",
+    month: "short",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
+export default function OfferCard({ offer, isRequestOwner, requestStatus, onAccept, onMessage, onCounterPropose }: OfferCardProps) {
   const [showFullMessage, setShowFullMessage] = useState(false);
   const [isAccepting, setIsAccepting] = useState(false);
+  const [selectedTime, setSelectedTime] = useState<string | null>(null);
 
-  // Determine if the Accept button should be shown
   const canAccept = isRequestOwner && requestStatus === "OPEN" && offer.status === "PENDING";
+  const times = (offer.suggestedTimes as string[] | null) || [];
+  const hasTimes = times.length > 0;
 
   const handleAccept = async () => {
     if (!onAccept) return;
     setIsAccepting(true);
     try {
-      await onAccept(offer.id);
+      await onAccept(offer.id, selectedTime || undefined);
     } finally {
       setIsAccepting(false);
     }
@@ -61,35 +77,39 @@ export default function OfferCard({ offer, isRequestOwner, requestStatus, onAcce
       <div className="flex flex-col md:flex-row gap-4">
         {/* Left: Avatar */}
         <div className="flex-shrink-0">
-          <div className="relative">
-            {offer.fixer.avatarUrl ? (
-              <img
-                src={offer.fixer.avatarUrl}
-                alt={offer.fixer.name}
-                className="w-12 h-12 rounded-full object-cover"
-              />
-            ) : (
-              <div className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center text-gray-500 font-semibold">
-                {offer.fixer.name.charAt(0).toUpperCase()}
-              </div>
-            )}
-            {offer.fixer.fixerProfile?.verifiedBadge && (
-              <div className="absolute -top-1 -right-1 w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center text-white text-xs">
-                ✓
-              </div>
-            )}
-          </div>
+          <Link href={`/profile/${offer.fixer.id}`}>
+            <div className="relative">
+              {offer.fixer.avatarUrl ? (
+                <img
+                  src={offer.fixer.avatarUrl}
+                  alt={offer.fixer.name}
+                  className="w-12 h-12 rounded-full object-cover"
+                />
+              ) : (
+                <div className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center text-gray-500 font-semibold">
+                  {offer.fixer.name.charAt(0).toUpperCase()}
+                </div>
+              )}
+              {offer.fixer.fixerProfile?.verifiedBadge && (
+                <div className="absolute -top-1 -right-1 w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center text-white text-xs">
+                  ✓
+                </div>
+              )}
+            </div>
+          </Link>
         </div>
 
         {/* Middle: Fixer Info & Message */}
         <div className="flex-1 min-w-0">
           {/* Fixer Name & Stats */}
           <div className="flex flex-wrap items-center gap-2 mb-2">
-            <h3 className="font-bold text-gray-800">{offer.fixer.name}</h3>
+            <Link href={`/profile/${offer.fixer.id}`} className="font-bold text-gray-800 hover:text-primary transition-colors">
+              {offer.fixer.name}
+            </Link>
             {offer.fixer.fixerProfile && (
               <>
                 <Link
-                  href={`/fixer/${offer.fixer.id}`}
+                  href={`/profile/${offer.fixer.id}`}
                   className="hover:opacity-80 transition-opacity"
                   title="View profile and reviews"
                 >
@@ -119,8 +139,56 @@ export default function OfferCard({ offer, isRequestOwner, requestStatus, onAcce
 
           {/* Estimated Time */}
           <div className="mt-3 text-sm text-gray-600">
-            <span>⏱ {offer.estimatedTime}</span>
+            <span className="inline-flex items-center gap-1">
+              <Clock className="w-3.5 h-3.5" />
+              {offer.estimatedTime}
+            </span>
           </div>
+
+          {/* Suggested Times - visible to request owner when offer is PENDING */}
+          {canAccept && hasTimes && (
+            <div className="mt-4">
+              <p className="flex items-center gap-1.5 text-sm font-semibold text-gray-700 mb-2">
+                <Calendar className="w-4 h-4 text-primary" />
+                Pick an appointment time
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {times.map((t) => (
+                  <button
+                    key={t}
+                    type="button"
+                    onClick={() => setSelectedTime(selectedTime === t ? null : t)}
+                    className={`px-3 py-2 rounded-lg text-sm font-medium transition-all ${
+                      selectedTime === t
+                        ? "bg-primary text-white shadow-sm"
+                        : "border border-gray-200 text-gray-700 hover:border-primary hover:text-primary"
+                    }`}
+                  >
+                    {formatSlot(t)}
+                  </button>
+                ))}
+              </div>
+              {onCounterPropose && (
+                <button
+                  type="button"
+                  onClick={() => onCounterPropose(offer.id, offer.fixer.id, offer.fixer.name)}
+                  className="mt-2 text-sm text-primary font-medium hover:underline"
+                >
+                  None of these work? Suggest other times
+                </button>
+              )}
+            </div>
+          )}
+
+          {/* Show times as info for non-owners or already accepted */}
+          {!canAccept && hasTimes && offer.status === "ACCEPTED" && (
+            <div className="mt-3 text-sm text-gray-500">
+              <span className="inline-flex items-center gap-1">
+                <Calendar className="w-3.5 h-3.5" />
+                Appointment times were proposed
+              </span>
+            </div>
+          )}
         </div>
 
         {/* Right: Price & Actions */}
@@ -154,13 +222,12 @@ export default function OfferCard({ offer, isRequestOwner, requestStatus, onAcce
               {canAccept ? (
                 <>
                   <Button
-                    variant="primary"
                     size="sm"
                     onClick={handleAccept}
                     disabled={isAccepting}
                     className="w-full md:w-auto"
                   >
-                    {isAccepting ? "Accepting..." : "Accept offer"}
+                    {isAccepting ? "Accepting..." : hasTimes && !selectedTime ? "Accept (no time)" : "Accept offer"}
                   </Button>
                   <Button
                     variant="outline"

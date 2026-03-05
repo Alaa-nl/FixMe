@@ -10,6 +10,9 @@ import OfferForm from "@/components/offer/OfferForm";
 import Link from "next/link";
 import Button from "@/components/ui/button";
 import { DiagnosisResult } from "@/lib/claude";
+import { haversineDistance } from "@/lib/geo";
+import SuggestedFixers from "@/components/request/SuggestedFixers";
+import RequestLocationMapClient from "@/components/map/RequestLocationMapClient";
 
 export const dynamic = "force-dynamic";
 
@@ -39,6 +42,9 @@ export default async function RequestPage({ params }: RequestPageProps) {
           avatarUrl: true,
           city: true,
           createdAt: true,
+          _count: {
+            select: { reviewsReceived: true, jobsAsCustomer: true, jobsAsFixer: true },
+          },
         },
       },
       offers: {
@@ -94,6 +100,77 @@ export default async function RequestPage({ params }: RequestPageProps) {
   }
 
   const canMakeOffer = isFixer && !hasAlreadyOffered && !isRequestOwner && request.status === "OPEN";
+
+  // Suggest fixers for open requests visible to the customer
+  let suggestedFixers: {
+    id: string;
+    name: string;
+    avatarUrl: string | null;
+    averageRating: number;
+    totalJobs: number;
+    distanceKm: number;
+    verifiedBadge: boolean;
+  }[] = [];
+
+  if (request.status === "OPEN" && isRequestOwner) {
+    const candidateFixers = await prisma.user.findMany({
+      where: {
+        userType: "FIXER",
+        fixerProfile: {
+          isActive: true,
+          skills: { has: request.category.slug },
+        },
+        locationLat: { not: null },
+        locationLng: { not: null },
+      },
+      select: {
+        id: true,
+        name: true,
+        avatarUrl: true,
+        locationLat: true,
+        locationLng: true,
+        fixerProfile: {
+          select: {
+            averageRating: true,
+            totalJobs: true,
+            serviceRadiusKm: true,
+            verifiedBadge: true,
+          },
+        },
+      },
+    });
+
+    suggestedFixers = candidateFixers
+      .map((fixer) => {
+        const dist = haversineDistance(
+          request.locationLat,
+          request.locationLng,
+          fixer.locationLat!,
+          fixer.locationLng!
+        );
+        return {
+          id: fixer.id,
+          name: fixer.name,
+          avatarUrl: fixer.avatarUrl,
+          averageRating: fixer.fixerProfile!.averageRating,
+          totalJobs: fixer.fixerProfile!.totalJobs,
+          distanceKm: Math.round(dist * 10) / 10,
+          verifiedBadge: fixer.fixerProfile!.verifiedBadge,
+          serviceRadiusKm: fixer.fixerProfile!.serviceRadiusKm,
+        };
+      })
+      // Only include fixers whose service radius covers this request
+      .filter((f) => f.distanceKm <= f.serviceRadiusKm)
+      // Score: 60% rating (normalized 0-5 → 0-1) + 40% experience (log scale)
+      .sort((a, b) => {
+        const scoreA = (a.averageRating / 5) * 0.6 + Math.min(Math.log10(a.totalJobs + 1) / 2, 1) * 0.4;
+        const scoreB = (b.averageRating / 5) * 0.6 + Math.min(Math.log10(b.totalJobs + 1) / 2, 1) * 0.4;
+        return scoreB - scoreA;
+      })
+      .slice(0, 3)
+      // Remove serviceRadiusKm from final output
+      .map(({ serviceRadiusKm, ...rest }) => rest);
+  }
 
   // Parse AI diagnosis if available
   const aiDiagnosis = request.aiDiagnosis as DiagnosisResult | null;
@@ -172,22 +249,33 @@ export default async function RequestPage({ params }: RequestPageProps) {
 
               {/* Posted By */}
               <div className="flex items-center gap-3 mb-4">
-                {request.customer.avatarUrl ? (
-                  <img
-                    src={request.customer.avatarUrl}
-                    alt={request.customer.name}
-                    className="w-10 h-10 rounded-full object-cover"
-                  />
-                ) : (
-                  <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-500 font-semibold">
-                    {request.customer.name.charAt(0).toUpperCase()}
-                  </div>
-                )}
+                <Link href={`/profile/${request.customer.id}`}>
+                  {request.customer.avatarUrl ? (
+                    <img
+                      src={request.customer.avatarUrl}
+                      alt={request.customer.name}
+                      className="w-10 h-10 rounded-full object-cover hover:ring-2 hover:ring-primary transition-all"
+                    />
+                  ) : (
+                    <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-500 font-semibold hover:ring-2 hover:ring-primary transition-all">
+                      {request.customer.name.charAt(0).toUpperCase()}
+                    </div>
+                  )}
+                </Link>
                 <div>
                   <p className="text-sm text-gray-700">
-                    Posted by <span className="font-semibold">{request.customer.name}</span>
+                    Posted by{" "}
+                    <Link href={`/profile/${request.customer.id}`} className="font-semibold hover:text-primary transition-colors">
+                      {request.customer.name}
+                    </Link>
                   </p>
-                  <p className="text-xs text-gray-500" suppressHydrationWarning>{timeAgo(request.createdAt)}</p>
+                  <p className="text-xs text-gray-500">
+                    <span suppressHydrationWarning>{timeAgo(request.createdAt)}</span>
+                    {" · "}
+                    {request.customer._count.reviewsReceived} review{request.customer._count.reviewsReceived !== 1 ? "s" : ""}
+                    {" · "}
+                    {request.customer._count.jobsAsCustomer + request.customer._count.jobsAsFixer} job{(request.customer._count.jobsAsCustomer + request.customer._count.jobsAsFixer) !== 1 ? "s" : ""}
+                  </p>
                 </div>
               </div>
 
@@ -222,7 +310,7 @@ export default async function RequestPage({ params }: RequestPageProps) {
             {/* AI Diagnosis */}
             {aiDiagnosis && (
               <div>
-                <DiagnosisCard diagnosis={aiDiagnosis} />
+                <DiagnosisCard diagnosis={aiDiagnosis} userType={isFixer ? "FIXER" : undefined} />
               </div>
             )}
 
@@ -243,7 +331,7 @@ export default async function RequestPage({ params }: RequestPageProps) {
                 </div>
               ) : (
                 <OffersList
-                  offers={request.offers}
+                  offers={request.offers as any}
                   isRequestOwner={isRequestOwner}
                   requestStatus={request.status}
                 />
@@ -258,17 +346,19 @@ export default async function RequestPage({ params }: RequestPageProps) {
               <h3 className="text-lg font-bold text-gray-800 mb-4">Quick Info</h3>
 
               <div className="space-y-4">
-                {/* Estimated Cost */}
-                <div>
-                  <div className="text-sm text-gray-600 mb-1">💰 Estimated cost</div>
-                  {aiDiagnosis ? (
-                    <div className="text-lg font-semibold text-primary">
-                      €{aiDiagnosis.estimatedCostMin} — €{aiDiagnosis.estimatedCostMax}
-                    </div>
-                  ) : (
-                    <div className="text-sm text-gray-500">Waiting for offers</div>
-                  )}
-                </div>
+                {/* Estimated Cost — only visible to fixers */}
+                {isFixer && (
+                  <div>
+                    <div className="text-sm text-gray-600 mb-1">💰 Estimated cost</div>
+                    {aiDiagnosis ? (
+                      <div className="text-lg font-semibold text-primary">
+                        €{aiDiagnosis.estimatedCostMin} — €{aiDiagnosis.estimatedCostMax}
+                      </div>
+                    ) : (
+                      <div className="text-sm text-gray-500">Waiting for offers</div>
+                    )}
+                  </div>
+                )}
 
                 {/* Location */}
                 <div>
@@ -305,6 +395,23 @@ export default async function RequestPage({ params }: RequestPageProps) {
                 </div>
               </div>
             </div>
+
+            {/* Suggested Fixers */}
+            {isRequestOwner && request.status === "OPEN" && (
+              <SuggestedFixers fixers={suggestedFixers} />
+            )}
+
+            {/* Location Map */}
+            {request.locationLat && request.locationLng && (
+              <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-200">
+                <h3 className="text-sm font-semibold text-gray-700 mb-2">📍 Location</h3>
+                <RequestLocationMapClient
+                  lat={request.locationLat}
+                  lng={request.locationLng}
+                  city={request.city}
+                />
+              </div>
+            )}
 
             {/* Make an Offer Box or Login Prompt */}
             {!isLoggedIn ? (

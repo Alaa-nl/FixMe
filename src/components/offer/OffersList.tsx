@@ -1,7 +1,9 @@
 "use client";
 
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import OfferCard from "./OfferCard";
+import SchedulePickerModal from "@/components/scheduling/SchedulePickerModal";
 
 interface OffersListProps {
   offers: Array<{
@@ -9,6 +11,7 @@ interface OffersListProps {
     price: number;
     estimatedTime: string;
     message: string;
+    suggestedTimes?: string[] | null;
     status: string;
     createdAt: Date | string;
     fixer: {
@@ -28,11 +31,18 @@ interface OffersListProps {
 
 export default function OffersList({ offers, isRequestOwner, requestStatus }: OffersListProps) {
   const router = useRouter();
+  const [counterProposing, setCounterProposing] = useState<{
+    offerId: string;
+    fixerId: string;
+    fixerName: string;
+  } | null>(null);
 
-  const handleAccept = async (offerId: string) => {
+  const acceptOffer = async (offerId: string, scheduledAt?: string) => {
     try {
       const res = await fetch(`/api/offers/${offerId}/accept`, {
         method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ scheduledAt: scheduledAt || null }),
       });
 
       if (res.ok) {
@@ -51,6 +61,10 @@ export default function OffersList({ offers, isRequestOwner, requestStatus }: Of
     router.push(`/messages?userId=${fixerId}`);
   };
 
+  const handleCounterPropose = (offerId: string, fixerId: string, fixerName: string) => {
+    setCounterProposing({ offerId, fixerId, fixerName });
+  };
+
   return (
     <div>
       {offers.map((offer) => (
@@ -59,10 +73,28 @@ export default function OffersList({ offers, isRequestOwner, requestStatus }: Of
           offer={offer}
           isRequestOwner={isRequestOwner}
           requestStatus={requestStatus}
-          onAccept={handleAccept}
+          onAccept={acceptOffer}
           onMessage={handleMessage}
+          onCounterPropose={handleCounterPropose}
         />
       ))}
+
+      {/* Counter-propose modal: lets customer pick from fixer's availability */}
+      {counterProposing && (
+        <SchedulePickerModal
+          fixerId={counterProposing.fixerId}
+          fixerName={counterProposing.fixerName}
+          onConfirm={(scheduledAt) => {
+            acceptOffer(counterProposing.offerId, scheduledAt);
+            setCounterProposing(null);
+          }}
+          onSkip={() => {
+            acceptOffer(counterProposing.offerId);
+            setCounterProposing(null);
+          }}
+          onClose={() => setCounterProposing(null)}
+        />
+      )}
     </div>
   );
 }

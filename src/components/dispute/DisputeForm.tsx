@@ -216,7 +216,7 @@ export default function DisputeForm({ jobId }: DisputeFormProps) {
             <span className="text-sm text-gray-700">
               I confirm that the information above is accurate and that I have attempted
               to resolve this issue with the fixer directly. I understand that opening
-              a dispute will put the payment on hold pending admin review.
+              a dispute will put the payment on hold. The fixer will have 48 hours to respond.
             </span>
           </label>
         </div>

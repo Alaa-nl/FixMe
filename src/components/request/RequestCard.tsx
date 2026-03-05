@@ -16,17 +16,23 @@ interface RequestCardProps {
       slug: string;
     };
     customer: {
+      id?: string;
       name: string;
       avatarUrl: string | null;
+      _count?: {
+        reviewsReceived: number;
+        jobsAsCustomer: number;
+        jobsAsFixer: number;
+      };
     };
     _count: {
       offers: number;
     };
+    distanceKm?: number;
   };
 }
 
 export default function RequestCard({ request }: RequestCardProps) {
-  // Get timeline badge config
   const getTimelineBadge = () => {
     switch (request.timeline) {
       case "URGENT":
@@ -41,17 +47,23 @@ export default function RequestCard({ request }: RequestCardProps) {
   };
 
   const timelineBadge = getTimelineBadge();
-
-  // Get first photo or placeholder
   const coverImage = request.photos.length > 0 ? request.photos[0] : null;
+  const totalJobs = request.customer._count
+    ? request.customer._count.jobsAsCustomer + request.customer._count.jobsAsFixer
+    : 0;
+  const reviewCount = request.customer._count?.reviewsReceived ?? 0;
 
   return (
-    <Link
-      href={`/request/${request.id}`}
-      className="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow overflow-hidden group"
-    >
+    <div className="relative bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow overflow-hidden group">
+      {/* Invisible card link (covers entire card) */}
+      <Link
+        href={`/request/${request.id}`}
+        className="absolute inset-0 z-0"
+        aria-label={request.title}
+      />
+
       {/* Cover Image */}
-      <div className="relative aspect-video bg-gray-200">
+      <div className="relative h-[100px] bg-gray-200">
         {coverImage ? (
           <img
             src={coverImage}
@@ -60,13 +72,12 @@ export default function RequestCard({ request }: RequestCardProps) {
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center bg-gray-100">
-            <span className="text-6xl">{getCategoryIcon(request.category.slug)}</span>
+            <span className="text-4xl">{getCategoryIcon(request.category.slug)}</span>
           </div>
         )}
 
         {/* Badges */}
         <div className="absolute top-3 right-3 flex flex-col gap-2 items-end">
-          {/* Status Badge */}
           {request.status && request.status !== "OPEN" && (
             <span
               className={`px-3 py-1 rounded-full text-xs font-semibold ${
@@ -86,7 +97,6 @@ export default function RequestCard({ request }: RequestCardProps) {
             </span>
           )}
 
-          {/* Timeline Badge */}
           {timelineBadge.text && (
             <span
               className={`px-3 py-1 rounded-full text-xs font-semibold ${timelineBadge.color}`}
@@ -112,10 +122,67 @@ export default function RequestCard({ request }: RequestCardProps) {
           {request.title}
         </h3>
 
+        {/* Customer Info Row — clickable to profile */}
+        {request.customer.id ? (
+          <Link
+            href={`/profile/${request.customer.id}`}
+            className="relative z-10 flex items-center gap-2 mb-2 hover:opacity-80 transition-opacity"
+          >
+            {request.customer.avatarUrl ? (
+              <img
+                src={request.customer.avatarUrl}
+                alt={request.customer.name}
+                className="w-6 h-6 rounded-full object-cover"
+              />
+            ) : (
+              <div className="w-6 h-6 rounded-full bg-gray-200 flex items-center justify-center text-gray-500 text-xs font-semibold">
+                {request.customer.name.charAt(0).toUpperCase()}
+              </div>
+            )}
+            <span className="text-sm text-gray-700 font-medium truncate hover:text-primary transition-colors">
+              {request.customer.name}
+            </span>
+            {request.customer._count && (
+              <span className="text-xs text-gray-400 ml-auto whitespace-nowrap">
+                {reviewCount} review{reviewCount !== 1 ? "s" : ""} · {totalJobs} job{totalJobs !== 1 ? "s" : ""}
+              </span>
+            )}
+          </Link>
+        ) : (
+          <div className="flex items-center gap-2 mb-2">
+            {request.customer.avatarUrl ? (
+              <img
+                src={request.customer.avatarUrl}
+                alt={request.customer.name}
+                className="w-6 h-6 rounded-full object-cover"
+              />
+            ) : (
+              <div className="w-6 h-6 rounded-full bg-gray-200 flex items-center justify-center text-gray-500 text-xs font-semibold">
+                {request.customer.name.charAt(0).toUpperCase()}
+              </div>
+            )}
+            <span className="text-sm text-gray-700 font-medium truncate">
+              {request.customer.name}
+            </span>
+            {request.customer._count && (
+              <span className="text-xs text-gray-400 ml-auto whitespace-nowrap">
+                {reviewCount} review{reviewCount !== 1 ? "s" : ""} · {totalJobs} job{totalJobs !== 1 ? "s" : ""}
+              </span>
+            )}
+          </div>
+        )}
+
         {/* Location */}
         <div className="flex items-center gap-1 text-sm text-gray-500 mb-3">
           <span>📍</span>
           <span>{request.city}</span>
+          {request.distanceKm != null && (
+            <span className="ml-auto text-xs font-medium text-primary">
+              {request.distanceKm < 1
+                ? `${Math.round(request.distanceKm * 1000)}m away`
+                : `${request.distanceKm.toFixed(1)} km away`}
+            </span>
+          )}
         </div>
 
         {/* Bottom Row */}
@@ -130,6 +197,6 @@ export default function RequestCard({ request }: RequestCardProps) {
           </span>
         </div>
       </div>
-    </Link>
+    </div>
   );
 }

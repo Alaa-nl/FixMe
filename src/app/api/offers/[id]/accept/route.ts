@@ -19,6 +19,18 @@ export async function POST(
 
     const { id: offerId } = await params;
 
+    // Parse optional scheduledAt from body
+    let scheduledAt: Date | null = null;
+    try {
+      const body = await request.json();
+      if (body.scheduledAt) {
+        scheduledAt = new Date(body.scheduledAt);
+        if (isNaN(scheduledAt.getTime())) scheduledAt = null;
+      }
+    } catch {
+      // No body or invalid JSON — that's fine, scheduledAt is optional
+    }
+
     // Get the offer with related data
     const offer = await prisma.offer.findUnique({
       where: { id: offerId },
@@ -117,6 +129,7 @@ export async function POST(
           platformFee,
           fixerPayout,
           status: "SCHEDULED",
+          scheduledAt,
         },
       });
 
