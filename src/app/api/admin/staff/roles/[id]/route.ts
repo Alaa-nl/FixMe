@@ -7,9 +7,10 @@ import { ALL_PERMISSIONS } from '@/lib/permissions';
 // PATCH /api/admin/staff/roles/[id] - Update role
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -22,7 +23,7 @@ export async function PATCH(
 
     // Check if role exists
     const existingRole = await prisma.staffRole.findUnique({
-      where: { id: params.id },
+      where: { id: id },
     });
 
     if (!existingRole) {
@@ -52,7 +53,7 @@ export async function PATCH(
       const nameConflict = await prisma.staffRole.findFirst({
         where: {
           name,
-          id: { not: params.id },
+          id: { not: id },
         },
       });
 
@@ -66,7 +67,7 @@ export async function PATCH(
 
     // Update role
     const role = await prisma.staffRole.update({
-      where: { id: params.id },
+      where: { id: id },
       data: {
         ...(name && { name }),
         ...(description !== undefined && { description }),
@@ -104,9 +105,10 @@ export async function PATCH(
 // DELETE /api/admin/staff/roles/[id] - Delete role
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -116,7 +118,7 @@ export async function DELETE(
 
     // Check if role exists
     const existingRole = await prisma.staffRole.findUnique({
-      where: { id: params.id },
+      where: { id: id },
       include: {
         _count: {
           select: {
@@ -142,7 +144,7 @@ export async function DELETE(
 
     // Delete role
     await prisma.staffRole.delete({
-      where: { id: params.id },
+      where: { id: id },
     });
 
     return NextResponse.json({ success: true });

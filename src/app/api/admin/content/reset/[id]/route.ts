@@ -8,9 +8,10 @@ import { logAdminAction, getIpAddress, AdminActions } from "@/lib/adminLog";
 // POST /api/admin/content/reset/[id] - Reset content to default value
 export async function POST(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -22,7 +23,7 @@ export async function POST(
     }
 
     // Get default value
-    const defaultValue = getDefaultContent(params.id);
+    const defaultValue = getDefaultContent(id);
 
     if (!defaultValue) {
       return NextResponse.json(
@@ -33,7 +34,7 @@ export async function POST(
 
     // Update to default value
     const content = await prisma.siteContent.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         value: defaultValue,
         updatedBy: session.user.id,
@@ -45,10 +46,10 @@ export async function POST(
 
     // Log admin action
     await logAdminAction(session.user.id, AdminActions.CONTENT_RESET, {
-      target: params.id,
+      target: id,
       targetType: "content",
       details: {
-        contentId: params.id,
+        contentId: id,
         section: content.section,
         label: content.label,
         resetToValue: defaultValue,

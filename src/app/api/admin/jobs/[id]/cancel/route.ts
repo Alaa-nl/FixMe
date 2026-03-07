@@ -6,9 +6,10 @@ import { hasPermission } from "@/lib/checkPermission";
 // POST /api/admin/jobs/[id]/cancel - Force cancel job with reason
 export async function POST(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -31,7 +32,7 @@ export async function POST(
 
     // Check if job exists
     const job = await prisma.job.findUnique({
-      where: { id: params.id },
+      where: { id: id },
       include: {
         repairRequest: true,
         payments: true,
@@ -46,7 +47,7 @@ export async function POST(
     await prisma.$transaction(async (tx) => {
       // Cancel the job
       await tx.job.update({
-        where: { id: params.id },
+        where: { id: id },
         data: {
           status: "REFUNDED",
         },
@@ -72,7 +73,7 @@ export async function POST(
     });
 
     // Log admin action
-    console.log(`Admin ${session.user.id} cancelled job ${params.id}`, {
+    console.log(`Admin ${session.user.id} cancelled job ${id}`, {
       reason,
       refundCustomer,
     });

@@ -6,9 +6,10 @@ import { hasPermission } from "@/lib/checkPermission";
 // GET /api/admin/credits/[userId] - Get user's credit balance and history
 export async function GET(
   req: NextRequest,
-  { params }: { params: { userId: string } }
+  { params }: { params: Promise<{ userId: string }> }
 ) {
   try {
+    const { userId } = await params;
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -21,7 +22,7 @@ export async function GET(
 
     // Check user exists
     const user = await prisma.user.findUnique({
-      where: { id: params.userId },
+      where: { id: userId },
       select: {
         id: true,
         name: true,
@@ -36,7 +37,7 @@ export async function GET(
 
     // Get credit history
     const credits = await prisma.userCredit.findMany({
-      where: { userId: params.userId },
+      where: { userId: userId },
       orderBy: { createdAt: "desc" },
     });
 

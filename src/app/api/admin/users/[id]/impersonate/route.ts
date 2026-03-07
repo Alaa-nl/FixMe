@@ -6,9 +6,10 @@ import { isAdmin } from "@/lib/checkPermission";
 // POST /api/admin/users/[id]/impersonate - Impersonate user (Admin only)
 export async function POST(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -25,7 +26,7 @@ export async function POST(
 
     // Check if target user exists
     const targetUser = await prisma.user.findUnique({
-      where: { id: params.id },
+      where: { id: id },
       include: {
         fixerProfile: true,
       },

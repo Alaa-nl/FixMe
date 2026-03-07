@@ -6,9 +6,10 @@ import { hasPermission } from "@/lib/checkPermission";
 // POST /api/admin/payments/[id]/release - Force release payment to fixer
 export async function POST(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -24,7 +25,7 @@ export async function POST(
 
     // Check if payment exists
     const payment = await prisma.payment.findUnique({
-      where: { id: params.id },
+      where: { id: id },
       include: {
         job: {
           include: {
@@ -71,7 +72,7 @@ export async function POST(
 
     // Release payment
     const updatedPayment = await prisma.payment.update({
-      where: { id: params.id },
+      where: { id: id },
       data: {
         status: "RELEASED",
         releasedAt: new Date(),
@@ -99,7 +100,7 @@ export async function POST(
     });
 
     // Log admin action
-    console.log(`Admin ${session.user.id} released payment ${params.id}`, {
+    console.log(`Admin ${session.user.id} released payment ${id}`, {
       amount: payment.fixerPayout,
       fixerId: payment.fixerId,
       adminNotes,

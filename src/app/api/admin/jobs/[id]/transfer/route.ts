@@ -6,9 +6,10 @@ import { hasPermission } from "@/lib/checkPermission";
 // POST /api/admin/jobs/[id]/transfer - Transfer job to different fixer
 export async function POST(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -31,7 +32,7 @@ export async function POST(
 
     // Check if job exists
     const job = await prisma.job.findUnique({
-      where: { id: params.id },
+      where: { id: id },
       include: {
         fixer: true,
         offer: true,
@@ -65,7 +66,7 @@ export async function POST(
 
     // Update job with new fixer
     const updatedJob = await prisma.job.update({
-      where: { id: params.id },
+      where: { id: id },
       data: {
         fixerId: newFixerId,
       },
@@ -89,7 +90,7 @@ export async function POST(
     });
 
     // Log admin action
-    console.log(`Admin ${session.user.id} transferred job ${params.id}`, {
+    console.log(`Admin ${session.user.id} transferred job ${id}`, {
       oldFixerId: job.fixerId,
       newFixerId,
       reason,

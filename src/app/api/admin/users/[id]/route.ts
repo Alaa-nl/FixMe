@@ -7,9 +7,10 @@ import bcrypt from "bcryptjs";
 // GET /api/admin/users/[id] - Get user details with statistics
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -22,7 +23,7 @@ export async function GET(
 
     // Fetch user with all related data
     const user = await prisma.user.findUnique({
-      where: { id: params.id },
+      where: { id: id },
       include: {
         fixerProfile: true,
         staffMember: {
@@ -58,7 +59,7 @@ export async function GET(
       // Total spent as customer
       prisma.payment.aggregate({
         where: {
-          customerId: params.id,
+          customerId: id,
           status: "RELEASED",
         },
         _sum: {
@@ -68,7 +69,7 @@ export async function GET(
       // Total earned as fixer
       prisma.payment.aggregate({
         where: {
-          fixerId: params.id,
+          fixerId: id,
           status: "RELEASED",
         },
         _sum: {
@@ -78,21 +79,21 @@ export async function GET(
       // Completed jobs as customer
       prisma.job.count({
         where: {
-          customerId: params.id,
+          customerId: id,
           status: "COMPLETED",
         },
       }),
       // Completed jobs as fixer
       prisma.job.count({
         where: {
-          fixerId: params.id,
+          fixerId: id,
           status: "COMPLETED",
         },
       }),
       // Average rating received
       prisma.review.aggregate({
         where: {
-          reviewedId: params.id,
+          reviewedId: id,
         },
         _avg: {
           rating: true,
@@ -108,7 +109,7 @@ export async function GET(
         title as description,
         "createdAt" as timestamp
       FROM "RepairRequest"
-      WHERE "customerId" = ${params.id}
+      WHERE "customerId" = ${id}
       UNION ALL
       SELECT
         'offer' as type,
@@ -116,7 +117,7 @@ export async function GET(
         message as description,
         "createdAt" as timestamp
       FROM "Offer"
-      WHERE "fixerId" = ${params.id}
+      WHERE "fixerId" = ${id}
       UNION ALL
       SELECT
         'job' as type,
@@ -124,7 +125,7 @@ export async function GET(
         status as description,
         "createdAt" as timestamp
       FROM "Job"
-      WHERE "customerId" = ${params.id} OR "fixerId" = ${params.id}
+      WHERE "customerId" = ${id} OR "fixerId" = ${id}
       ORDER BY timestamp DESC
       LIMIT 10
     `;
@@ -156,9 +157,10 @@ export async function GET(
 // PATCH /api/admin/users/[id] - Update user
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -189,7 +191,7 @@ export async function PATCH(
 
     // Check if user exists
     const existingUser = await prisma.user.findUnique({
-      where: { id: params.id },
+      where: { id: id },
       include: { fixerProfile: true },
     });
 
@@ -268,7 +270,7 @@ export async function PATCH(
     }
 
     const updatedUser = await prisma.user.update({
-      where: { id: params.id },
+      where: { id: id },
       data: updateData,
       include: {
         fixerProfile: true,
@@ -296,9 +298,10 @@ export async function PATCH(
 // DELETE /api/admin/users/[id] - Delete or anonymize user
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -314,7 +317,7 @@ export async function DELETE(
 
     // Check if user exists
     const user = await prisma.user.findUnique({
-      where: { id: params.id },
+      where: { id: id },
     });
 
     if (!user) {
@@ -334,10 +337,10 @@ export async function DELETE(
       await prisma.$transaction(async (tx) => {
         // Update user to anonymized state
         await tx.user.update({
-          where: { id: params.id },
+          where: { id: id },
           data: {
             name: "Deleted User",
-            email: `deleted_${params.id}@fixme.deleted`,
+            email: `deleted_${id}@fixme.deleted`,
             phone: null,
             avatarUrl: null,
             locationLat: null,
@@ -350,33 +353,33 @@ export async function DELETE(
 
         // Delete fixer profile if exists
         await tx.fixerProfile.deleteMany({
-          where: { userId: params.id },
+          where: { userId: id },
         });
 
         // Delete staff member if exists
         await tx.staffMember.deleteMany({
-          where: { userId: params.id },
+          where: { userId: id },
         });
 
         // Delete sensitive data but keep reviews
         await tx.message.deleteMany({
-          where: { senderId: params.id },
+          where: { senderId: id },
         });
 
         await tx.notification.deleteMany({
-          where: { userId: params.id },
+          where: { userId: id },
         });
 
         // Mark repair requests as cancelled
         await tx.repairRequest.updateMany({
-          where: { customerId: params.id },
+          where: { customerId: id },
           data: { status: "CANCELLED" },
         });
 
         // Withdraw all pending offers
         await tx.offer.updateMany({
           where: {
-            fixerId: params.id,
+            fixerId: id,
             status: "PENDING",
           },
           data: { status: "WITHDRAWN" },
@@ -390,7 +393,7 @@ export async function DELETE(
     } else {
       // Complete deletion - use cascade delete from Prisma schema
       await prisma.user.delete({
-        where: { id: params.id },
+        where: { id: id },
       });
 
       return NextResponse.json({

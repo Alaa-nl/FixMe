@@ -6,9 +6,10 @@ import { hasPermission } from "@/lib/checkPermission";
 // GET /api/admin/vouchers/[id] - Get voucher with stats
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -20,7 +21,7 @@ export async function GET(
     }
 
     const voucher = await prisma.voucher.findUnique({
-      where: { id: params.id },
+      where: { id: id },
       include: {
         redemptions: {
           include: {
@@ -68,9 +69,10 @@ export async function GET(
 // PATCH /api/admin/vouchers/[id] - Update voucher
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -85,7 +87,7 @@ export async function PATCH(
 
     // Check voucher exists
     const voucher = await prisma.voucher.findUnique({
-      where: { id: params.id },
+      where: { id: id },
     });
 
     if (!voucher) {
@@ -132,7 +134,7 @@ export async function PATCH(
 
     // Update voucher
     const updatedVoucher = await prisma.voucher.update({
-      where: { id: params.id },
+      where: { id: id },
       data: updateData,
     });
 
@@ -156,9 +158,10 @@ export async function PATCH(
 // DELETE /api/admin/vouchers/[id] - Delete voucher
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -171,7 +174,7 @@ export async function DELETE(
 
     // Check voucher exists
     const voucher = await prisma.voucher.findUnique({
-      where: { id: params.id },
+      where: { id: id },
       include: {
         _count: {
           select: { redemptions: true },
@@ -188,7 +191,7 @@ export async function DELETE(
 
     // Delete voucher (cascades to redemptions)
     await prisma.voucher.delete({
-      where: { id: params.id },
+      where: { id: id },
     });
 
     console.log(`Admin ${session.user.id} deleted voucher ${voucher.code}`, {

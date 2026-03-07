@@ -7,9 +7,10 @@ import { logAdminAction, getIpAddress, AdminActions } from "@/lib/adminLog";
 // POST /api/admin/users/[id]/unban - Unban user
 export async function POST(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -22,7 +23,7 @@ export async function POST(
 
     // Check if user exists
     const user = await prisma.user.findUnique({
-      where: { id: params.id },
+      where: { id: id },
     });
 
     if (!user) {
@@ -31,7 +32,7 @@ export async function POST(
 
     // Unban the user
     const unbannedUser = await prisma.user.update({
-      where: { id: params.id },
+      where: { id: id },
       data: { isBanned: false },
       include: {
         fixerProfile: true,
@@ -40,7 +41,7 @@ export async function POST(
 
     // Log the admin action
     await logAdminAction(session.user.id, AdminActions.USER_UNBANNED, {
-      target: params.id,
+      target: id,
       targetType: "user",
       details: {
         userName: user.name,

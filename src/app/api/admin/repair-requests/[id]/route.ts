@@ -6,9 +6,10 @@ import { hasPermission } from "@/lib/checkPermission";
 // PATCH /api/admin/repair-requests/[id] - Edit repair request
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -38,7 +39,7 @@ export async function PATCH(
 
     // Check if repair request exists
     const existingRequest = await prisma.repairRequest.findUnique({
-      where: { id: params.id },
+      where: { id: id },
       include: {
         jobs: true,
       },
@@ -94,7 +95,7 @@ export async function PATCH(
     }
 
     const repairRequest = await prisma.repairRequest.update({
-      where: { id: params.id },
+      where: { id: id },
       data: updateData,
       include: {
         customer: {
@@ -141,9 +142,10 @@ export async function PATCH(
 // DELETE /api/admin/repair-requests/[id] - Delete repair request
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -156,7 +158,7 @@ export async function DELETE(
 
     // Check if repair request exists
     const repairRequest = await prisma.repairRequest.findUnique({
-      where: { id: params.id },
+      where: { id: id },
       include: {
         jobs: {
           include: {
@@ -201,7 +203,7 @@ export async function DELETE(
 
       // Delete the repair request
       await tx.repairRequest.delete({
-        where: { id: params.id },
+        where: { id: id },
       });
     });
 

@@ -6,9 +6,10 @@ import { requirePermission } from '@/lib/checkPermission';
 // PATCH /api/admin/staff/[id] - Update staff member
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -21,7 +22,7 @@ export async function PATCH(
 
     // Check if staff member exists
     const existingStaff = await prisma.staffMember.findUnique({
-      where: { id: params.id },
+      where: { id: id },
     });
 
     if (!existingStaff) {
@@ -44,7 +45,7 @@ export async function PATCH(
 
     // Update staff member
     const staffMember = await prisma.staffMember.update({
-      where: { id: params.id },
+      where: { id: id },
       data: {
         ...(roleId && { roleId }),
         ...(typeof isActive === 'boolean' && { isActive }),
@@ -85,9 +86,10 @@ export async function PATCH(
 // DELETE /api/admin/staff/[id] - Remove staff member
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -97,7 +99,7 @@ export async function DELETE(
 
     // Check if staff member exists
     const existingStaff = await prisma.staffMember.findUnique({
-      where: { id: params.id },
+      where: { id: id },
     });
 
     if (!existingStaff) {
@@ -109,7 +111,7 @@ export async function DELETE(
 
     // Delete staff member
     await prisma.staffMember.delete({
-      where: { id: params.id },
+      where: { id: id },
     });
 
     return NextResponse.json({ success: true });
