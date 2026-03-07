@@ -6,9 +6,19 @@ import { prisma } from "./db";
  * Used throughout public pages for marketing text and images
  */
 
-// In-memory cache
-let contentCache: Record<string, string> = {};
-let cacheTimestamp: number = 0;
+// In-memory cache (stored on globalThis to survive hot reloads and share across modules)
+const globalForCache = globalThis as unknown as {
+  __siteContentCache?: Record<string, string>;
+  __siteContentCacheTimestamp?: number;
+};
+
+if (!globalForCache.__siteContentCache) {
+  globalForCache.__siteContentCache = {};
+}
+if (!globalForCache.__siteContentCacheTimestamp) {
+  globalForCache.__siteContentCacheTimestamp = 0;
+}
+
 const CACHE_TTL = 5 * 60 * 1000; // 5 minutes TTL
 
 // Default content values (fallbacks)
@@ -90,10 +100,13 @@ export const DEFAULT_CONTENT: Record<string, string> = {
  * Get a single content item by ID
  */
 export async function getContent(id: string): Promise<string> {
+  const cache = globalForCache.__siteContentCache!;
+  const cacheTimestamp = globalForCache.__siteContentCacheTimestamp!;
+
   // Check cache
   const now = Date.now();
-  if (contentCache[id] && now - cacheTimestamp < CACHE_TTL) {
-    return contentCache[id];
+  if (cache[id] && now - cacheTimestamp < CACHE_TTL) {
+    return cache[id];
   }
 
   // Fetch from database
@@ -104,8 +117,8 @@ export async function getContent(id: string): Promise<string> {
   const value = content?.value || DEFAULT_CONTENT[id] || "";
 
   // Update cache
-  contentCache[id] = value;
-  cacheTimestamp = now;
+  cache[id] = value;
+  globalForCache.__siteContentCacheTimestamp = now;
 
   return value;
 }
@@ -116,14 +129,17 @@ export async function getContent(id: string): Promise<string> {
 export async function getContentBatch(
   ids: string[]
 ): Promise<Record<string, string>> {
+  const cache = globalForCache.__siteContentCache!;
+  const cacheTimestamp = globalForCache.__siteContentCacheTimestamp!;
+
   // Check cache
   const now = Date.now();
-  const allCached = ids.every((id) => contentCache[id] !== undefined);
+  const allCached = ids.every((id) => cache[id] !== undefined);
 
   if (allCached && now - cacheTimestamp < CACHE_TTL) {
     const result: Record<string, string> = {};
     ids.forEach((id) => {
-      result[id] = contentCache[id];
+      result[id] = cache[id];
     });
     return result;
   }
@@ -140,10 +156,10 @@ export async function getContentBatch(
     result[id] = found?.value || DEFAULT_CONTENT[id] || "";
 
     // Update cache
-    contentCache[id] = result[id];
+    cache[id] = result[id];
   });
 
-  cacheTimestamp = now;
+  globalForCache.__siteContentCacheTimestamp = now;
 
   return result;
 }
@@ -152,8 +168,8 @@ export async function getContentBatch(
  * Clear content cache (called after CMS updates)
  */
 export function clearContentCache() {
-  contentCache = {};
-  cacheTimestamp = 0;
+  globalForCache.__siteContentCache = {};
+  globalForCache.__siteContentCacheTimestamp = 0;
 }
 
 /**

@@ -3,6 +3,7 @@ import Button from "@/components/ui/button";
 import { prisma } from "@/lib/db";
 import { getCategoryIcon } from "@/lib/categoryIcons";
 import RequestCard from "@/components/request/RequestCard";
+import { getContentBatch } from "@/lib/siteContent";
 
 export const dynamic = "force-dynamic";
 
@@ -39,35 +40,54 @@ export default async function Home() {
     },
   });
 
+  // Fetch CMS content (falls back to defaults if not set)
+  const content = await getContentBatch([
+    "hero_title",
+    "hero_subtitle",
+    "hero_cta_primary",
+    "hero_cta_secondary",
+    "how_it_works_title",
+    "how_it_works_step1_title",
+    "how_it_works_step1_desc",
+    "how_it_works_step2_title",
+    "how_it_works_step2_desc",
+    "how_it_works_step3_title",
+    "how_it_works_step3_desc",
+    "categories_title",
+    "stats_repairs",
+    "stats_fixers",
+    "stats_repairs_label",
+    "stats_fixers_label",
+    "stats_cities",
+    "stats_cities_label",
+  ]);
+
   const steps = [
     {
       number: 1,
       emoji: "📸",
-      title: "Post your broken item",
-      description:
-        "Take a photo and describe what's broken. Our AI will help diagnose the problem.",
+      title: content["how_it_works_step1_title"],
+      description: content["how_it_works_step1_desc"],
     },
     {
       number: 2,
       emoji: "💰",
-      title: "Get offers from fixers",
-      description:
-        "Local repair people will send you offers with their price and availability.",
+      title: content["how_it_works_step2_title"],
+      description: content["how_it_works_step2_desc"],
     },
     {
       number: 3,
       emoji: "✅",
-      title: "Get it fixed",
-      description:
-        "Pick the best offer, get your item repaired, and pay safely through the app.",
+      title: content["how_it_works_step3_title"],
+      description: content["how_it_works_step3_desc"],
     },
   ];
 
   const stats = [
-    { value: "1,000+", label: "Repairs completed" },
-    { value: "500+", label: "Trusted fixers" },
+    { value: content["stats_repairs"], label: content["stats_repairs_label"] },
+    { value: content["stats_fixers"], label: content["stats_fixers_label"] },
     { value: "4.8 ⭐", label: "Average rating" },
-    { value: "€50,000+", label: "Saved from landfill" },
+    { value: content["stats_cities"], label: content["stats_cities_label"] },
   ];
 
   return (
@@ -79,23 +99,22 @@ export default async function Home() {
             {/* Left Side */}
             <div className="text-center md:text-left">
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-secondary mb-6 leading-tight">
-                Don't throw it away. Fix it.
+                {content["hero_title"]}
               </h1>
               <p className="text-lg md:text-xl text-gray-600 mb-8 leading-relaxed">
-                Find trusted local repair people in your area. Bikes, phones,
-                appliances — anything fixed, fast and affordable.
+                {content["hero_subtitle"]}
               </p>
 
               {/* CTA Buttons */}
               <div className="flex flex-col sm:flex-row gap-4 mb-6">
                 <Link href="/post">
                   <Button variant="primary" size="lg" className="w-full sm:w-auto">
-                    Post a repair request
+                    {content["hero_cta_primary"]}
                   </Button>
                 </Link>
                 <Link href="/register">
                   <Button variant="outline" size="lg" className="w-full sm:w-auto">
-                    I'm a fixer
+                    {content["hero_cta_secondary"]}
                   </Button>
                 </Link>
               </div>
@@ -128,7 +147,7 @@ export default async function Home() {
       <section className="bg-gray-100 py-16 md:py-24">
         <div className="max-w-7xl mx-auto px-4">
           <h2 className="text-3xl md:text-4xl font-bold text-center text-gray-800 mb-12">
-            How does FixMe work?
+            {content["how_it_works_title"]}
           </h2>
 
           <div className="grid md:grid-cols-3 gap-8">
@@ -161,7 +180,7 @@ export default async function Home() {
       <section className="bg-white py-16 md:py-24">
         <div className="max-w-7xl mx-auto px-4">
           <h2 className="text-3xl md:text-4xl font-bold text-center text-gray-800 mb-12">
-            What needs fixing?
+            {content["categories_title"]}
           </h2>
 
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
