@@ -350,7 +350,6 @@ export default function DisputeDetail({ disputeId, isAdmin }: DisputeDetailProps
                   )}
                   <div>
                     <p className="font-medium text-gray-800 group-hover:text-primary transition-colors">{dispute.job.customer.name}</p>
-                    <p className="text-sm text-gray-500">{dispute.job.customer.email}</p>
                   </div>
                 </Link>
               </div>
@@ -371,7 +370,6 @@ export default function DisputeDetail({ disputeId, isAdmin }: DisputeDetailProps
                   )}
                   <div>
                     <p className="font-medium text-gray-800 group-hover:text-primary transition-colors">{dispute.job.fixer.name}</p>
-                    <p className="text-sm text-gray-500">{dispute.job.fixer.email}</p>
                   </div>
                 </Link>
               </div>

@@ -101,6 +101,10 @@ export async function POST(
       const job = dispute.job;
       const payment = job.payments && job.payments.length > 0 ? job.payments[0] : null;
 
+      // If job was already COMPLETED before the dispute, fixer stats were already
+      // credited by the complete route. Only adjust stats if not already credited.
+      const wasAlreadyCompleted = !!job.completedAt;
+
       if (resolution === "REFUNDED") {
         await tx.job.update({
           where: { id: job.id },
@@ -111,6 +115,17 @@ export async function POST(
           await tx.payment.update({
             where: { id: payment.id },
             data: { status: "REFUNDED" },
+          });
+        }
+
+        // If job was already completed, reverse the fixer stats
+        if (wasAlreadyCompleted) {
+          await tx.fixerProfile.updateMany({
+            where: { userId: job.fixerId },
+            data: {
+              totalJobs: { decrement: 1 },
+              totalEarnings: { decrement: payment?.fixerPayout || job.agreedPrice * 0.85 },
+            },
           });
         }
       } else if (resolution === "PARTIAL_REFUND") {
@@ -131,13 +146,24 @@ export async function POST(
             },
           });
 
-          await tx.fixerProfile.updateMany({
-            where: { userId: job.fixerId },
-            data: {
-              totalJobs: { increment: 1 },
-              totalEarnings: { increment: remainingPayout },
-            },
-          });
+          if (wasAlreadyCompleted) {
+            // Adjust earnings down by the refund amount (stats already credited)
+            await tx.fixerProfile.updateMany({
+              where: { userId: job.fixerId },
+              data: {
+                totalEarnings: { decrement: refundAmount },
+              },
+            });
+          } else {
+            // First time crediting stats
+            await tx.fixerProfile.updateMany({
+              where: { userId: job.fixerId },
+              data: {
+                totalJobs: { increment: 1 },
+                totalEarnings: { increment: remainingPayout },
+              },
+            });
+          }
         }
       } else if (resolution === "RELEASED") {
         await tx.job.update({
@@ -152,13 +178,16 @@ export async function POST(
           });
         }
 
-        await tx.fixerProfile.updateMany({
-          where: { userId: job.fixerId },
-          data: {
-            totalJobs: { increment: 1 },
-            totalEarnings: { increment: payment?.fixerPayout || job.agreedPrice * 0.85 },
-          },
-        });
+        // Only credit stats if not already done at completion
+        if (!wasAlreadyCompleted) {
+          await tx.fixerProfile.updateMany({
+            where: { userId: job.fixerId },
+            data: {
+              totalJobs: { increment: 1 },
+              totalEarnings: { increment: payment?.fixerPayout || job.agreedPrice * 0.85 },
+            },
+          });
+        }
       }
 
       return updatedDispute;

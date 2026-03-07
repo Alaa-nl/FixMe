@@ -90,12 +90,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Process evidence photos (placeholder - would normally upload to cloud storage)
+    // Validate evidence photo URLs (already uploaded via /api/upload)
     let photoUrls: string[] = [];
     if (evidencePhotos && Array.isArray(evidencePhotos) && evidencePhotos.length > 0) {
-      // In a real app, we'd upload to cloud storage here
-      // For now, we'll just use placeholder URLs
-      photoUrls = evidencePhotos.map((_, index) => `/uploads/dispute-${jobId}-${index}.jpg`);
+      photoUrls = evidencePhotos
+        .filter((url: unknown): url is string => typeof url === "string" && url.startsWith("/uploads/"))
+        .slice(0, 5);
     }
 
     // Create dispute using transaction

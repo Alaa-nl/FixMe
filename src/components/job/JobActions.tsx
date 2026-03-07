@@ -143,12 +143,12 @@ export default function JobActions({
               >
                 {isLoading ? "Processing..." : "✅ Confirm job completed"}
               </button>
-              <Link
-                href="#"
+              <a
+                href="#dispute-section"
                 className="block text-center text-sm text-red-600 hover:underline"
               >
                 ⚠️ Open dispute
-              </Link>
+              </a>
             </>
           )}
 

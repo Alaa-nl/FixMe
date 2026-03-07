@@ -24,16 +24,6 @@ export async function POST(req: NextRequest) {
 
     // Parse request body
     const body = await req.json();
-    console.log("📝 Received repair request data:", {
-      title: body.title,
-      categoryId: body.categoryId,
-      city: body.city,
-      timeline: body.timeline,
-      mobility: body.mobility,
-      photosCount: body.photos?.length,
-      hasDiagnosis: !!body.aiDiagnosis,
-    });
-
     // Validate required fields
     const {
       title,
@@ -144,8 +134,6 @@ export async function POST(req: NextRequest) {
         },
       },
     });
-
-    console.log("✅ Repair request created successfully:", repairRequest.id);
 
     return NextResponse.json(repairRequest, { status: 201 });
   } catch (error) {

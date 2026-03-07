@@ -67,9 +67,13 @@ export async function POST(request: NextRequest) {
 
       filename = `${randomUUID()}.webp`;
     } else {
-      // Videos: keep original format
+      // Videos: keep original format, derive extension from MIME type
       outputBuffer = rawBuffer;
-      const extension = file.name.split(".").pop() || "mp4";
+      const videoMimeToExt: Record<string, string> = {
+        "video/mp4": "mp4",
+        "video/quicktime": "mov",
+      };
+      const extension = videoMimeToExt[file.type] || "mp4";
       filename = `${randomUUID()}.${extension}`;
     }
 

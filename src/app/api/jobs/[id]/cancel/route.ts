@@ -67,9 +67,21 @@ export async function POST(
         },
       });
 
-      // Update offer status back to PENDING
+      // Reset the accepted offer back to PENDING
       await tx.offer.update({
         where: { id: job.offerId },
+        data: {
+          status: "PENDING",
+        },
+      });
+
+      // Also reset competing offers that were REJECTED when this offer was accepted
+      await tx.offer.updateMany({
+        where: {
+          repairRequestId: job.repairRequestId,
+          id: { not: job.offerId },
+          status: "REJECTED",
+        },
         data: {
           status: "PENDING",
         },

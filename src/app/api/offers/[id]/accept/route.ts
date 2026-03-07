@@ -48,20 +48,8 @@ export async function POST(
       return NextResponse.json({ error: "Offer not found" }, { status: 404 });
     }
 
-    // Debug logging
-    console.log("🔍 Accept offer attempt:", {
-      offerId,
-      requestId: offer.repairRequestId,
-      currentUserId: session.user.id,
-      requestOwnerId: offer.repairRequest.customerId,
-      requestStatus: offer.repairRequest.status,
-      requestStatusType: typeof offer.repairRequest.status,
-      offerStatus: offer.status,
-    });
-
     // Verify the user is the request owner
     if (offer.repairRequest.customerId !== session.user.id) {
-      console.log("❌ Authorization failed: User is not request owner");
       return NextResponse.json(
         { error: "Only the request owner can accept offers" },
         { status: 403 }
@@ -70,11 +58,6 @@ export async function POST(
 
     // Verify the repair request is still open
     if (offer.repairRequest.status !== "OPEN") {
-      console.log("❌ Status check failed:", {
-        actualStatus: offer.repairRequest.status,
-        expectedStatus: "OPEN",
-        comparison: offer.repairRequest.status === "OPEN",
-      });
       return NextResponse.json(
         {
           error: "This repair request is no longer accepting offers",
@@ -86,8 +69,6 @@ export async function POST(
         { status: 400 }
       );
     }
-
-    console.log("✅ All checks passed, proceeding with acceptance...");
 
     // Calculate platform fee and fixer payout
     const agreedPrice = offer.price;

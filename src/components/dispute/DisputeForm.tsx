@@ -75,9 +75,18 @@ export default function DisputeForm({ jobId }: DisputeFormProps) {
     setIsSubmitting(true);
 
     try {
-      // In a real app, we'd upload photos to cloud storage first
-      // For now, we'll just pass placeholder URLs
-      const evidencePhotos = photos.map((_, index) => `/uploads/dispute-${jobId}-${index}.jpg`);
+      // Upload photos first
+      const evidencePhotos: string[] = [];
+      for (const photo of photos) {
+        const formData = new FormData();
+        formData.append("file", photo);
+        const uploadRes = await fetch("/api/upload", { method: "POST", body: formData });
+        if (!uploadRes.ok) {
+          throw new Error("Failed to upload evidence photo");
+        }
+        const uploadData = await uploadRes.json();
+        evidencePhotos.push(uploadData.url);
+      }
 
       const response = await fetch("/api/disputes", {
         method: "POST",
@@ -107,7 +116,7 @@ export default function DisputeForm({ jobId }: DisputeFormProps) {
   };
 
   return (
-    <div className="bg-white rounded-xl border-t-4 border-red-500 p-6 shadow-sm">
+    <div id="dispute-section" className="bg-white rounded-xl border-t-4 border-red-500 p-6 shadow-sm">
       <h2 className="text-2xl font-bold text-gray-800 mb-2">
         ⚠️ Open a dispute
       </h2>
