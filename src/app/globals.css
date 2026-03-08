@@ -123,3 +123,14 @@ body {
   --sidebar-border: oklch(0.30 0.02 30);
   --sidebar-ring: oklch(0.68 0.20 45);
 }
+
+/* Custom animations */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}

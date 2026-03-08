@@ -2,11 +2,12 @@
 
 import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { timeAgo } from "@/lib/utils";
 import RequestCard from "@/components/request/RequestCard";
 import DisputeCard from "@/components/dispute/DisputeCard";
-import { AlertTriangle } from "lucide-react";
+import { AlertTriangle, Package } from "lucide-react";
 
 interface DashboardData {
   nearbyRequests: any[];
@@ -22,21 +23,59 @@ interface DashboardData {
   };
 }
 
+interface CustomerDashboardData {
+  activeRequests: any[];
+  activeJobs: any[];
+}
+
 export default function FixerDashboard() {
   const { data: session } = useSession();
+  const router = useRouter();
   const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
+  const [customerData, setCustomerData] = useState<CustomerDashboardData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [profileChecked, setProfileChecked] = useState(false);
+
+  // Check if fixer has completed their profile — redirect to setup if not
+  useEffect(() => {
+    if (session?.user?.userType === "FIXER") {
+      fetch("/api/users/me")
+        .then((res) => res.json())
+        .then((data) => {
+          if (!data.user?.fixerProfile) {
+            router.push("/become-fixer?setup=true");
+          } else {
+            setProfileChecked(true);
+          }
+        })
+        .catch(() => setProfileChecked(true));
+    } else {
+      setProfileChecked(true);
+    }
+  }, [session, router]);
 
   useEffect(() => {
-    fetchDashboardData();
-  }, []);
+    if (profileChecked) {
+      fetchDashboardData();
+    }
+  }, [profileChecked]);
 
   const fetchDashboardData = async () => {
     try {
-      const res = await fetch("/api/dashboard/fixer");
-      if (res.ok) {
-        const data = await res.json();
+      // Fetch both fixer and customer dashboard data in parallel
+      const [fixerRes, customerRes] = await Promise.all([
+        fetch("/api/dashboard/fixer"),
+        fetch("/api/dashboard/customer"),
+      ]);
+
+      if (fixerRes.ok) {
+        const data = await fixerRes.json();
         setDashboardData(data);
+      }
+
+      if (customerRes.ok) {
+        const data = await customerRes.json();
+        setCustomerData(data);
       }
     } catch (error) {
       console.error("Error fetching dashboard data:", error);
@@ -289,6 +328,66 @@ export default function FixerDashboard() {
           </div>
         </div>
       )}
+
+      {/* My Repair Requests (customer-side — fixers can post requests too) */}
+      {customerData &&
+        ((customerData.activeRequests?.length > 0) ||
+          (customerData.activeJobs?.length > 0)) && (
+          <div className="pt-6 border-t border-gray-200">
+            <div className="flex items-center gap-2 mb-4">
+              <Package className="w-5 h-5 text-gray-600" />
+              <h2 className="text-2xl font-bold text-gray-800">My repair requests</h2>
+            </div>
+            <p className="text-sm text-gray-500 mb-4">
+              Repairs you&apos;ve requested as a customer
+            </p>
+
+            {customerData.activeRequests?.length > 0 && (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
+                {customerData.activeRequests.map((request: any) => (
+                  <RequestCard key={request.id} request={request} />
+                ))}
+              </div>
+            )}
+
+            {customerData.activeJobs?.length > 0 && (
+              <div className="space-y-3">
+                {customerData.activeJobs.map((job: any) => (
+                  <Link
+                    key={job.id}
+                    href={`/jobs/${job.id}`}
+                    className="block bg-white rounded-xl border border-gray-200 p-4 hover:shadow-md transition-shadow"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h3 className="font-medium text-gray-800">{job.repairRequest?.title}</h3>
+                        <p className="text-sm text-gray-500">
+                          Fixer: {job.fixer?.name || "Assigned"}
+                        </p>
+                        <span
+                          className={`mt-1 inline-block px-3 py-1 rounded-full text-xs font-semibold border ${getStatusBadge(
+                            job.status
+                          )}`}
+                        >
+                          {job.status.replace("_", " ")}
+                        </span>
+                      </div>
+                      <div className="text-right">
+                        <div className="font-semibold text-primary">€{job.agreedPrice}</div>
+                      </div>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            )}
+
+            <div className="mt-4 text-center">
+              <Link href="/post" className="text-primary font-medium hover:underline">
+                Post a new repair request →
+              </Link>
+            </div>
+          </div>
+        )}
     </div>
   );
 }

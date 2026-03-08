@@ -49,6 +49,7 @@ export async function PATCH(req: NextRequest) {
       avatarUrl,
       // Fixer-specific fields
       kvkNumber,
+      btwNumber,
       bio,
       skills,
       serviceRadiusKm,
@@ -77,6 +78,15 @@ export async function PATCH(req: NextRequest) {
       if (!/^\d{8}$/.test(kvkNumber)) {
         return NextResponse.json(
           { error: "KVK number must be 8 digits" },
+          { status: 400 }
+        );
+      }
+    }
+
+    if (btwNumber !== undefined && btwNumber !== null && btwNumber !== "") {
+      if (!/^NL\d{9}B\d{2}$/.test(btwNumber)) {
+        return NextResponse.json(
+          { error: "BTW number must be in format NL123456789B01" },
           { status: 400 }
         );
       }
@@ -147,6 +157,7 @@ export async function PATCH(req: NextRequest) {
     if (updatedUser.userType === "FIXER" && updatedUser.fixerProfile) {
       const fixerUpdateData: any = {};
       if (kvkNumber !== undefined) fixerUpdateData.kvkNumber = kvkNumber || null;
+      if (btwNumber !== undefined) fixerUpdateData.btwNumber = btwNumber || null;
       if (bio !== undefined) fixerUpdateData.bio = bio || null;
       if (skills !== undefined) fixerUpdateData.skills = skills;
       if (serviceRadiusKm !== undefined) fixerUpdateData.serviceRadiusKm = serviceRadiusKm;

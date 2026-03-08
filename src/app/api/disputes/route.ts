@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { notifyAndEmail } from "@/lib/notifications";
+import { getPlatformSettings } from "@/lib/platformSettings";
 
 export async function POST(request: NextRequest) {
   try {
@@ -55,7 +56,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Validate job status (IN_PROGRESS or COMPLETED within 48 hours)
+    // Validate job status (IN_PROGRESS or COMPLETED within dispute window)
     if (job.status !== "IN_PROGRESS" && job.status !== "COMPLETED") {
       return NextResponse.json(
         { error: "Can only dispute jobs that are in progress or completed" },
@@ -63,12 +64,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // If completed, check it's within 48 hours
+    // If completed, check it's within the dispute window
+    const settings = await getPlatformSettings();
+    const disputeWindowHours = settings.disputeWindowHours;
     if (job.status === "COMPLETED" && job.completedAt) {
       const hoursSinceCompletion = (Date.now() - new Date(job.completedAt).getTime()) / (1000 * 60 * 60);
-      if (hoursSinceCompletion > 48) {
+      if (hoursSinceCompletion > disputeWindowHours) {
         return NextResponse.json(
-          { error: "Disputes can only be opened within 48 hours of job completion" },
+          { error: `Disputes can only be opened within ${disputeWindowHours} hours of job completion` },
           { status: 400 }
         );
       }
@@ -168,7 +171,7 @@ export async function POST(request: NextRequest) {
         job.fixerId,
         "DISPUTE_OPENED",
         "A dispute was opened",
-        `${session.user.name} opened a dispute on "${job.repairRequest.title}". You have 48 hours to respond.`,
+        `${session.user.name} opened a dispute on "${job.repairRequest.title}". You have ${disputeWindowHours} hours to respond.`,
         result.id
       );
     } catch (notifError) {

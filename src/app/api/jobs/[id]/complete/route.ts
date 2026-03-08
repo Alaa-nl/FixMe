@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
-import { notifyAndEmail } from "@/lib/notifications";
+import { getPlatformSettings } from "@/lib/platformSettings";
+import { notifyAndEmail, sendInvoiceEmail } from "@/lib/notifications";
+import { generateServiceInvoice, generateCommissionInvoice } from "@/lib/invoice";
 
 export async function POST(
   request: NextRequest,
@@ -128,6 +130,72 @@ export async function POST(
       );
     } catch (notifError) {
       console.error("Failed to send notification:", notifError);
+    }
+
+    // Auto-generate and email invoices
+    try {
+      // Refetch job with all relations needed for invoice generation
+      const fullJob = await prisma.job.findUnique({
+        where: { id },
+        include: {
+          repairRequest: {
+            select: {
+              title: true,
+              description: true,
+              city: true,
+              category: { select: { name: true } },
+            },
+          },
+          customer: { select: { id: true, name: true, email: true } },
+          fixer: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              fixerProfile: {
+                select: { kvkNumber: true, btwNumber: true },
+              },
+            },
+          },
+          payments: { take: 1 },
+        },
+      });
+
+      if (fullJob) {
+        // Fetch VAT rate from platform settings
+        const settings = await getPlatformSettings();
+        const vatRate = settings.repairVatRate;
+
+        // 1. Generate service invoice (fixer → customer) and email to customer
+        const serviceInvoicePdf = await generateServiceInvoice(fullJob, vatRate);
+        const invoiceNumber = `INV-${id.substring(0, 8).toUpperCase()}`;
+
+        await sendInvoiceEmail(
+          fullJob.customer.email,
+          `Invoice for your repair: ${fullJob.repairRequest.title}`,
+          serviceInvoicePdf,
+          `FixMe-Invoice-${invoiceNumber}.pdf`
+        );
+
+        // 2. Generate commission invoice (FixMe → fixer) and email to fixer
+        const payment = fullJob.payments[0];
+        const platformFee = payment?.platformFee ?? fullJob.agreedPrice * 0.15;
+
+        if (platformFee > 0) {
+          const commissionPdf = await generateCommissionInvoice(fullJob, vatRate);
+          const commInvoiceNumber = `COMM-${id.substring(0, 8).toUpperCase()}`;
+
+          await sendInvoiceEmail(
+            fullJob.fixer.email,
+            `FixMe platform commission invoice: ${fullJob.repairRequest.title}`,
+            commissionPdf,
+            `FixMe-Commission-${commInvoiceNumber}.pdf`
+          );
+        }
+      }
+    } catch (invoiceError) {
+      // Don't fail the completion — invoice generation is non-critical
+      console.error("Failed to generate/send invoices:", invoiceError);
     }
 
     return NextResponse.json(

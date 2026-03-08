@@ -126,6 +126,16 @@ export async function PATCH(req: NextRequest) {
       );
     }
 
+    if (
+      body.repairVatRate !== undefined &&
+      (body.repairVatRate < 0 || body.repairVatRate > 25)
+    ) {
+      return NextResponse.json(
+        { error: "Repair VAT rate must be between 0 and 25%" },
+        { status: 400 }
+      );
+    }
+
     if (body.reviewEditDays !== undefined && body.reviewEditDays < 0) {
       return NextResponse.json(
         { error: "Review edit days cannot be negative" },
@@ -172,6 +182,8 @@ export async function PATCH(req: NextRequest) {
       updateData.maxOffersPerRequest = body.maxOffersPerRequest;
     if (body.disputeWindowHours !== undefined)
       updateData.disputeWindowHours = body.disputeWindowHours;
+    if (body.repairVatRate !== undefined)
+      updateData.repairVatRate = body.repairVatRate;
     if (body.reviewEditDays !== undefined)
       updateData.reviewEditDays = body.reviewEditDays;
     if (body.accountDeletionDays !== undefined)

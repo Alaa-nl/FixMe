@@ -6,6 +6,7 @@ import Button from "@/components/ui/button";
 
 interface DisputeFormProps {
   jobId: string;
+  disputeWindowHours?: number;
 }
 
 const COMMON_REASONS = [
@@ -16,7 +17,7 @@ const COMMON_REASONS = [
   "Other issue",
 ];
 
-export default function DisputeForm({ jobId }: DisputeFormProps) {
+export default function DisputeForm({ jobId, disputeWindowHours = 72 }: DisputeFormProps) {
   const router = useRouter();
   const [selectedReason, setSelectedReason] = useState<string>("");
   const [description, setDescription] = useState("");
@@ -225,7 +226,7 @@ export default function DisputeForm({ jobId }: DisputeFormProps) {
             <span className="text-sm text-gray-700">
               I confirm that the information above is accurate and that I have attempted
               to resolve this issue with the fixer directly. I understand that opening
-              a dispute will put the payment on hold. The fixer will have 48 hours to respond.
+              a dispute will put the payment on hold. The fixer will have {disputeWindowHours} hours to respond.
             </span>
           </label>
         </div>

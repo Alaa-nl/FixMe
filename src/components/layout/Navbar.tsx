@@ -4,7 +4,7 @@ import { useSession, signOut } from "next-auth/react";
 import Link from "next/link";
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { Search, MessageCircle, Bell, User, LogOut, ChevronDown } from "lucide-react";
+import { Search, MessageCircle, Bell, User, LogOut, ChevronDown, Wrench } from "lucide-react";
 import Button from "@/components/ui/button";
 import NotificationBell from "@/components/layout/NotificationBell";
 
@@ -184,6 +184,17 @@ export default function Navbar() {
                     >
                       Settings
                     </Link>
+
+                    {session.user?.userType === "CUSTOMER" && (
+                      <Link
+                        href="/become-fixer"
+                        className="flex items-center gap-2 px-4 py-2 text-primary font-medium hover:bg-orange-50 transition-colors"
+                        onClick={() => setDropdownOpen(false)}
+                      >
+                        <Wrench className="w-4 h-4" />
+                        Become a Fixer
+                      </Link>
+                    )}
 
                     <div className="border-t border-gray-200 my-2"></div>
 

@@ -13,7 +13,7 @@ A comprehensive platform settings management system that gives admins complete c
 - ✅ Live preview showing platform fee vs fixer payout
 - ✅ Minimum job fee (default €0)
 - ✅ Maximum job fee (optional cap)
-- ✅ Auto-release timeout in hours (default 48)
+- ✅ Auto-release timeout in hours (default 72)
 - ✅ Changes apply to NEW jobs only
 
 ### 2. **Platform Rules**
@@ -91,13 +91,13 @@ model PlatformSettings {
   commissionPercentage  Float    @default(15)
   minJobFee             Float    @default(0)
   maxJobFee             Float?
-  autoReleaseHours      Int      @default(48)
+  autoReleaseHours      Int      @default(72)
 
   // Platform Rules
   maxPhotosPerRequest   Int      @default(5)
   maxVideoSeconds       Int      @default(60)
   maxOffersPerRequest   Int      @default(20)
-  disputeWindowHours    Int      @default(48)
+  disputeWindowHours    Int      @default(72)
   reviewEditDays        Int      @default(7)
   accountDeletionDays   Int      @default(30)
   requireKvk            Boolean  @default(true)
@@ -198,7 +198,7 @@ Show message for unavailable cities:
 
 **Offer and Dispute Rules:**
 - **Max Offers Per Request**: Prevents spam (default 20)
-- **Dispute Window**: 24-168 hours after completion (default 48)
+- **Dispute Window**: 24-168 hours after completion (default 72)
 
 **Time Windows:**
 - **Review Edit Window**: Days users can edit reviews (default 7)
@@ -246,11 +246,11 @@ Get current platform settings
     "commissionPercentage": 15,
     "minJobFee": 0,
     "maxJobFee": null,
-    "autoReleaseHours": 48,
+    "autoReleaseHours": 72,
     "maxPhotosPerRequest": 5,
     "maxVideoSeconds": 60,
     "maxOffersPerRequest": 20,
-    "disputeWindowHours": 48,
+    "disputeWindowHours": 72,
     "reviewEditDays": 7,
     "accountDeletionDays": 30,
     "requireKvk": true,
@@ -414,7 +414,7 @@ if (await isCityActive(userCity)) {
 Get payment auto-release hours
 
 ```typescript
-const hours = await getAutoReleaseHours(); // 48
+const hours = await getAutoReleaseHours(); // 72
 const releaseTime = new Date(Date.now() + hours * 60 * 60 * 1000);
 ```
 
@@ -478,7 +478,7 @@ if (photos.length > maxPhotos) { // ✅
 
 **Before (hardcoded auto-release):**
 ```typescript
-const releaseAt = new Date(Date.now() + 48 * 60 * 60 * 1000); // ❌ Hardcoded 48 hours
+const releaseAt = new Date(Date.now() + 72 * 60 * 60 * 1000); // ❌ Hardcoded 72 hours
 ```
 
 **After (dynamic):**
@@ -774,7 +774,7 @@ console.log(`Admin ${session.user.id} updated platform settings`, {
 │ [0                ]    │ [Unlimited        ]    │
 │                                                  │
 │ Auto-Release Payment (Hours After Completion)   │
-│ [48                                        ]    │
+│ [72                                        ]    │
 └─────────────────────────────────────────────────┘
 ```
 
@@ -787,7 +787,7 @@ console.log(`Admin ${session.user.id} updated platform settings`, {
 │ [5             ]   │ [60                  ]     │
 │                                                  │
 │ Max Offers         │ Dispute Window (Hours)     │
-│ [20            ]   │ [48                  ]     │
+│ [20            ]   │ [72                  ]     │
 │                                                  │
 │ ☑️ Require KVK for Fixers             [ON ]     │
 │ ☑️ Allow Unverified Fixers            [ON ]     │

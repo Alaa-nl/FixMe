@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { notifyAndEmail } from "@/lib/notifications";
+import { getPlatformSettings } from "@/lib/platformSettings";
 
 /**
  * POST /api/disputes/escalate
- * Auto-escalate PENDING disputes older than 48 hours.
+ * Auto-escalate PENDING disputes older than the configured dispute window.
  * Can be called by a cron job or checked on page load.
  */
 export async function POST(request: NextRequest) {
@@ -19,9 +20,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const cutoff = new Date(Date.now() - 48 * 60 * 60 * 1000);
+    const settings = await getPlatformSettings();
+    const windowHours = settings.disputeWindowHours;
+    const cutoff = new Date(Date.now() - windowHours * 60 * 60 * 1000);
 
-    // Find PENDING disputes older than 48 hours
+    // Find PENDING disputes older than the dispute window
     const expiredDisputes = await prisma.dispute.findMany({
       where: {
         resolution: "PENDING",
@@ -68,7 +71,7 @@ export async function POST(request: NextRequest) {
           dispute.job.customerId,
           "DISPUTE_ESCALATED",
           "Dispute escalated to admin",
-          `The fixer did not respond to your dispute for "${title}" within 48 hours. It has been escalated to our team.`,
+          `The fixer did not respond to your dispute for "${title}" within ${windowHours} hours. It has been escalated to our team.`,
           dispute.id
         );
 
@@ -76,7 +79,7 @@ export async function POST(request: NextRequest) {
           dispute.job.fixerId,
           "DISPUTE_ESCALATED",
           "Dispute escalated to admin",
-          `You did not respond to the dispute for "${title}" within 48 hours. It has been escalated to admin review.`,
+          `You did not respond to the dispute for "${title}" within ${windowHours} hours. It has been escalated to admin review.`,
           dispute.id
         );
       } catch (e) {

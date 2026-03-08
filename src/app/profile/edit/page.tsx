@@ -25,6 +25,7 @@ export default function EditProfilePage() {
 
   // Fixer-specific state
   const [kvkNumber, setKvkNumber] = useState("");
+  const [btwNumber, setBtwNumber] = useState("");
   const [bio, setBio] = useState("");
   const [skills, setSkills] = useState<string[]>([]);
   const [serviceRadiusKm, setServiceRadiusKm] = useState(10);
@@ -58,6 +59,7 @@ export default function EditProfilePage() {
         if (data.user.userType === "FIXER" && data.user.fixerProfile) {
           const profile = data.user.fixerProfile;
           setKvkNumber(profile.kvkNumber || "");
+          setBtwNumber(profile.btwNumber || "");
           setBio(profile.bio || "");
           setSkills(profile.skills || []);
           setServiceRadiusKm(profile.serviceRadiusKm || 10);
@@ -136,6 +138,7 @@ export default function EditProfilePage() {
 
       if (user?.userType === "FIXER") {
         updateData.kvkNumber = kvkNumber;
+        updateData.btwNumber = btwNumber;
         updateData.bio = bio;
         updateData.skills = skills;
         updateData.serviceRadiusKm = serviceRadiusKm;
@@ -308,6 +311,28 @@ export default function EditProfilePage() {
                 </div>
                 {!user?.fixerProfile?.kvkVerified && kvkNumber && (
                   <p className="text-xs text-yellow-600 mt-1">Pending verification</p>
+                )}
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  BTW Number (VAT)
+                </label>
+                <input
+                  type="text"
+                  value={btwNumber}
+                  onChange={(e) => setBtwNumber(e.target.value.toUpperCase())}
+                  placeholder="NL123456789B01"
+                  maxLength={14}
+                  className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Your VAT identification number. Required for invoicing completed repairs.
+                </p>
+                {btwNumber && !/^NL\d{9}B\d{2}$/.test(btwNumber) && (
+                  <p className="text-xs text-red-500 mt-1">
+                    BTW number must be in format NL123456789B01
+                  </p>
                 )}
               </div>
 

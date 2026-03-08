@@ -1,12 +1,15 @@
 import Link from "next/link";
 import type { Metadata } from "next";
+import { getPlatformSettings } from "@/lib/platformSettings";
 
 export const metadata: Metadata = {
   title: "Terms & Conditions",
   description: "Read FixMe's terms and conditions for using our repair marketplace platform. Learn about user responsibilities, payments, disputes, and more.",
 };
 
-export default function TermsPage() {
+export default async function TermsPage() {
+  const settings = await getPlatformSettings();
+  const disputeHours = settings.disputeWindowHours;
   return (
     <div className="min-h-screen bg-gray-50 py-12">
       <div className="max-w-4xl mx-auto px-4">
@@ -86,7 +89,7 @@ export default function TermsPage() {
                 Fixer
               </li>
               <li>
-                Confirm completion of work within 48 hours, or open a dispute
+                Confirm completion of work within {disputeHours} hours, or open a dispute
                 if needed
               </li>
               <li>Not post illegal, stolen, or prohibited items</li>
@@ -151,7 +154,7 @@ export default function TermsPage() {
             </p>
             <p className="text-gray-700 leading-relaxed mb-4">
               <strong>Automatic Release:</strong> If the customer does not
-              confirm or dispute within 48 hours of the Fixer marking the job as
+              confirm or dispute within {disputeHours} hours of the Fixer marking the job as
               complete, payment is automatically released to the Fixer.
             </p>
             <p className="text-gray-700 leading-relaxed">
@@ -195,7 +198,7 @@ export default function TermsPage() {
               7. Disputes
             </h2>
             <p className="text-gray-700 leading-relaxed mb-4">
-              If you're unhappy with a repair, you have 48 hours after the
+              If you&apos;re unhappy with a repair, you have {disputeHours} hours after the
               Fixer marks the job as complete to open a dispute.
             </p>
             <p className="text-gray-700 leading-relaxed mb-4">

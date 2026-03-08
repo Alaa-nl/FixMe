@@ -63,6 +63,7 @@ export default function PlatformSettingsForm({
     settings.allowUnverifiedFixers
   );
   const [minFixerRating, setMinFixerRating] = useState(settings.minFixerRating);
+  const [repairVatRate, setRepairVatRate] = useState(settings.repairVatRate);
 
   // Active Cities
   const [activeCities, setActiveCities] = useState<string[]>(
@@ -134,6 +135,7 @@ export default function PlatformSettingsForm({
           maxVideoSeconds,
           maxOffersPerRequest,
           disputeWindowHours,
+          repairVatRate,
           reviewEditDays,
           accountDeletionDays,
           requireKvk,
@@ -258,6 +260,29 @@ export default function PlatformSettingsForm({
               Payment automatically released to fixer after this period
             </p>
           </div>
+
+          {/* Repair VAT Rate */}
+          <div>
+            <Label htmlFor="repairVatRate">
+              Repair VAT Rate (%, 0-25)
+            </Label>
+            <Input
+              id="repairVatRate"
+              type="number"
+              min="0"
+              max="25"
+              step="0.1"
+              value={repairVatRate}
+              onChange={(e) => setRepairVatRate(parseFloat(e.target.value))}
+              disabled={!canEdit}
+              className="mt-1"
+            />
+            <p className="text-xs text-gray-500 mt-1">
+              VAT percentage applied to repair services. In the Netherlands most
+              repairs qualify for the 9% reduced rate. Update this per country
+              when expanding to other EU markets.
+            </p>
+          </div>
         </div>
       </div>
 
@@ -340,6 +365,10 @@ export default function PlatformSettingsForm({
                 disabled={!canEdit}
                 className="mt-1"
               />
+              <p className="text-xs text-gray-500 mt-1">
+                How long customers have to open a dispute after a job is marked
+                complete. Also controls the auto-release of payment to the fixer.
+              </p>
             </div>
           </div>
 

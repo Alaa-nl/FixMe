@@ -14,10 +14,10 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Only customers can create repair requests
-    if (session.user.userType !== "CUSTOMER") {
+    // Customers and fixers can create repair requests (FIXER is a superset of CUSTOMER)
+    if (session.user.userType !== "CUSTOMER" && session.user.userType !== "FIXER") {
       return NextResponse.json(
-        { error: "Only customers can create repair requests" },
+        { error: "Only customers and fixers can create repair requests" },
         { status: 403 }
       );
     }
@@ -176,10 +176,15 @@ export async function GET(req: NextRequest) {
     // Build where clause
     const where: any = {};
 
-    // If customer, only show their requests
-    // If fixer, show all open requests or their accepted jobs
+    // If customer, only show their own requests
+    // If fixer, show all open requests (browse) — unless ?mine=true to see their own posted requests
     if (session.user.userType === "CUSTOMER") {
       where.customerId = session.user.id;
+    } else if (session.user.userType === "FIXER") {
+      const mine = searchParams.get("mine");
+      if (mine === "true") {
+        where.customerId = session.user.id;
+      }
     }
 
     if (status) {

@@ -43,14 +43,15 @@ interface DisputeCardProps {
   };
   isAdmin?: boolean;
   currentUserId?: string;
+  disputeWindowHours?: number;
 }
 
-export default function DisputeCard({ dispute, isAdmin, currentUserId }: DisputeCardProps) {
+export default function DisputeCard({ dispute, isAdmin, currentUserId, disputeWindowHours = 72 }: DisputeCardProps) {
   const [showFullReason, setShowFullReason] = useState(false);
 
   // Compute countdown for PENDING disputes
   const hoursElapsed = (Date.now() - new Date(dispute.createdAt).getTime()) / (1000 * 60 * 60);
-  const hoursRemaining = Math.max(0, 48 - hoursElapsed);
+  const hoursRemaining = Math.max(0, disputeWindowHours - hoursElapsed);
   const isPending = dispute.resolution === "PENDING";
 
   const isFixer = currentUserId === dispute.job.fixer.id;

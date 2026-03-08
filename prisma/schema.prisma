@@ -159,6 +159,7 @@ model FixerProfile {
   userId          String   @unique
   kvkNumber       String?
   kvkVerified     Boolean  @default(false)
+  btwNumber       String?
   bio             String?  @db.Text
   skills          String[]
   serviceRadiusKm Int      @default(10)
@@ -262,8 +263,10 @@ model Job {
   status          JobStatus  @default(SCHEDULED)
   scheduledAt     DateTime?
   startedAt       DateTime?
-  completedAt     DateTime?
-  createdAt       DateTime   @default(now())
+  completedAt       DateTime?
+  reminder24hSentAt DateTime?
+  reminder1hSentAt  DateTime?
+  createdAt         DateTime   @default(now())
 
   // Relations
   repairRequest RepairRequest @relation(fields: [repairRequestId], references: [id])
@@ -279,6 +282,7 @@ model Job {
   @@index([customerId])
   @@index([fixerId])
   @@index([status])
+  @@index([status, scheduledAt])
   @@index([createdAt])
 }
 
@@ -459,18 +463,19 @@ model PlatformSettings {
   commissionPercentage  Float    @default(15)
   minJobFee             Float    @default(0)
   maxJobFee             Float?
-  autoReleaseHours      Int      @default(48)
+  autoReleaseHours      Int      @default(72)
   maxPhotosPerRequest   Int      @default(5)
   maxVideoSeconds       Int      @default(60)
   maxOffersPerRequest   Int      @default(20)
-  disputeWindowHours    Int      @default(48)
+  disputeWindowHours    Int      @default(72)
+  repairVatRate         Float    @default(9)
   reviewEditDays        Int      @default(7)
   accountDeletionDays   Int      @default(30)
   requireKvk            Boolean  @default(true)
   allowUnverifiedFixers Boolean  @default(true)
   minFixerRating        Float    @default(0)
   activeCities          Json     @default("[\"Amsterdam\"]")
-  notificationSettings  Json     @default("{\"welcome\":true,\"newOffer\":true,\"offerAccepted\":true,\"jobCompleted\":true,\"reviewReceived\":true,\"disputeUpdates\":true}")
+  notificationSettings  Json     @default("{\"welcome\":true,\"newOffer\":true,\"offerAccepted\":true,\"jobCompleted\":true,\"reviewReceived\":true,\"disputeUpdates\":true,\"appointmentReminder\":true}")
   updatedAt             DateTime @updatedAt
   updatedBy             String?
 }

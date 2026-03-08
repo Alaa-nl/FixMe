@@ -21,6 +21,7 @@ export interface PlatformSettings {
   maxVideoSeconds: number;
   maxOffersPerRequest: number;
   disputeWindowHours: number;
+  repairVatRate: number;
   reviewEditDays: number;
   accountDeletionDays: number;
   requireKvk: boolean;
@@ -34,6 +35,7 @@ export interface PlatformSettings {
     jobCompleted: boolean;
     reviewReceived: boolean;
     disputeUpdates: boolean;
+    appointmentReminder: boolean;
   };
   updatedAt: Date;
   updatedBy: string | null;
@@ -168,4 +170,20 @@ export async function getMaxOffersPerRequest(): Promise<number> {
 export async function meetsMinimumRating(rating: number): Promise<boolean> {
   const settings = await getPlatformSettings();
   return rating >= settings.minFixerRating;
+}
+
+/**
+ * Get repair VAT rate as a decimal (e.g., 0.09 for 9%)
+ */
+export async function getRepairVatRate(): Promise<number> {
+  const settings = await getPlatformSettings();
+  return settings.repairVatRate / 100;
+}
+
+/**
+ * Get dispute window hours
+ */
+export async function getDisputeWindowHours(): Promise<number> {
+  const settings = await getPlatformSettings();
+  return settings.disputeWindowHours;
 }

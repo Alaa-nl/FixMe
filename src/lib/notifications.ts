@@ -53,6 +53,30 @@ export async function sendEmailNotification(
 }
 
 /**
+ * Send an invoice PDF as an email attachment.
+ * TODO: Replace with actual email service (Resend/SendGrid) that supports attachments.
+ */
+export async function sendInvoiceEmail(
+  to: string,
+  subject: string,
+  pdfBuffer: Buffer,
+  filename: string
+) {
+  try {
+    // TODO: Replace with actual email service that supports PDF attachments
+    console.log("========================================");
+    console.log("INVOICE EMAIL");
+    console.log("To:", to);
+    console.log("Subject:", subject);
+    console.log("Attachment:", filename, `(${pdfBuffer.length} bytes)`);
+    console.log("========================================");
+  } catch (error) {
+    console.error("Error sending invoice email:", error);
+    // Don't throw - email failures shouldn't break the app
+  }
+}
+
+/**
  * Create notification and send email
  */
 export async function notifyAndEmail(

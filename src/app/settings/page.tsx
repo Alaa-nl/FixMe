@@ -5,8 +5,9 @@ import { useSession, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Toggle from "@/components/ui/Toggle";
 import Modal from "@/components/ui/Modal";
-import { ChevronDown, ChevronUp } from "lucide-react";
+import { ChevronDown, ChevronUp, Wrench, ArrowRight } from "lucide-react";
 import PasswordInput from "@/components/ui/password-input";
+import Link from "next/link";
 
 export default function SettingsPage() {
   const { data: session, status } = useSession();
@@ -183,6 +184,29 @@ export default function SettingsPage() {
     <div className="min-h-screen pt-20 bg-gray-50">
       <div className="max-w-3xl mx-auto px-4 py-8">
         <h1 className="text-3xl font-bold text-gray-800 mb-8">Settings</h1>
+
+        {/* Become a Fixer banner — only shown to CUSTOMER users */}
+        {user?.userType === "CUSTOMER" && (
+          <Link
+            href="/become-fixer"
+            className="group mb-6 flex items-center justify-between p-5 bg-gradient-to-r from-orange-50 via-orange-50/70 to-transparent border-2 border-orange-200/60 rounded-xl hover:border-primary/40 transition-all"
+          >
+            <div className="flex items-center gap-4">
+              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                <Wrench className="w-5 h-5 text-primary" />
+              </div>
+              <div>
+                <p className="font-bold text-gray-900">
+                  Want to earn money fixing things?
+                </p>
+                <p className="text-sm text-gray-500">
+                  Register as a fixer and start receiving repair requests nearby.
+                </p>
+              </div>
+            </div>
+            <ArrowRight className="w-5 h-5 text-primary opacity-60 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
+          </Link>
+        )}
 
         <div className="bg-white rounded-xl shadow-sm border divide-y">
           {/* SECTION: Account */}

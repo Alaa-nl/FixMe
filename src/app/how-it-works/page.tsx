@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import Button from "@/components/ui/button";
 import {
@@ -19,6 +19,18 @@ import {
 export default function HowItWorksPage() {
   const [activeTab, setActiveTab] = useState<"customers" | "fixers">("customers");
   const [openFaq, setOpenFaq] = useState<number | null>(null);
+  const [disputeHours, setDisputeHours] = useState(72);
+
+  useEffect(() => {
+    fetch("/api/admin/settings")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (data?.settings?.disputeWindowHours) {
+          setDisputeHours(data.settings.disputeWindowHours);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   const customerSteps = [
     {
@@ -83,12 +95,12 @@ export default function HowItWorksPage() {
     {
       question: "How is my payment protected?",
       answer:
-        "We use an escrow system. When you accept an offer, your payment is held safely by FixMe. The money is only released to the fixer after you confirm the repair is complete. If something goes wrong, you can open a dispute within 48 hours.",
+        `We use an escrow system. When you accept an offer, your payment is held safely by FixMe. The money is only released to the fixer after you confirm the repair is complete. If something goes wrong, you can open a dispute within ${disputeHours} hours.`,
     },
     {
       question: "What if the repair goes wrong?",
       answer:
-        "You have 48 hours after completion to open a dispute if the repair wasn't done properly or if there's damage. Our admin team reviews the case, looks at evidence from both sides, and makes a fair decision. Refunds are processed within 5-7 business days.",
+        `You have ${disputeHours} hours after completion to open a dispute if the repair wasn't done properly or if there's damage. Our admin team reviews the case, looks at evidence from both sides, and makes a fair decision. Refunds are processed within 5-7 business days.`,
     },
     {
       question: "Do I need a KVK number to be a fixer?",

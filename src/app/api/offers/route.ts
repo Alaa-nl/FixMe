@@ -21,9 +21,9 @@ export async function POST(request: NextRequest) {
       include: { fixerProfile: true },
     });
 
-    if (!user || user.userType !== "FIXER") {
+    if (!user || user.userType !== "FIXER" || !user.fixerProfile) {
       return NextResponse.json(
-        { error: "Only fixers can make offers" },
+        { error: "Only fixers with a completed profile can make offers" },
         { status: 403 }
       );
     }

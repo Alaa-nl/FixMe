@@ -19,9 +19,10 @@ export async function GET(request: NextRequest) {
       where: { id: userId },
     });
 
-    if (!user || user.userType !== "CUSTOMER") {
+    // FIXER is a superset of CUSTOMER — fixers can access their customer-side data too
+    if (!user || (user.userType !== "CUSTOMER" && user.userType !== "FIXER")) {
       return NextResponse.json(
-        { error: "Access denied. Customer account required." },
+        { error: "Access denied. Customer or fixer account required." },
         { status: 403 }
       );
     }

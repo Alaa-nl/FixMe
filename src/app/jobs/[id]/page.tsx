@@ -1,6 +1,7 @@
 import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/db";
+import { getPlatformSettings } from "@/lib/platformSettings";
 import Link from "next/link";
 import { getCategoryIcon } from "@/lib/categoryIcons";
 import { DiagnosisResult } from "@/lib/claude";
@@ -110,6 +111,10 @@ export default async function JobPage({ params }: JobPageProps) {
   if (!job) {
     redirect("/dashboard");
   }
+
+  // Fetch platform settings for dispute window
+  const settings = await getPlatformSettings();
+  const disputeWindowHours = settings.disputeWindowHours;
 
   // Validate user is either customer or fixer
   const userId = session.user.id;
@@ -315,7 +320,7 @@ export default async function JobPage({ params }: JobPageProps) {
                     </h3>
                     <p className={`${isFixer && job.disputes[0].resolution === "PENDING" ? "text-yellow-800" : "text-red-800"} mb-4`}>
                       {isFixer && job.disputes[0].resolution === "PENDING"
-                        ? "Please review the dispute and respond with your decision within 48 hours."
+                        ? `Please review the dispute and respond with your decision within ${disputeWindowHours} hours.`
                         : "A dispute has been opened for this job. The payment is on hold."}
                     </p>
                     <Link
@@ -333,9 +338,10 @@ export default async function JobPage({ params }: JobPageProps) {
                       job.completedAt &&
                       (Date.now() - new Date(job.completedAt).getTime()) /
                         (1000 * 60 * 60) <=
-                        48)) && (
+                        disputeWindowHours)) && (
                     <DisputeForm
                       jobId={job.id}
+                      disputeWindowHours={disputeWindowHours}
                     />
                   )
                 )}

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import { getPlatformSettings } from "@/lib/platformSettings";
 
 export async function GET(
   request: NextRequest,
@@ -84,7 +85,9 @@ export async function GET(
 
     const userRole = isAdmin ? "admin" : isFixer ? "fixer" : "customer";
 
-    return NextResponse.json({ dispute, userRole }, { status: 200 });
+    const settings = await getPlatformSettings();
+
+    return NextResponse.json({ dispute, userRole, disputeWindowHours: settings.disputeWindowHours }, { status: 200 });
   } catch (error) {
     console.error("Error fetching dispute:", error);
     return NextResponse.json(

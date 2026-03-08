@@ -37,6 +37,9 @@ export default function DisputeDetail({ disputeId, isAdmin }: DisputeDetailProps
   const [isCustomerResponding, setIsCustomerResponding] = useState(false);
   const [customerRespondError, setCustomerRespondError] = useState("");
 
+  // Platform settings
+  const [windowHours, setWindowHours] = useState(72);
+
   useEffect(() => {
     fetchDispute();
   }, [disputeId]);
@@ -52,6 +55,7 @@ export default function DisputeDetail({ disputeId, isAdmin }: DisputeDetailProps
 
       setDispute(data.dispute);
       setUserRole(data.userRole || (isAdmin ? "admin" : "customer"));
+      if (data.disputeWindowHours) setWindowHours(data.disputeWindowHours);
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -159,7 +163,7 @@ export default function DisputeDetail({ disputeId, isAdmin }: DisputeDetailProps
 
   // Compute hours remaining for PENDING disputes
   const hoursElapsed = (Date.now() - new Date(dispute.createdAt).getTime()) / (1000 * 60 * 60);
-  const hoursRemaining = Math.max(0, 48 - hoursElapsed);
+  const hoursRemaining = Math.max(0, windowHours - hoursElapsed);
   const isExpired = hoursRemaining <= 0 && dispute.resolution === "PENDING";
 
   const payment = dispute.job.payments?.[0];
@@ -175,7 +179,7 @@ export default function DisputeDetail({ disputeId, isAdmin }: DisputeDetailProps
             <p className="font-semibold">Awaiting fixer response</p>
             <p className="text-sm">
               {isExpired
-                ? "The 48-hour response window has expired. This dispute will be escalated to admin."
+                ? `The ${windowHours}-hour response window has expired. This dispute will be escalated to admin.`
                 : `The fixer has ${Math.floor(hoursRemaining)}h ${Math.floor((hoursRemaining % 1) * 60)}m to respond. Payment is on hold.`}
             </p>
           </div>
@@ -204,7 +208,7 @@ export default function DisputeDetail({ disputeId, isAdmin }: DisputeDetailProps
             <p className="font-semibold">Escalated to admin</p>
             <p className="text-sm">
               {dispute.escalationReason === "TIMEOUT"
-                ? "The fixer did not respond within 48 hours."
+                ? `The fixer did not respond within ${windowHours} hours.`
                 : dispute.escalationReason === "CUSTOMER_REJECTED"
                 ? "The customer rejected the fixer's offer."
                 : "This dispute is under admin review."}
@@ -276,7 +280,7 @@ export default function DisputeDetail({ disputeId, isAdmin }: DisputeDetailProps
 
   if (dispute.escalatedAt) {
     const reasonMap: Record<string, string> = {
-      TIMEOUT: "48-hour response window expired",
+      TIMEOUT: `${windowHours}-hour response window expired`,
       FIXER_REJECTED: "Fixer rejected the dispute",
       CUSTOMER_REJECTED: "Customer rejected fixer's offer",
       ADMIN_OVERRIDE: "Admin stepped in",
