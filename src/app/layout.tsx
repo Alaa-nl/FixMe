@@ -6,6 +6,7 @@ import Navbar from "@/components/layout/Navbar";
 import BottomNav from "@/components/layout/BottomNav";
 import Footer from "@/components/layout/Footer";
 import { Toaster } from "@/components/ui/sonner";
+import { getContentBySection } from "@/lib/siteContent";
 
 const dmSans = DM_Sans({
   subsets: ["latin"],
@@ -70,11 +71,16 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const [navbarContent, bottomNavContent] = await Promise.all([
+    getContentBySection("navbar"),
+    getContentBySection("bottomnav"),
+  ]);
+
   return (
     <html lang="en">
       <head>
@@ -87,12 +93,12 @@ export default function RootLayout({
       </head>
       <body className={`${dmSans.variable} ${syne.variable} font-sans antialiased`}>
         <SessionProvider>
-          <Navbar />
+          <Navbar content={navbarContent} />
           <main className="pt-16 pb-20 md:pb-0 min-h-screen flex flex-col">
             {children}
           </main>
           <Footer />
-          <BottomNav />
+          <BottomNav content={bottomNavContent} />
           <Toaster />
         </SessionProvider>
       </body>

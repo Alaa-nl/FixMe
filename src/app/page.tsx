@@ -3,7 +3,7 @@ import Button from "@/components/ui/button";
 import { prisma } from "@/lib/db";
 import { getCategoryIcon } from "@/lib/categoryIcons";
 import RequestCard from "@/components/request/RequestCard";
-import { getContentBatch } from "@/lib/siteContent";
+import { getContentBySection } from "@/lib/siteContent";
 
 export const dynamic = "force-dynamic";
 
@@ -40,27 +40,8 @@ export default async function Home() {
     },
   });
 
-  // Fetch CMS content (falls back to defaults if not set)
-  const content = await getContentBatch([
-    "hero_title",
-    "hero_subtitle",
-    "hero_cta_primary",
-    "hero_cta_secondary",
-    "how_it_works_title",
-    "how_it_works_step1_title",
-    "how_it_works_step1_desc",
-    "how_it_works_step2_title",
-    "how_it_works_step2_desc",
-    "how_it_works_step3_title",
-    "how_it_works_step3_desc",
-    "categories_title",
-    "stats_repairs",
-    "stats_fixers",
-    "stats_repairs_label",
-    "stats_fixers_label",
-    "stats_cities",
-    "stats_cities_label",
-  ]);
+  // Fetch all homepage CMS content in one query
+  const content = await getContentBySection("homepage");
 
   const steps = [
     {
@@ -86,7 +67,7 @@ export default async function Home() {
   const stats = [
     { value: content["stats_repairs"], label: content["stats_repairs_label"] },
     { value: content["stats_fixers"], label: content["stats_fixers_label"] },
-    { value: "4.8 ⭐", label: "Average rating" },
+    { value: content["stats_rating"], label: content["stats_rating_label"] },
     { value: content["stats_cities"], label: content["stats_cities_label"] },
   ];
 
@@ -122,13 +103,13 @@ export default async function Home() {
               {/* Trust Indicators */}
               <div className="flex flex-col sm:flex-row gap-4 text-sm text-gray-600">
                 <span className="flex items-center gap-2">
-                  <span className="text-green-600">✓</span> Free to post
+                  <span className="text-green-600">✓</span> {content["hero_trust_free"]}
                 </span>
                 <span className="flex items-center gap-2">
-                  <span className="text-green-600">✓</span> Pay only when fixed
+                  <span className="text-green-600">✓</span> {content["hero_trust_pay"]}
                 </span>
                 <span className="flex items-center gap-2">
-                  <span className="text-green-600">✓</span> Trusted fixers
+                  <span className="text-green-600">✓</span> {content["hero_trust_verified"]}
                 </span>
               </div>
             </div>
@@ -209,24 +190,24 @@ export default async function Home() {
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex justify-between items-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold text-gray-800">
-              Recent repair requests
+              {content["homepage_recent_title"]}
             </h2>
             <Link
               href="/browse"
               className="text-primary font-medium hover:underline flex items-center gap-2"
             >
-              View all →
+              {content["homepage_recent_view_all"]}
             </Link>
           </div>
 
           {recentRequests.length === 0 ? (
             <div className="text-center py-12">
               <p className="text-gray-500 text-lg mb-4">
-                No repair requests yet.
+                {content["homepage_recent_empty"]}
               </p>
               <Link href="/post">
                 <Button variant="primary" size="lg">
-                  Post the first request
+                  {content["homepage_recent_empty_cta"]}
                 </Button>
               </Link>
             </div>
@@ -240,24 +221,46 @@ export default async function Home() {
         </div>
       </section>
 
+      {/* Trust Section */}
+      <section className="bg-white py-16 md:py-24">
+        <div className="max-w-7xl mx-auto px-4">
+          <h2 className="text-3xl md:text-4xl font-bold text-center text-gray-800 mb-12">
+            {content["trust_title"]}
+          </h2>
+          <div className="grid md:grid-cols-3 gap-8">
+            {[
+              { title: content["trust_badge1_title"], desc: content["trust_badge1_desc"], emoji: "✅" },
+              { title: content["trust_badge2_title"], desc: content["trust_badge2_desc"], emoji: "🔒" },
+              { title: content["trust_badge3_title"], desc: content["trust_badge3_desc"], emoji: "💬" },
+            ].map((badge, i) => (
+              <div key={i} className="text-center p-6">
+                <div className="text-4xl mb-4">{badge.emoji}</div>
+                <h3 className="text-xl font-semibold text-gray-800 mb-2">{badge.title}</h3>
+                <p className="text-gray-600">{badge.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* CTA Section for Fixers */}
       <section className="bg-secondary py-16 md:py-24 text-white">
         <div className="max-w-4xl mx-auto px-4 text-center">
           <h2 className="text-3xl md:text-4xl font-bold mb-4">
-            Are you handy? Start earning with FixMe.
+            {content["homepage_fixer_cta_title"]}
           </h2>
           <p className="text-lg md:text-xl text-blue-100 mb-8">
-            Join hundreds of local repair people. Set your own hours, pick your own jobs.
+            {content["homepage_fixer_cta_desc"]}
           </p>
 
           <Link href="/register">
             <Button variant="primary" size="lg">
-              Sign up as a fixer
+              {content["homepage_fixer_cta_button"]}
             </Button>
           </Link>
 
           <p className="mt-6 text-blue-200">
-            💶 Average fixer earns €500/month
+            {content["homepage_fixer_cta_footnote"]}
           </p>
         </div>
       </section>

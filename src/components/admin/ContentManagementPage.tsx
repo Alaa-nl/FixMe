@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import {
   FileText,
   Image as ImageIcon,
@@ -9,11 +9,15 @@ import {
   Save,
   RotateCcw,
   Check,
+  Search,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
+import ReactMarkdown from "react-markdown";
 
 interface ContentItem {
   id: string;
@@ -33,6 +37,8 @@ export default function ContentManagementPage() {
   const [editValue, setEditValue] = useState("");
   const [saving, setSaving] = useState(false);
   const [savedItemId, setSavedItemId] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [markdownPreview, setMarkdownPreview] = useState(false);
 
   useEffect(() => {
     fetchContent();
@@ -66,6 +72,7 @@ export default function ContentManagementPage() {
     setEditingItem(item);
     setEditValue(item.value);
     setSavedItemId(null);
+    setMarkdownPreview(false);
   };
 
   const handleSave = async () => {
@@ -137,6 +144,8 @@ export default function ContentManagementPage() {
     switch (type) {
       case "image":
         return <ImageIcon size={16} className="text-purple-600" />;
+      case "markdown":
+        return <Code size={16} className="text-blue-600" />;
       case "html":
         return <Code size={16} className="text-blue-600" />;
       default:
@@ -154,16 +163,35 @@ export default function ContentManagementPage() {
   const sections = Object.keys(content);
   const currentItems = content[selectedSection] || [];
 
+  // Filter items by search query (matches label or id)
+  const filteredItems = useMemo(() => {
+    if (!searchQuery.trim()) return currentItems;
+    const q = searchQuery.toLowerCase();
+    return currentItems.filter(
+      (item) =>
+        item.label.toLowerCase().includes(q) ||
+        item.id.toLowerCase().includes(q) ||
+        item.value.toLowerCase().includes(q)
+    );
+  }, [currentItems, searchQuery]);
+
+  // Count total items across all sections for search across all
+  const totalItems = useMemo(() => {
+    return Object.values(content).reduce((sum, items) => sum + items.length, 0);
+  }, [content]);
+
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold text-gray-900">
-          Content Management
-        </h1>
-        <p className="mt-2 text-gray-600">
-          Edit marketing text and images across the website
-        </p>
+      <div className="flex items-start justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">
+            Content Management
+          </h1>
+          <p className="mt-2 text-gray-600">
+            Edit marketing text and images across the website ({totalItems} items across {sections.length} sections)
+          </p>
+        </div>
       </div>
 
       {loading ? (
@@ -183,6 +211,7 @@ export default function ContentManagementPage() {
                     onClick={() => {
                       setSelectedSection(section);
                       setEditingItem(null);
+                      setSearchQuery("");
                     }}
                     className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${
                       selectedSection === section
@@ -204,21 +233,40 @@ export default function ContentManagementPage() {
           <div className="lg:col-span-3">
             <div className="bg-white rounded-xl border">
               <div className="p-6 border-b">
-                <h2 className="text-xl font-bold text-gray-900">
-                  {getSectionLabel(selectedSection)}
-                </h2>
-                <p className="text-sm text-gray-600 mt-1">
-                  {currentItems.length} items
-                </p>
+                <div className="flex items-center justify-between mb-3">
+                  <div>
+                    <h2 className="text-xl font-bold text-gray-900">
+                      {getSectionLabel(selectedSection)}
+                    </h2>
+                    <p className="text-sm text-gray-600 mt-1">
+                      {filteredItems.length === currentItems.length
+                        ? `${currentItems.length} items`
+                        : `${filteredItems.length} of ${currentItems.length} items`}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Search */}
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                  <Input
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="Filter by label, key, or value..."
+                    className="pl-10"
+                  />
+                </div>
               </div>
 
               <div className="p-6 space-y-4">
-                {currentItems.length === 0 ? (
+                {filteredItems.length === 0 ? (
                   <div className="text-center py-8 text-gray-500">
-                    No content items in this section
+                    {searchQuery
+                      ? `No items matching "${searchQuery}"`
+                      : "No content items in this section"}
                   </div>
                 ) : (
-                  currentItems.map((item) => (
+                  filteredItems.map((item) => (
                     <div
                       key={item.id}
                       className={`border rounded-lg p-4 transition-colors ${
@@ -233,6 +281,11 @@ export default function ContentManagementPage() {
                           <Label className="font-semibold text-gray-900">
                             {item.label}
                           </Label>
+                          {item.type === "markdown" && (
+                            <span className="px-2 py-0.5 bg-blue-100 text-blue-700 text-xs font-medium rounded">
+                              Markdown
+                            </span>
+                          )}
                           {savedItemId === item.id && (
                             <span className="flex items-center gap-1 text-xs text-green-600 font-medium">
                               <Check size={14} />
@@ -243,6 +296,16 @@ export default function ContentManagementPage() {
                         <div className="flex gap-2">
                           {editingItem?.id === item.id ? (
                             <>
+                              {item.type === "markdown" && (
+                                <Button
+                                  onClick={() => setMarkdownPreview(!markdownPreview)}
+                                  size="sm"
+                                  variant="outline"
+                                  title={markdownPreview ? "Edit" : "Preview"}
+                                >
+                                  {markdownPreview ? <EyeOff size={14} /> : <Eye size={14} />}
+                                </Button>
+                              )}
                               <Button
                                 onClick={handleSave}
                                 disabled={saving}
@@ -259,6 +322,7 @@ export default function ContentManagementPage() {
                                 onClick={() => {
                                   setEditingItem(null);
                                   setEditValue("");
+                                  setMarkdownPreview(false);
                                 }}
                                 size="sm"
                                 variant="outline"
@@ -290,7 +354,21 @@ export default function ContentManagementPage() {
 
                       {editingItem?.id === item.id ? (
                         <div className="mt-2">
-                          {item.type === "text" && editValue.length <= 100 ? (
+                          {item.type === "markdown" ? (
+                            markdownPreview ? (
+                              <div className="border rounded-lg p-4 bg-white prose prose-sm max-w-none prose-headings:text-gray-800 prose-p:text-gray-700 prose-a:text-[#FF6B35]">
+                                <ReactMarkdown>{editValue}</ReactMarkdown>
+                              </div>
+                            ) : (
+                              <textarea
+                                value={editValue}
+                                onChange={(e) => setEditValue(e.target.value)}
+                                rows={20}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md font-mono text-sm focus:outline-none focus:ring-2 focus:ring-[#FF6B35]"
+                                placeholder="Enter markdown content..."
+                              />
+                            )
+                          ) : item.type === "text" && editValue.length <= 100 ? (
                             <Input
                               value={editValue}
                               onChange={(e) => setEditValue(e.target.value)}
@@ -307,6 +385,8 @@ export default function ContentManagementPage() {
                           <p className="text-xs text-gray-500 mt-1">
                             {item.type === "image"
                               ? "Enter image URL or path"
+                              : item.type === "markdown"
+                              ? `${editValue.length} characters · Use markdown syntax for formatting`
                               : `${editValue.length} characters`}
                           </p>
                         </div>
@@ -327,6 +407,17 @@ export default function ContentManagementPage() {
                                       "none";
                                   }}
                                 />
+                              )}
+                            </div>
+                          ) : item.type === "markdown" ? (
+                            <div className="text-sm text-gray-700 max-h-32 overflow-hidden relative">
+                              <div className="font-mono whitespace-pre-wrap">
+                                {item.value.length > 200
+                                  ? item.value.slice(0, 200) + "..."
+                                  : item.value}
+                              </div>
+                              {item.value.length > 200 && (
+                                <div className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-white to-transparent" />
                               )}
                             </div>
                           ) : (

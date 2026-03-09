@@ -3,15 +3,21 @@
   "configurations": [
     {
       "name": "next-dev",
-      "runtimeExecutable": "npm",
+      "runtimeExecutable": "/usr/local/bin/npm",
       "runtimeArgs": ["run", "dev"],
-      "port": 3000
+      "port": 3000,
+      "env": {
+        "PATH": "/bin:/usr/bin:/usr/local/bin:/usr/local/Cellar/node/23.11.0/bin"
+      }
     },
     {
       "name": "prisma-studio",
-      "runtimeExecutable": "npx",
+      "runtimeExecutable": "/usr/local/bin/npx",
       "runtimeArgs": ["prisma", "studio"],
-      "port": 5555
+      "port": 5555,
+      "env": {
+        "PATH": "/bin:/usr/bin:/usr/local/bin:/usr/local/Cellar/node/23.11.0/bin"
+      }
     }
   ]
 }
