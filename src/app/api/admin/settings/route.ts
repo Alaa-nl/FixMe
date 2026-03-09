@@ -29,7 +29,7 @@ export async function GET(req: NextRequest) {
   } catch (error: any) {
     console.error("Error fetching settings:", error);
     return NextResponse.json(
-      { error: error.message || "Failed to fetch settings" },
+      { error: "Failed to fetch settings" },
       { status: 500 }
     );
   }
@@ -244,7 +244,7 @@ export async function PATCH(req: NextRequest) {
   } catch (error: any) {
     console.error("Error updating settings:", error);
     return NextResponse.json(
-      { error: error.message || "Failed to update settings" },
+      { error: "Failed to update settings" },
       { status: 500 }
     );
   }

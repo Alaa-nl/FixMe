@@ -147,7 +147,7 @@ export async function POST(req: NextRequest) {
   } catch (error: any) {
     console.error("Error validating voucher:", error);
     return NextResponse.json(
-      { error: error.message || "Failed to validate voucher", valid: false },
+      { error: "Failed to validate voucher", valid: false },
       { status: 500 }
     );
   }

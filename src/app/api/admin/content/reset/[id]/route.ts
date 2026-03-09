@@ -64,7 +64,7 @@ export async function POST(
   } catch (error: any) {
     console.error("Error resetting content:", error);
     return NextResponse.json(
-      { error: error.message || "Failed to reset content" },
+      { error: "Failed to reset content" },
       { status: 500 }
     );
   }

@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { timeAgo } from "@/lib/utils";
 import Button from "@/components/ui/button";
 
@@ -392,11 +393,14 @@ export default function DisputeDetail({ disputeId, isAdmin }: DisputeDetailProps
               <h3 className="text-xl font-bold text-gray-800 mb-4">Evidence Photos</h3>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                 {dispute.evidencePhotos.map((photo: string, index: number) => (
-                  <div key={index} className="relative group">
-                    <img
+                  <div key={index} className="relative group h-32">
+                    <Image
                       src={photo}
                       alt={`Evidence ${index + 1}`}
-                      className="w-full h-32 object-cover rounded-lg border border-gray-200"
+                      fill
+                      className="object-cover rounded-lg border border-gray-200"
+                      sizes="(max-width: 768px) 50vw, 33vw"
+                      unoptimized
                     />
                   </div>
                 ))}

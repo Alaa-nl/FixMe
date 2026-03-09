@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import Image from "next/image";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { CategoryIcon } from "@/lib/categoryIconsReact";
@@ -252,10 +253,13 @@ export default async function RequestPage({ params }: RequestPageProps) {
               <div className="flex items-center gap-3 mb-4">
                 <Link href={`/profile/${request.customer.id}`}>
                   {request.customer.avatarUrl ? (
-                    <img
+                    <Image
                       src={request.customer.avatarUrl}
                       alt={request.customer.name}
+                      width={40}
+                      height={40}
                       className="w-10 h-10 rounded-full object-cover hover:ring-2 hover:ring-primary transition-all"
+                      unoptimized
                     />
                   ) : (
                     <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-500 font-semibold hover:ring-2 hover:ring-primary transition-all">

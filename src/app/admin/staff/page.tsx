@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import Image from "next/image";
 import { requireAdmin } from "@/lib/adminAuth";
 import { hasPermission } from "@/lib/checkPermission";
 import { prisma } from "@/lib/db";
@@ -132,10 +133,13 @@ export default async function StaffPage() {
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center gap-3">
                           {staff.user.avatarUrl ? (
-                            <img
+                            <Image
                               src={staff.user.avatarUrl}
                               alt={staff.user.name}
+                              width={40}
+                              height={40}
                               className="w-10 h-10 rounded-full object-cover"
+                              unoptimized
                             />
                           ) : (
                             <div className="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center font-semibold">

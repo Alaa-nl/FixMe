@@ -5,7 +5,8 @@ import { join } from "path";
 import { randomUUID } from "crypto";
 import sharp from "sharp";
 
-const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+const MAX_IMAGE_SIZE = 10 * 1024 * 1024; // 10MB for images
+const MAX_VIDEO_SIZE = 50 * 1024 * 1024; // 50MB for videos
 const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/gif", "image/webp"];
 const ALLOWED_VIDEO_TYPES = ["video/mp4", "video/quicktime"];
 const ALLOWED_TYPES = [...ALLOWED_IMAGE_TYPES, ...ALLOWED_VIDEO_TYPES];
@@ -41,10 +42,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Validate file size
-    if (file.size > MAX_FILE_SIZE) {
+    // Validate file size (different limits for images vs videos)
+    const isVideo = ALLOWED_VIDEO_TYPES.includes(file.type);
+    const maxSize = isVideo ? MAX_VIDEO_SIZE : MAX_IMAGE_SIZE;
+    const maxLabel = isVideo ? "50MB" : "10MB";
+
+    if (file.size > maxSize) {
       return NextResponse.json(
-        { error: "File too large. Maximum size is 10MB." },
+        { error: `File too large. Maximum size is ${maxLabel}.` },
         { status: 400 }
       );
     }

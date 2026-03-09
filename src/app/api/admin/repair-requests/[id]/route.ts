@@ -133,7 +133,7 @@ export async function PATCH(
   } catch (error: any) {
     console.error("Error updating repair request:", error);
     return NextResponse.json(
-      { error: error.message || "Failed to update repair request" },
+      { error: "Failed to update repair request" },
       { status: 500 }
     );
   }
@@ -214,7 +214,7 @@ export async function DELETE(
   } catch (error: any) {
     console.error("Error deleting repair request:", error);
     return NextResponse.json(
-      { error: error.message || "Failed to delete repair request" },
+      { error: "Failed to delete repair request" },
       { status: 500 }
     );
   }

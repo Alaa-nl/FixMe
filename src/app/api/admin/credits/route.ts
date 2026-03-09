@@ -96,7 +96,7 @@ export async function POST(req: NextRequest) {
   } catch (error: any) {
     console.error("Error managing credit:", error);
     return NextResponse.json(
-      { error: error.message || "Failed to manage credit" },
+      { error: "Failed to manage credit" },
       { status: 500 }
     );
   }

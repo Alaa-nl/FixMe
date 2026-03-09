@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { CategoryIcon } from "@/lib/categoryIconsReact";
 import { Package } from "lucide-react";
 
@@ -28,11 +29,15 @@ export default function PhotoGallery({ photos, categorySlug }: PhotoGalleryProps
   return (
     <div className="space-y-4">
       {/* Main Photo */}
-      <div className="w-full aspect-video bg-gray-200 rounded-xl overflow-hidden">
-        <img
+      <div className="relative w-full aspect-video bg-gray-200 rounded-xl overflow-hidden">
+        <Image
           src={photos[selectedIndex]}
           alt={`Photo ${selectedIndex + 1}`}
-          className="w-full h-full object-cover"
+          fill
+          className="object-cover"
+          sizes="(max-width: 768px) 100vw, 50vw"
+          unoptimized
+          priority
         />
       </div>
 
@@ -49,10 +54,13 @@ export default function PhotoGallery({ photos, categorySlug }: PhotoGalleryProps
                   : "border-gray-200 hover:border-gray-400"
               }`}
             >
-              <img
+              <Image
                 src={photo}
                 alt={`Thumbnail ${index + 1}`}
+                width={80}
+                height={80}
                 className="w-full h-full object-cover"
+                unoptimized
               />
             </button>
           ))}

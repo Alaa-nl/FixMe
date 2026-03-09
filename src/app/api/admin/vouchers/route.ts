@@ -57,7 +57,7 @@ export async function GET(req: NextRequest) {
   } catch (error: any) {
     console.error("Error fetching vouchers:", error);
     return NextResponse.json(
-      { error: error.message || "Failed to fetch vouchers" },
+      { error: "Failed to fetch vouchers" },
       { status: 500 }
     );
   }
@@ -171,7 +171,7 @@ export async function POST(req: NextRequest) {
   } catch (error: any) {
     console.error("Error creating voucher:", error);
     return NextResponse.json(
-      { error: error.message || "Failed to create voucher" },
+      { error: "Failed to create voucher" },
       { status: 500 }
     );
   }

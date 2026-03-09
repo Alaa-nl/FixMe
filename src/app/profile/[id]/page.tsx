@@ -1,4 +1,5 @@
-import { redirect } from "next/navigation";
+import { notFound } from "next/navigation";
+import Image from "next/image";
 import { prisma } from "@/lib/db";
 import StarRating from "@/components/review/StarRating";
 import ReviewList from "@/components/review/ReviewList";
@@ -29,7 +30,7 @@ export default async function PublicProfilePage({ params }: ProfilePageProps) {
   });
 
   if (!user) {
-    redirect("/browse");
+    notFound();
   }
 
   const isFixer = user.userType === "FIXER" && !!user.fixerProfile;
@@ -64,10 +65,13 @@ export default async function PublicProfilePage({ params }: ProfilePageProps) {
           <div className="flex flex-col sm:flex-row items-center sm:items-start gap-5">
             {/* Avatar */}
             {user.avatarUrl ? (
-              <img
+              <Image
                 src={user.avatarUrl}
                 alt={user.name}
+                width={96}
+                height={96}
                 className="w-24 h-24 rounded-full object-cover ring-4 ring-orange-100 shrink-0"
+                unoptimized
               />
             ) : (
               <div className="w-24 h-24 rounded-full bg-gradient-to-br from-primary/80 to-orange-400 flex items-center justify-center text-white font-bold text-3xl ring-4 ring-orange-100 shrink-0">

@@ -22,7 +22,7 @@ export async function GET(req: NextRequest) {
   } catch (error: any) {
     console.error("Error fetching content:", error);
     return NextResponse.json(
-      { error: error.message || "Failed to fetch content" },
+      { error: "Failed to fetch content" },
       { status: 500 }
     );
   }

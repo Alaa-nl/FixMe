@@ -63,7 +63,7 @@ export async function GET(
   } catch (error: any) {
     console.error("Error fetching user credits:", error);
     return NextResponse.json(
-      { error: error.message || "Failed to fetch credits" },
+      { error: "Failed to fetch credits" },
       { status: 500 }
     );
   }

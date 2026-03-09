@@ -79,7 +79,7 @@ export async function POST(
   } catch (error: any) {
     console.error("Error banning user:", error);
     return NextResponse.json(
-      { error: error.message || "Failed to ban user" },
+      { error: "Failed to ban user" },
       { status: 500 }
     );
   }

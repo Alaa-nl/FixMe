@@ -60,7 +60,7 @@ export async function GET(
   } catch (error: any) {
     console.error("Error fetching voucher:", error);
     return NextResponse.json(
-      { error: error.message || "Failed to fetch voucher" },
+      { error: "Failed to fetch voucher" },
       { status: 500 }
     );
   }
@@ -149,7 +149,7 @@ export async function PATCH(
   } catch (error: any) {
     console.error("Error updating voucher:", error);
     return NextResponse.json(
-      { error: error.message || "Failed to update voucher" },
+      { error: "Failed to update voucher" },
       { status: 500 }
     );
   }
@@ -205,7 +205,7 @@ export async function DELETE(
   } catch (error: any) {
     console.error("Error deleting voucher:", error);
     return NextResponse.json(
-      { error: error.message || "Failed to delete voucher" },
+      { error: "Failed to delete voucher" },
       { status: 500 }
     );
   }

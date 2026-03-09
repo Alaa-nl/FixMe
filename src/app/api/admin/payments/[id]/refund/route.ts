@@ -127,7 +127,7 @@ export async function POST(
   } catch (error: any) {
     console.error("Error refunding payment:", error);
     return NextResponse.json(
-      { error: error.message || "Failed to refund payment" },
+      { error: "Failed to refund payment" },
       { status: 500 }
     );
   }

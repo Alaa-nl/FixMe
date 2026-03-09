@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import { Search, UserPlus, Star, Check } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -139,7 +140,7 @@ export default function AdminUsersPage() {
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center gap-3">
                       {user.avatarUrl ? (
-                        <img src={user.avatarUrl} alt={user.name} className="w-10 h-10 rounded-full" />
+                        <Image src={user.avatarUrl} alt={user.name} width={40} height={40} className="w-10 h-10 rounded-full" unoptimized />
                       ) : (
                         <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-600 font-semibold">
                           {user.name.charAt(0).toUpperCase()}

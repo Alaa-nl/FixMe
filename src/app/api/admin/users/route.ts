@@ -70,9 +70,12 @@ export async function GET(request: NextRequest) {
 
     const totalPages = Math.ceil(total / limit);
 
+    // Exclude passwordHash from all users in response
+    const safeUsers = users.map(({ passwordHash, ...user }) => user);
+
     return NextResponse.json(
       {
-        users,
+        users: safeUsers,
         total,
         page,
         totalPages,
@@ -170,7 +173,9 @@ export async function PATCH(request: NextRequest) {
         );
     }
 
-    return NextResponse.json(updatedUser, { status: 200 });
+    // Exclude passwordHash from response
+    const { passwordHash: _ph, ...safeUpdatedUser } = updatedUser;
+    return NextResponse.json(safeUpdatedUser, { status: 200 });
   } catch (error) {
     console.error("Error updating user:", error);
     return NextResponse.json(
@@ -273,9 +278,12 @@ export async function POST(request: NextRequest) {
     // TODO: Send welcome email if sendWelcomeEmail is true
     // You can implement email sending here
 
+    // Exclude passwordHash from response
+    const { passwordHash: _ph, ...safeUser } = user;
+
     return NextResponse.json(
       {
-        user,
+        user: safeUser,
         message: "User created successfully",
       },
       { status: 201 }
@@ -283,7 +291,7 @@ export async function POST(request: NextRequest) {
   } catch (error: any) {
     console.error("Error creating user:", error);
     return NextResponse.json(
-      { error: error.message || "Failed to create user" },
+      { error: "Failed to create user" },
       { status: 500 }
     );
   }

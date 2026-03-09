@@ -128,7 +128,7 @@ export async function POST(req: NextRequest) {
   } catch (error: any) {
     console.error("Error creating repair request:", error);
     return NextResponse.json(
-      { error: error.message || "Failed to create repair request" },
+      { error: "Failed to create repair request" },
       { status: 500 }
     );
   }

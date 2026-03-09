@@ -118,7 +118,7 @@ export async function POST(
   } catch (error: any) {
     console.error("Error releasing payment:", error);
     return NextResponse.json(
-      { error: error.message || "Failed to release payment" },
+      { error: "Failed to release payment" },
       { status: 500 }
     );
   }

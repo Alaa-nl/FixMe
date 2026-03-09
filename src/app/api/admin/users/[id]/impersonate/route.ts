@@ -66,7 +66,7 @@ export async function POST(
   } catch (error: any) {
     console.error("Error impersonating user:", error);
     return NextResponse.json(
-      { error: error.message || "Failed to impersonate user" },
+      { error: "Failed to impersonate user" },
       { status: 500 }
     );
   }

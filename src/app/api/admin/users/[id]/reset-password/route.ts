@@ -46,9 +46,10 @@ export async function POST(
     // TODO: Send email with new password
     // You can implement email sending here
 
+    // Note: In production, the new password should be sent via email.
+    // Never expose passwords in API responses.
     return NextResponse.json({
-      message: "Password reset successfully",
-      newPassword, // In production, this should be sent via email only
+      message: "Password reset successfully. The user should receive the new password via email.",
       user: {
         id: user.id,
         name: user.name,
@@ -58,7 +59,7 @@ export async function POST(
   } catch (error: any) {
     console.error("Error resetting password:", error);
     return NextResponse.json(
-      { error: error.message || "Failed to reset password" },
+      { error: "Failed to reset password" },
       { status: 500 }
     );
   }

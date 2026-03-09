@@ -138,7 +138,7 @@ export async function POST(req: NextRequest) {
   } catch (error: any) {
     console.error('Error creating staff member:', error);
     if (error.message?.includes('Permission denied')) {
-      return NextResponse.json({ error: error.message }, { status: 403 });
+      return NextResponse.json({ error: "Permission denied" }, { status: 403 });
     }
     return NextResponse.json(
       { error: 'Failed to create staff member' },

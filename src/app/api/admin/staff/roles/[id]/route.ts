@@ -93,7 +93,7 @@ export async function PATCH(
   } catch (error: any) {
     console.error('Error updating role:', error);
     if (error.message?.includes('Permission denied')) {
-      return NextResponse.json({ error: error.message }, { status: 403 });
+      return NextResponse.json({ error: "Permission denied" }, { status: 403 });
     }
     return NextResponse.json(
       { error: 'Failed to update role' },
@@ -151,7 +151,7 @@ export async function DELETE(
   } catch (error: any) {
     console.error('Error deleting role:', error);
     if (error.message?.includes('Permission denied')) {
-      return NextResponse.json({ error: error.message }, { status: 403 });
+      return NextResponse.json({ error: "Permission denied" }, { status: 403 });
     }
     return NextResponse.json(
       { error: 'Failed to delete role' },

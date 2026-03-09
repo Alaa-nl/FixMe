@@ -102,6 +102,7 @@ export async function GET(
     ]);
 
     // Get recent activity (last 10 items)
+    // SAFETY: Using Prisma tagged template literals — ${id} is auto-parameterized (not string interpolation)
     const recentActivity = await prisma.$queryRaw<any[]>`
       SELECT
         'repair_request' as type,
@@ -130,8 +131,11 @@ export async function GET(
       LIMIT 10
     `;
 
+    // Exclude passwordHash from response
+    const { passwordHash: _ph, ...safeUser } = user;
+
     return NextResponse.json({
-      user,
+      user: safeUser,
       statistics: {
         totalSpent: totalSpent._sum.amount || 0,
         totalEarned: totalEarned._sum.fixerPayout || 0,
@@ -148,7 +152,7 @@ export async function GET(
   } catch (error: any) {
     console.error("Error fetching user:", error);
     return NextResponse.json(
-      { error: error.message || "Failed to fetch user" },
+      { error: "Failed to fetch user" },
       { status: 500 }
     );
   }
@@ -282,14 +286,17 @@ export async function PATCH(
       },
     });
 
+    // Exclude passwordHash from response
+    const { passwordHash: _ph, ...safeUpdatedUser } = updatedUser;
+
     return NextResponse.json({
-      user: updatedUser,
+      user: safeUpdatedUser,
       message: "User updated successfully",
     });
   } catch (error: any) {
     console.error("Error updating user:", error);
     return NextResponse.json(
-      { error: error.message || "Failed to update user" },
+      { error: "Failed to update user" },
       { status: 500 }
     );
   }
@@ -404,7 +411,7 @@ export async function DELETE(
   } catch (error: any) {
     console.error("Error deleting user:", error);
     return NextResponse.json(
-      { error: error.message || "Failed to delete user" },
+      { error: "Failed to delete user" },
       { status: 500 }
     );
   }
