@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Button from "@/components/ui/button";
 
@@ -19,6 +19,7 @@ const COMMON_REASONS = [
 
 export default function DisputeForm({ jobId, disputeWindowHours = 72 }: DisputeFormProps) {
   const router = useRouter();
+  const [isFormOpen, setIsFormOpen] = useState(false);
   const [selectedReason, setSelectedReason] = useState<string>("");
   const [description, setDescription] = useState("");
   const [photos, setPhotos] = useState<File[]>([]);
@@ -26,6 +27,16 @@ export default function DisputeForm({ jobId, disputeWindowHours = 72 }: DisputeF
   const [confirmed, setConfirmed] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
+  const formRef = useRef<HTMLDivElement>(null);
+
+  // Scroll form into view when opened
+  useEffect(() => {
+    if (isFormOpen && formRef.current) {
+      setTimeout(() => {
+        formRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+      }, 100);
+    }
+  }, [isFormOpen]);
 
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
@@ -52,6 +63,17 @@ export default function DisputeForm({ jobId, disputeWindowHours = 72 }: DisputeF
 
     setPhotos(newPhotos);
     setPhotoPreviewUrls(newPreviewUrls);
+  };
+
+  const handleCancel = () => {
+    setIsFormOpen(false);
+    setSelectedReason("");
+    setDescription("");
+    setPhotos([]);
+    photoPreviewUrls.forEach((url) => URL.revokeObjectURL(url));
+    setPhotoPreviewUrls([]);
+    setConfirmed(false);
+    setError("");
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -116,11 +138,53 @@ export default function DisputeForm({ jobId, disputeWindowHours = 72 }: DisputeF
     }
   };
 
+  // Collapsed state — just the trigger button
+  if (!isFormOpen) {
+    return (
+      <div id="dispute-section" className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
+        <div className="flex items-start gap-4">
+          <div className="flex-shrink-0 w-10 h-10 bg-red-50 rounded-full flex items-center justify-center">
+            <svg className="w-5 h-5 text-red-500" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" />
+            </svg>
+          </div>
+          <div className="flex-1">
+            <h3 className="text-base font-semibold text-gray-800">
+              Having an issue with this job?
+            </h3>
+            <p className="text-sm text-gray-500 mt-1">
+              Try resolving the issue with the fixer through chat first. If that doesn&apos;t work, you can open a formal dispute.
+            </p>
+          </div>
+          <button
+            onClick={() => setIsFormOpen(true)}
+            className="flex-shrink-0 px-4 py-2 text-sm font-medium text-red-600 bg-red-50 hover:bg-red-100 border border-red-200 rounded-lg transition-colors"
+          >
+            Open dispute
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Expanded state — full form
   return (
-    <div id="dispute-section" className="bg-white rounded-xl border-t-4 border-red-500 p-6 shadow-sm">
-      <h2 className="text-2xl font-bold text-gray-800 mb-2">
-        ⚠️ Open a dispute
-      </h2>
+    <div id="dispute-section" ref={formRef} className="bg-white rounded-xl border-t-4 border-red-500 p-6 shadow-sm">
+      <div className="flex items-center justify-between mb-2">
+        <h2 className="text-2xl font-bold text-gray-800">
+          Open a dispute
+        </h2>
+        <button
+          type="button"
+          onClick={handleCancel}
+          className="text-gray-400 hover:text-gray-600 transition-colors"
+          aria-label="Close dispute form"
+        >
+          <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
       <p className="text-gray-600 mb-6">
         Please try to resolve the issue with the fixer through chat first. Disputes
         should only be opened for serious issues that cannot be resolved directly.
@@ -202,7 +266,7 @@ export default function DisputeForm({ jobId, disputeWindowHours = 72 }: DisputeF
           {/* Upload Button */}
           {photos.length < 5 && (
             <label className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
-              <span className="text-gray-700">📷 Add photos</span>
+              <span className="text-gray-700">Add photos</span>
               <input
                 type="file"
                 accept="image/*"
@@ -238,15 +302,24 @@ export default function DisputeForm({ jobId, disputeWindowHours = 72 }: DisputeF
           </div>
         )}
 
-        {/* Submit Button */}
-        <Button
-          type="submit"
-          variant="primary"
-          disabled={isSubmitting || !confirmed}
-          className="w-full bg-red-600 hover:bg-red-700 disabled:bg-gray-400"
-        >
-          {isSubmitting ? "Submitting dispute..." : "Submit dispute"}
-        </Button>
+        {/* Action Buttons */}
+        <div className="flex gap-3">
+          <button
+            type="button"
+            onClick={handleCancel}
+            className="flex-1 px-4 py-3 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+          >
+            Cancel
+          </button>
+          <Button
+            type="submit"
+            variant="primary"
+            disabled={isSubmitting || !confirmed}
+            className="flex-1 bg-red-600 hover:bg-red-700 disabled:bg-gray-400"
+          >
+            {isSubmitting ? "Submitting dispute..." : "Submit dispute"}
+          </Button>
+        </div>
       </form>
     </div>
   );

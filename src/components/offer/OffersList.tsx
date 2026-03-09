@@ -57,6 +57,24 @@ export default function OffersList({ offers, isRequestOwner, requestStatus }: Of
     }
   };
 
+  const rejectOffer = async (offerId: string) => {
+    try {
+      const res = await fetch(`/api/offers/${offerId}/reject`, {
+        method: "POST",
+      });
+
+      if (res.ok) {
+        router.refresh();
+      } else {
+        const data = await res.json();
+        alert(data.error || "Failed to reject offer");
+      }
+    } catch (error) {
+      console.error("Error rejecting offer:", error);
+      alert("An error occurred. Please try again.");
+    }
+  };
+
   const handleMessage = (fixerId: string) => {
     router.push(`/messages?userId=${fixerId}`);
   };
@@ -74,6 +92,7 @@ export default function OffersList({ offers, isRequestOwner, requestStatus }: Of
           isRequestOwner={isRequestOwner}
           requestStatus={requestStatus}
           onAccept={acceptOffer}
+          onReject={rejectOffer}
           onMessage={handleMessage}
           onCounterPropose={handleCounterPropose}
         />

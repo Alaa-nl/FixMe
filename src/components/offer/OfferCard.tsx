@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import Button from "@/components/ui/button";
 import StarRating from "@/components/review/StarRating";
-import { Clock, Calendar } from "lucide-react";
+import { Clock, Calendar, MessageCircle, Check, X as XIcon, RotateCcw } from "lucide-react";
 
 interface OfferCardProps {
   offer: {
@@ -29,6 +29,7 @@ interface OfferCardProps {
   isRequestOwner?: boolean;
   requestStatus?: string;
   onAccept?: (offerId: string, scheduledAt?: string) => void;
+  onReject?: (offerId: string) => void;
   onMessage?: (fixerId: string) => void;
   onCounterPropose?: (offerId: string, fixerId: string, fixerName: string) => void;
 }
@@ -44,22 +45,46 @@ function formatSlot(iso: string): string {
   });
 }
 
-export default function OfferCard({ offer, isRequestOwner, requestStatus, onAccept, onMessage, onCounterPropose }: OfferCardProps) {
+function formatSlotShort(iso: string): string {
+  const d = new Date(iso);
+  return d.toLocaleString("en-GB", {
+    weekday: "short",
+    day: "numeric",
+    month: "short",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
+export default function OfferCard({ offer, isRequestOwner, requestStatus, onAccept, onReject, onMessage, onCounterPropose }: OfferCardProps) {
   const [showFullMessage, setShowFullMessage] = useState(false);
   const [isAccepting, setIsAccepting] = useState(false);
+  const [isRejecting, setIsRejecting] = useState(false);
+  const [showRejectConfirm, setShowRejectConfirm] = useState(false);
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
 
   const canAccept = isRequestOwner && requestStatus === "OPEN" && offer.status === "PENDING";
   const times = (offer.suggestedTimes as string[] | null) || [];
   const hasTimes = times.length > 0;
 
-  const handleAccept = async () => {
+  const handleAccept = async (scheduledAt?: string) => {
     if (!onAccept) return;
     setIsAccepting(true);
     try {
-      await onAccept(offer.id, selectedTime || undefined);
+      await onAccept(offer.id, scheduledAt || undefined);
     } finally {
       setIsAccepting(false);
+    }
+  };
+
+  const handleReject = async () => {
+    if (!onReject) return;
+    setIsRejecting(true);
+    try {
+      await onReject(offer.id);
+    } finally {
+      setIsRejecting(false);
+      setShowRejectConfirm(false);
     }
   };
 
@@ -73,189 +98,272 @@ export default function OfferCard({ offer, isRequestOwner, requestStatus, onAcce
     : truncateMessage(offer.message, 150);
 
   return (
-    <div className="bg-white rounded-xl border border-gray-200 p-6 mb-4">
-      <div className="flex flex-col md:flex-row gap-4">
-        {/* Left: Avatar */}
-        <div className="flex-shrink-0">
-          <Link href={`/profile/${offer.fixer.id}`}>
-            <div className="relative">
-              {offer.fixer.avatarUrl ? (
-                <img
-                  src={offer.fixer.avatarUrl}
-                  alt={offer.fixer.name}
-                  className="w-12 h-12 rounded-full object-cover"
-                />
-              ) : (
-                <div className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center text-gray-500 font-semibold">
-                  {offer.fixer.name.charAt(0).toUpperCase()}
-                </div>
-              )}
-              {offer.fixer.fixerProfile?.verifiedBadge && (
-                <div className="absolute -top-1 -right-1 w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center text-white text-xs">
-                  ✓
-                </div>
-              )}
-            </div>
-          </Link>
-        </div>
-
-        {/* Middle: Fixer Info & Message */}
-        <div className="flex-1 min-w-0">
-          {/* Fixer Name & Stats */}
-          <div className="flex flex-wrap items-center gap-2 mb-2">
-            <Link href={`/profile/${offer.fixer.id}`} className="font-bold text-gray-800 hover:text-primary transition-colors">
-              {offer.fixer.name}
-            </Link>
-            {offer.fixer.fixerProfile && (
-              <>
-                <Link
-                  href={`/profile/${offer.fixer.id}`}
-                  className="hover:opacity-80 transition-opacity"
-                  title="View profile and reviews"
-                >
-                  <StarRating
-                    rating={offer.fixer.fixerProfile.averageRating}
-                    size="sm"
-                    readOnly
+    <div className="bg-white rounded-xl border border-gray-200 overflow-hidden mb-4">
+      {/* Header: Fixer identity + Price */}
+      <div className="p-5 pb-4">
+        <div className="flex items-start justify-between gap-4">
+          {/* Fixer info */}
+          <div className="flex items-center gap-3 min-w-0">
+            <Link href={`/profile/${offer.fixer.id}`} className="flex-shrink-0">
+              <div className="relative">
+                {offer.fixer.avatarUrl ? (
+                  <img
+                    src={offer.fixer.avatarUrl}
+                    alt={offer.fixer.name}
+                    className="w-11 h-11 rounded-full object-cover ring-2 ring-gray-100"
                   />
-                </Link>
-                <span className="text-sm text-gray-500">
-                  ({offer.fixer.fixerProfile.totalJobs} job{offer.fixer.fixerProfile.totalJobs !== 1 ? "s" : ""})
-                </span>
-              </>
-            )}
-          </div>
-
-          {/* Message */}
-          <p className="text-gray-700 mb-2 whitespace-pre-wrap">{displayMessage}</p>
-          {offer.message.length > 150 && (
-            <button
-              onClick={() => setShowFullMessage(!showFullMessage)}
-              className="text-primary text-sm font-medium hover:underline"
-            >
-              {showFullMessage ? "Show less" : "Read more"}
-            </button>
-          )}
-
-          {/* Estimated Time */}
-          <div className="mt-3 text-sm text-gray-600">
-            <span className="inline-flex items-center gap-1">
-              <Clock className="w-3.5 h-3.5" />
-              {offer.estimatedTime}
-            </span>
-          </div>
-
-          {/* Suggested Times - visible to request owner when offer is PENDING */}
-          {canAccept && hasTimes && (
-            <div className="mt-4">
-              <p className="flex items-center gap-1.5 text-sm font-semibold text-gray-700 mb-2">
-                <Calendar className="w-4 h-4 text-primary" />
-                Pick an appointment time
-              </p>
-              <div className="flex flex-wrap gap-2">
-                {times.map((t) => (
-                  <button
-                    key={t}
-                    type="button"
-                    onClick={() => setSelectedTime(selectedTime === t ? null : t)}
-                    className={`px-3 py-2 rounded-lg text-sm font-medium transition-all ${
-                      selectedTime === t
-                        ? "bg-primary text-white shadow-sm"
-                        : "border border-gray-200 text-gray-700 hover:border-primary hover:text-primary"
-                    }`}
-                  >
-                    {formatSlot(t)}
-                  </button>
-                ))}
+                ) : (
+                  <div className="w-11 h-11 rounded-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center text-gray-600 font-bold text-sm ring-2 ring-gray-100">
+                    {offer.fixer.name.charAt(0).toUpperCase()}
+                  </div>
+                )}
+                {offer.fixer.fixerProfile?.verifiedBadge && (
+                  <div className="absolute -bottom-0.5 -right-0.5 w-4.5 h-4.5 bg-blue-500 rounded-full flex items-center justify-center text-white ring-2 ring-white">
+                    <Check className="w-2.5 h-2.5" strokeWidth={3} />
+                  </div>
+                )}
               </div>
-              {onCounterPropose && (
-                <button
-                  type="button"
-                  onClick={() => onCounterPropose(offer.id, offer.fixer.id, offer.fixer.name)}
-                  className="mt-2 text-sm text-primary font-medium hover:underline"
-                >
-                  None of these work? Suggest other times
-                </button>
+            </Link>
+            <div className="min-w-0">
+              <div className="flex items-center gap-2 flex-wrap">
+                <Link href={`/profile/${offer.fixer.id}`} className="font-bold text-gray-900 hover:text-primary transition-colors text-[15px]">
+                  {offer.fixer.name}
+                </Link>
+                {offer.status === "ACCEPTED" && (
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-green-50 border border-green-200 text-green-700 text-xs font-semibold rounded-full">
+                    <Check className="w-3 h-3" />
+                    Accepted
+                  </span>
+                )}
+                {offer.status === "REJECTED" && (
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-gray-50 border border-gray-200 text-gray-500 text-xs font-medium rounded-full">
+                    <XIcon className="w-3 h-3" />
+                    Not selected
+                  </span>
+                )}
+                {offer.status === "WITHDRAWN" && (
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-amber-50 border border-amber-200 text-amber-700 text-xs font-medium rounded-full">
+                    <RotateCcw className="w-3 h-3" />
+                    Withdrawn
+                  </span>
+                )}
+              </div>
+              {offer.fixer.fixerProfile && (
+                <div className="flex items-center gap-2 mt-0.5">
+                  <Link href={`/profile/${offer.fixer.id}`} className="hover:opacity-80 transition-opacity">
+                    <StarRating rating={offer.fixer.fixerProfile.averageRating} size="sm" readOnly />
+                  </Link>
+                  <span className="text-xs text-gray-400">·</span>
+                  <span className="text-xs text-gray-500">
+                    {offer.fixer.fixerProfile.totalJobs} job{offer.fixer.fixerProfile.totalJobs !== 1 ? "s" : ""}
+                  </span>
+                </div>
               )}
             </div>
-          )}
-
-          {/* Show times as info for non-owners or already accepted */}
-          {!canAccept && hasTimes && offer.status === "ACCEPTED" && (
-            <div className="mt-3 text-sm text-gray-500">
-              <span className="inline-flex items-center gap-1">
-                <Calendar className="w-3.5 h-3.5" />
-                Appointment times were proposed
-              </span>
-            </div>
-          )}
-        </div>
-
-        {/* Right: Price & Actions */}
-        <div className="flex-shrink-0 flex flex-col items-end justify-between gap-3">
-          <div className="text-right">
-            <div className="text-3xl font-bold text-primary">€{offer.price}</div>
-
-            {/* Status Badge */}
-            {offer.status === "ACCEPTED" && (
-              <div className="mt-2 inline-flex items-center gap-1 px-3 py-1 bg-green-100 border border-green-300 text-green-800 text-sm font-semibold rounded-full">
-                <span>✓</span>
-                <span>Accepted</span>
-              </div>
-            )}
-            {offer.status === "REJECTED" && (
-              <div className="mt-2 inline-flex items-center gap-1 px-3 py-1 bg-gray-100 border border-gray-300 text-gray-600 text-sm font-medium rounded-full">
-                <span>✕</span>
-                <span>Not selected</span>
-              </div>
-            )}
-            {offer.status === "WITHDRAWN" && (
-              <div className="mt-2 inline-flex items-center gap-1 px-3 py-1 bg-yellow-100 border border-yellow-300 text-yellow-800 text-sm font-medium rounded-full">
-                <span>⎌</span>
-                <span>Withdrawn</span>
-              </div>
-            )}
           </div>
 
-          {isRequestOwner && (
-            <div className="flex flex-col gap-2 w-full md:w-auto">
-              {canAccept ? (
-                <>
-                  <Button
-                    size="sm"
-                    onClick={handleAccept}
-                    disabled={isAccepting}
-                    className="w-full md:w-auto"
-                  >
-                    {isAccepting ? "Accepting..." : hasTimes && !selectedTime ? "Accept (no time)" : "Accept offer"}
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => onMessage?.(offer.fixer.id)}
-                    className="w-full md:w-auto"
-                  >
-                    Message
-                  </Button>
-                </>
-              ) : offer.status === "PENDING" && requestStatus !== "OPEN" ? (
-                <div className="text-sm text-gray-600 text-center">
-                  Request no longer accepting offers
-                </div>
-              ) : offer.status === "ACCEPTED" ? (
+          {/* Price */}
+          <div className="text-right flex-shrink-0">
+            <div className="text-2xl font-extrabold text-primary leading-none">€{offer.price}</div>
+          </div>
+        </div>
+      </div>
+
+      {/* Message + Estimated time */}
+      <div className="px-5 pb-4">
+        <p className="text-gray-700 text-sm leading-relaxed whitespace-pre-wrap">{displayMessage}</p>
+        {offer.message.length > 150 && (
+          <button
+            onClick={() => setShowFullMessage(!showFullMessage)}
+            className="text-primary text-xs font-semibold hover:underline mt-1"
+          >
+            {showFullMessage ? "Show less" : "Read more"}
+          </button>
+        )}
+        <div className="mt-3">
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-gray-50 border border-gray-100 rounded-full text-xs font-medium text-gray-600">
+            <Clock className="w-3 h-3" />
+            {offer.estimatedTime}
+          </span>
+        </div>
+      </div>
+
+      {/* Appointment Section — only for actionable offers with times */}
+      {canAccept && hasTimes && (
+        <div className="mx-5 mb-4 rounded-lg border border-primary/15 bg-orange-50/40 p-4">
+          <p className="flex items-center gap-1.5 text-sm font-semibold text-gray-800 mb-3">
+            <Calendar className="w-4 h-4 text-primary" />
+            Choose an appointment time
+          </p>
+
+          {/* Time slot pills */}
+          <div className="flex flex-wrap gap-2 mb-3">
+            {times.map((t) => (
+              <button
+                key={t}
+                type="button"
+                onClick={() => setSelectedTime(selectedTime === t ? null : t)}
+                className={`px-3.5 py-2 rounded-lg text-sm font-medium transition-all ${
+                  selectedTime === t
+                    ? "bg-primary text-white shadow-sm ring-2 ring-primary/20"
+                    : "bg-white border border-gray-200 text-gray-700 hover:border-primary/40 hover:text-primary"
+                }`}
+              >
+                {formatSlot(t)}
+              </button>
+            ))}
+          </div>
+
+          {/* Accept button — dynamic text based on selection */}
+          <Button
+            size="sm"
+            onClick={() => handleAccept(selectedTime || undefined)}
+            disabled={isAccepting}
+            className="w-full"
+          >
+            {isAccepting
+              ? "Accepting..."
+              : selectedTime
+                ? `Accept & book ${formatSlotShort(selectedTime)}`
+                : "Select a time to book"}
+          </Button>
+
+          {/* Secondary options */}
+          <div className="flex items-center justify-between mt-3 pt-3 border-t border-primary/10">
+            {onCounterPropose && (
+              <button
+                type="button"
+                onClick={() => onCounterPropose(offer.id, offer.fixer.id, offer.fixer.name)}
+                className="text-xs text-primary font-semibold hover:underline"
+              >
+                None of these work? Suggest other times
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={() => handleAccept()}
+              disabled={isAccepting}
+              className="text-xs text-gray-500 hover:text-gray-700 font-medium"
+            >
+              Accept without scheduling
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Action Footer — for offers WITHOUT times, or non-actionable states */}
+      {isRequestOwner && (
+        <div className="px-5 pb-5">
+          {canAccept && !hasTimes && (
+            <div>
+              <div className="flex gap-2">
+                <Button
+                  size="sm"
+                  onClick={() => handleAccept()}
+                  disabled={isAccepting}
+                  className="flex-1"
+                >
+                  {isAccepting ? "Accepting..." : "Accept offer"}
+                </Button>
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => onMessage?.(offer.fixer.id)}
-                  className="w-full md:w-auto"
+                  className="flex-1"
                 >
-                  Message fixer
+                  <MessageCircle className="w-3.5 h-3.5 mr-1.5" />
+                  Message
                 </Button>
-              ) : null}
+              </div>
+              <div className="flex justify-center mt-3">
+                <button
+                  onClick={() => setShowRejectConfirm(true)}
+                  className="inline-flex items-center gap-1 text-xs text-gray-400 hover:text-red-500 font-medium transition-colors"
+                >
+                  <XIcon className="w-3 h-3" />
+                  Decline this offer
+                </button>
+              </div>
             </div>
           )}
+
+          {canAccept && hasTimes && (
+            <div className="flex items-center justify-center gap-4">
+              <button
+                onClick={() => onMessage?.(offer.fixer.id)}
+                className="inline-flex items-center gap-1.5 text-xs text-gray-500 hover:text-primary font-medium transition-colors"
+              >
+                <MessageCircle className="w-3.5 h-3.5" />
+                Message {offer.fixer.name.split(" ")[0]}
+              </button>
+              <span className="text-gray-300">·</span>
+              <button
+                onClick={() => setShowRejectConfirm(true)}
+                className="inline-flex items-center gap-1 text-xs text-gray-400 hover:text-red-500 font-medium transition-colors"
+              >
+                <XIcon className="w-3 h-3" />
+                Decline
+              </button>
+            </div>
+          )}
+
+          {offer.status === "PENDING" && requestStatus !== "OPEN" && (
+            <p className="text-sm text-gray-500 text-center py-1">
+              Request no longer accepting offers
+            </p>
+          )}
+
+          {offer.status === "ACCEPTED" && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onMessage?.(offer.fixer.id)}
+              className="w-full"
+            >
+              <MessageCircle className="w-3.5 h-3.5 mr-1.5" />
+              Message {offer.fixer.name.split(" ")[0]}
+            </Button>
+          )}
         </div>
-      </div>
+      )}
+
+      {/* Show times as info for non-owners or already accepted */}
+      {!canAccept && hasTimes && offer.status === "ACCEPTED" && (
+        <div className="px-5 pb-4">
+          <span className="inline-flex items-center gap-1 text-sm text-gray-500">
+            <Calendar className="w-3.5 h-3.5" />
+            Appointment times were proposed
+          </span>
+        </div>
+      )}
+
+      {/* Reject confirmation overlay */}
+      {showRejectConfirm && (
+        <div className="mx-5 mb-5 rounded-lg border border-red-200 bg-red-50 p-4">
+          <p className="text-sm font-semibold text-gray-800 mb-1">
+            Decline this offer?
+          </p>
+          <p className="text-xs text-gray-500 mb-3">
+            {offer.fixer.name.split(" ")[0]} will be notified that their offer was declined. This cannot be undone.
+          </p>
+          <div className="flex gap-2">
+            <button
+              onClick={() => setShowRejectConfirm(false)}
+              disabled={isRejecting}
+              className="flex-1 px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleReject}
+              disabled={isRejecting}
+              className="flex-1 px-3 py-2 text-sm font-medium text-white bg-red-500 rounded-lg hover:bg-red-600 disabled:bg-red-300 transition-colors"
+            >
+              {isRejecting ? "Declining..." : "Yes, decline"}
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
