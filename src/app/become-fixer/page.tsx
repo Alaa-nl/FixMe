@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
@@ -28,7 +28,15 @@ const STEPS = [
   { id: 4, title: "Review", icon: CheckCircle, label: "Ready to go" },
 ];
 
-export default function BecomeFixerPage() {
+export default function BecomeFixerPageWrapper() {
+  return (
+    <Suspense fallback={<div className="flex items-center justify-center min-h-[60vh]"><div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" /></div>}>
+      <BecomeFixerPage />
+    </Suspense>
+  );
+}
+
+function BecomeFixerPage() {
   const { data: session, status, update: updateSession } = useSession();
   const router = useRouter();
   const searchParams = useSearchParams();

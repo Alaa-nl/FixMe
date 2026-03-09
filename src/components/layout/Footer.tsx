@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { getContentBySection } from "@/lib/siteContent";
 
 export default async function Footer() {
@@ -9,8 +10,15 @@ export default async function Footer() {
       <div className="max-w-7xl mx-auto px-4 py-12">
         {/* Logo and Slogan */}
         <div className="mb-8">
-          <Link href="/" className="inline-block">
-            <h2 className="text-3xl font-bold mb-2">FixMe</h2>
+          <Link href="/" className="inline-flex items-center gap-3 mb-2">
+            <Image
+              src="/images/fixme-app-icon.png"
+              alt="FixMe"
+              width={48}
+              height={48}
+              className="rounded-xl"
+            />
+            <span className="text-3xl font-bold text-white">FixMe</span>
           </Link>
           <p className="text-blue-200 text-lg">{content["footer_tagline"]}</p>
         </div>

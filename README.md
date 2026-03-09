@@ -1,3 +1,11 @@
+<p align="center">
+  <img src="public/images/fixme-logo.svg" alt="FixMe Logo" width="400" />
+</p>
+
+<p align="center"><strong>Don't throw it away. Fix it.</strong></p>
+
+---
+
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
 ## Getting Started

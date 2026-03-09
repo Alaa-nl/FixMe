@@ -62,7 +62,7 @@ export default function LocationPicker({
   const [selectedAddress, setSelectedAddress] = useState(initialAddress);
   const [isSearching, setIsSearching] = useState(false);
   const [useLocationLoading, setUseLocationLoading] = useState(false);
-  const searchTimeoutRef = useRef<NodeJS.Timeout>();
+  const searchTimeoutRef = useRef<NodeJS.Timeout>(undefined);
 
   // Reverse geocode when position changes
   useEffect(() => {

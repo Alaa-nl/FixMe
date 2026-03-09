@@ -96,7 +96,7 @@ export async function POST(req: NextRequest) {
         // In a real system, you might want a separate adminNotes field
         aiDiagnosis: adminNotes
           ? { adminNotes, createdBy: session.user.id }
-          : null,
+          : undefined,
       },
       include: {
         customer: {

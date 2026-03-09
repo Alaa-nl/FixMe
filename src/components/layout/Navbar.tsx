@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { Search, MessageCircle, Bell, User, LogOut, ChevronDown, Wrench } from "lucide-react";
+import Image from "next/image";
 import Button from "@/components/ui/button";
 import NotificationBell from "@/components/layout/NotificationBell";
 
@@ -90,8 +91,25 @@ export default function Navbar({ content = {} }: NavbarProps) {
     <nav className="fixed top-0 left-0 right-0 z-50 bg-white shadow-sm h-16">
       <div className="max-w-7xl mx-auto px-4 h-full flex items-center justify-between gap-4">
         {/* Logo */}
-        <Link href="/" className="text-2xl font-bold text-primary hover:opacity-80 transition-opacity">
-          {t("navbar_logo", "FixMe")}
+        <Link href="/" className="flex-shrink-0 hover:opacity-80 transition-opacity">
+          {/* Full horizontal logo on md+ screens */}
+          <Image
+            src="/images/fixme-logo.svg"
+            alt="FixMe"
+            width={160}
+            height={45}
+            className="hidden md:block"
+            priority
+          />
+          {/* Square app icon on mobile */}
+          <Image
+            src="/images/fixme-app-icon.png"
+            alt="FixMe"
+            width={40}
+            height={40}
+            className="block md:hidden rounded-lg"
+            priority
+          />
         </Link>
 
         {/* Search Bar - Hidden on mobile, visible on md+ */}

@@ -2,6 +2,7 @@
 
 import { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
 import {
@@ -229,6 +230,13 @@ export default function AdminSidebar({
           {/* Logo */}
           <div className="p-6 border-b border-white/10">
             <div className="flex items-center gap-3">
+              <Image
+                src="/images/fixme-app-icon.png"
+                alt="FixMe"
+                width={36}
+                height={36}
+                className="rounded-lg"
+              />
               <h1 className="text-2xl font-bold text-white">FixMe</h1>
               <span className="px-2 py-1 bg-orange-500 text-white text-xs font-bold rounded">
                 {isSuperAdmin ? "ADMIN" : "STAFF"}

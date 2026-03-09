@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="96" ry="96" fill="#F97721"/>
+  <g transform="translate(256,268) rotate(-135) translate(0,0)">
+    <!-- Wrench shape -->
+    <path d="M-24,-140 L-24,-30 C-52,-25 -72,-1 -72,28 C-72,61 -45,88 -12,88 C10,88 28,75 38,56 L84,56 L84,88 L116,56 L116,0 L84,0 L84,32 L38,32 C36,28 33,24 30,20 L30,-140 Z M-12,28 C-12,41 -22,52 -36,52 C-50,52 -60,41 -60,28 C-60,15 -50,4 -36,4 C-22,4 -12,15 -12,28 Z" fill="white"/>
+  </g>
+</svg>

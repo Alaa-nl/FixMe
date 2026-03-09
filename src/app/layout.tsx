@@ -24,10 +24,10 @@ const syne = Syne({
 export const metadata: Metadata = {
   metadataBase: new URL('https://fixme.nl'),
   title: {
-    default: "FixMe — Don't Throw It Away. Fix It.",
+    default: "FixMe — Don't throw it away. Fix it.",
     template: "%s | FixMe — Repair Marketplace",
   },
-  description: "Don't throw it away. Fix it. Find local repair people for bikes, phones, appliances and more. Save money, save the planet, support local businesses.",
+  description: "FixMe is the Dutch repair marketplace. Post your broken item and get offers from local repair experts near you.",
   keywords: ["repair", "fix", "marketplace", "local repair", "bike repair", "phone repair", "appliance repair", "Netherlands", "Amsterdam", "sustainable"],
   authors: [{ name: "FixMe B.V." }],
   creator: "FixMe B.V.",
@@ -37,22 +37,22 @@ export const metadata: Metadata = {
     locale: "nl_NL",
     url: "https://fixme.nl",
     siteName: "FixMe",
-    title: "FixMe — Don't Throw It Away. Fix It.",
-    description: "Find local repair people for bikes, phones, appliances and more. Save money, save the planet, support local businesses.",
+    title: "FixMe — Don't throw it away. Fix it.",
+    description: "FixMe is the Dutch repair marketplace. Post your broken item and get offers from local repair experts near you.",
     images: [
       {
-        url: "/og-image.png",
-        width: 1200,
-        height: 630,
-        alt: "FixMe — Repair Marketplace",
+        url: "/images/fixme-logo.svg",
+        width: 933,
+        height: 455,
+        alt: "FixMe — Don't throw it away. Fix it.",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "FixMe — Don't Throw It Away. Fix It.",
-    description: "Find local repair people for bikes, phones, appliances and more.",
-    images: ["/og-image.png"],
+    title: "FixMe — Don't throw it away. Fix it.",
+    description: "FixMe is the Dutch repair marketplace. Post your broken item and get offers from local repair experts near you.",
+    images: ["/images/fixme-logo.svg"],
   },
   robots: {
     index: true,
@@ -66,9 +66,21 @@ export const metadata: Metadata = {
     },
   },
   icons: {
-    icon: "/favicon.ico",
-    shortcut: "/favicon.ico",
-    apple: "/apple-touch-icon.png",
+    icon: [
+      { url: "/favicon.ico", sizes: "32x32" },
+      { url: "/favicon-16x16.png", sizes: "16x16", type: "image/png" },
+      { url: "/favicon-32x32.png", sizes: "32x32", type: "image/png" },
+    ],
+    apple: [
+      { url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
+    ],
+    other: [
+      { rel: "icon", url: "/icon-192.png", sizes: "192x192", type: "image/png" },
+    ],
+  },
+  manifest: "/site.webmanifest",
+  other: {
+    "theme-color": "#FF6B35",
   },
 };
 

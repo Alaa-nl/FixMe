@@ -4,6 +4,7 @@ import { useState } from "react";
 import { signIn, getProviders } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import Button from "@/components/ui/button";
 import Input from "@/components/ui/input";
 import PasswordInput from "@/components/ui/password-input";
@@ -90,7 +91,16 @@ export default function LoginClient({ content }: LoginClientProps) {
       <div className="max-w-md w-full bg-card rounded-xl shadow-lg p-8">
         {/* Logo */}
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-primary mb-2">{content["login_logo"]}</h1>
+          <Link href="/">
+            <Image
+              src="/images/fixme-logo.svg"
+              alt="FixMe"
+              width={180}
+              height={50}
+              className="mx-auto mb-4"
+              priority
+            />
+          </Link>
           <h2 className="text-2xl font-semibold text-gray-800">{content["login_title"]}</h2>
         </div>
 
