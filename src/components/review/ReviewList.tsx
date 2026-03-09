@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { Star } from "lucide-react";
 import StarRating from "./StarRating";
 import ReviewCard from "./ReviewCard";
 
@@ -95,8 +96,8 @@ export default function ReviewList({ userId }: ReviewListProps) {
 
             return (
               <div key={stars} className="flex items-center gap-2">
-                <span className="text-sm font-medium text-gray-700 w-8">
-                  {stars} ★
+                <span className="flex items-center gap-0.5 text-sm font-medium text-gray-700 w-12">
+                  {stars} <Star className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
                 </span>
                 <div className="flex-1 bg-gray-200 rounded-full h-2">
                   <div

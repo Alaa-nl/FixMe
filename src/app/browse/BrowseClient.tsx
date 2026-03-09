@@ -5,7 +5,7 @@ import { useSession } from "next-auth/react";
 import { useSearchParams } from "next/navigation";
 import dynamic from "next/dynamic";
 import RequestCard from "@/components/request/RequestCard";
-import { Search, List, Map } from "lucide-react";
+import { Search, List, Map, MapPinOff, SearchX } from "lucide-react";
 
 // Dynamically import MapView with SSR disabled
 const MapView = dynamic(() => import("@/components/map/MapView"), {
@@ -442,7 +442,9 @@ function BrowsePage({ content }: BrowseClientProps) {
           ) : requests.length === 0 ? (
             <div className="bg-white rounded-xl p-12 text-center shadow-sm border border-gray-200">
               <div className="max-w-md mx-auto">
-                <div className="text-6xl mb-4">🗺️</div>
+                <div className="w-16 h-16 mx-auto bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                <MapPinOff className="w-8 h-8 text-gray-400" />
+              </div>
                 <h3 className="text-xl font-semibold text-gray-800 mb-3">
                   {content["browse_map_empty"]}
                 </h3>
@@ -477,7 +479,9 @@ function BrowsePage({ content }: BrowseClientProps) {
         ) : requests.length === 0 ? (
           <div className="bg-white rounded-xl p-12 text-center shadow-sm border border-gray-200">
             <div className="max-w-md mx-auto">
-              <div className="text-6xl mb-4">🔍</div>
+              <div className="w-16 h-16 mx-auto bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                <SearchX className="w-8 h-8 text-gray-400" />
+              </div>
               <h3 className="text-xl font-semibold text-gray-800 mb-3">
                 {content["browse_empty_title"]}
               </h3>

@@ -148,7 +148,7 @@ export default function VoucherManagementPage() {
             setEditingVoucher(null);
             setIsFormOpen(true);
           }}
-          className="bg-[#FF6B35] hover:bg-[#FF6B35]/90"
+          className="bg-primary hover:bg-primary/90"
         >
           <Plus size={18} className="mr-2" />
           Create Voucher
@@ -218,7 +218,7 @@ export default function VoucherManagementPage() {
               onClick={() => setFilter(f as any)}
               className={`px-4 py-2 rounded-lg font-medium transition-colors ${
                 filter === f
-                  ? "bg-[#FF6B35] text-white"
+                  ? "bg-primary text-white"
                   : "bg-gray-100 text-gray-700 hover:bg-gray-200"
               }`}
             >
@@ -240,7 +240,7 @@ export default function VoucherManagementPage() {
             <p className="mt-4 text-gray-600">No vouchers found</p>
             <Button
               onClick={() => setIsFormOpen(true)}
-              className="mt-4 bg-[#FF6B35] hover:bg-[#FF6B35]/90"
+              className="mt-4 bg-primary hover:bg-primary/90"
             >
               Create Your First Voucher
             </Button>
@@ -277,7 +277,7 @@ export default function VoucherManagementPage() {
                 {vouchers.map((voucher) => (
                   <tr key={voucher.id} className="hover:bg-gray-50">
                     <td className="px-6 py-4">
-                      <div className="font-mono font-bold text-[#FF6B35]">
+                      <div className="font-mono font-bold text-primary">
                         {voucher.code}
                       </div>
                       {voucher.description && (

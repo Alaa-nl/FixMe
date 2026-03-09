@@ -27,7 +27,7 @@ export default async function PrivacyPage() {
         </div>
 
         {/* Markdown Content */}
-        <div className="bg-white rounded-xl shadow-sm p-8 prose prose-gray max-w-none prose-headings:text-gray-800 prose-h2:text-2xl prose-h2:font-bold prose-h2:mt-10 prose-h2:mb-4 prose-p:text-gray-700 prose-p:leading-relaxed prose-li:text-gray-700 prose-strong:text-gray-800 prose-a:text-[#FF6B35] prose-a:font-semibold hover:prose-a:underline prose-ul:ml-4">
+        <div className="bg-white rounded-xl shadow-sm p-8 prose prose-gray max-w-none prose-headings:text-gray-800 prose-h2:text-2xl prose-h2:font-bold prose-h2:mt-10 prose-h2:mb-4 prose-p:text-gray-700 prose-p:leading-relaxed prose-li:text-gray-700 prose-strong:text-gray-800 prose-a:text-primary prose-a:font-semibold hover:prose-a:underline prose-ul:ml-4">
           <ReactMarkdown>{content["privacy_markdown"]}</ReactMarkdown>
         </div>
 
@@ -35,7 +35,7 @@ export default async function PrivacyPage() {
         <div className="text-center mt-8">
           <Link
             href="/"
-            className="text-[#FF6B35] hover:underline font-semibold"
+            className="text-primary hover:underline font-semibold"
           >
             {content["privacy_back_link"]}
           </Link>

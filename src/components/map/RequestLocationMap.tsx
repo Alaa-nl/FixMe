@@ -1,6 +1,7 @@
 "use client";
 
 import { MapContainer, TileLayer, Circle } from "react-leaflet";
+import { MapPin } from "lucide-react";
 import MapWrapper from "./MapWrapper";
 
 interface RequestLocationMapProps {
@@ -40,8 +41,8 @@ export default function RequestLocationMap({ lat, lng, city }: RequestLocationMa
         </MapContainer>
       </div>
 
-      <p className="mt-2 text-xs text-gray-500">
-        📍 Approximate location in {city}
+      <p className="mt-2 text-xs text-gray-500 flex items-center gap-1">
+        <MapPin className="w-3.5 h-3.5" /> Approximate location in {city}
       </p>
     </MapWrapper>
   );

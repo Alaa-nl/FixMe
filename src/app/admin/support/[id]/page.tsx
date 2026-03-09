@@ -223,7 +223,7 @@ export default function AdminSupportDetailPage() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <div className="animate-spin w-8 h-8 border-3 border-[#FF6B35] border-t-transparent rounded-full" />
+        <div className="animate-spin w-8 h-8 border-3 border-primary border-t-transparent rounded-full" />
       </div>
     );
   }
@@ -336,10 +336,10 @@ export default function AdminSupportDetailPage() {
                     <div
                       className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center mt-1 ${
                         isUser
-                          ? "bg-[#FF6B35] text-white"
+                          ? "bg-primary text-white"
                           : msg.senderType === "AI"
                           ? "bg-gray-200 text-gray-600"
-                          : "bg-[#1B4965] text-white"
+                          : "bg-secondary text-white"
                       }`}
                     >
                       <Icon className="w-4 h-4" />
@@ -354,9 +354,9 @@ export default function AdminSupportDetailPage() {
                       <div
                         className={`rounded-2xl px-4 py-2 text-sm leading-relaxed ${
                           isUser
-                            ? "bg-[#FF6B35] text-white rounded-br-sm"
+                            ? "bg-primary text-white rounded-br-sm"
                             : msg.senderType === "ADMIN"
-                            ? "bg-[#1B4965] text-white rounded-bl-sm"
+                            ? "bg-secondary text-white rounded-bl-sm"
                             : "bg-gray-100 text-gray-800 rounded-bl-sm"
                         }`}
                       >
@@ -387,14 +387,14 @@ export default function AdminSupportDetailPage() {
               onKeyDown={handleKeyDown}
               placeholder="Type your reply..."
               rows={1}
-              className="flex-1 px-4 py-3 border border-gray-300 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-[#1B4965] text-sm max-h-32"
+              className="flex-1 px-4 py-3 border border-gray-300 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-secondary text-sm max-h-32"
               style={{ minHeight: "2.75rem" }}
               disabled={isSending}
             />
             <button
               type="submit"
               disabled={!reply.trim() || isSending}
-              className="flex-shrink-0 px-6 py-3 rounded-xl bg-[#1B4965] text-white flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[#163d56] transition-colors text-sm font-medium"
+              className="flex-shrink-0 px-6 py-3 rounded-xl bg-secondary text-white flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-secondary/90 transition-colors text-sm font-medium"
             >
               {isSending ? (
                 <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full" />

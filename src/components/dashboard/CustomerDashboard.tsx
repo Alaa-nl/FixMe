@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { timeAgo } from "@/lib/utils";
-import { getCategoryIcon } from "@/lib/categoryIcons";
+import { CategoryIcon } from "@/lib/categoryIconsReact";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -22,6 +22,7 @@ import {
   AlertTriangle,
   ArrowRight,
   TrendingUp,
+  Star,
 } from "lucide-react";
 
 interface DashboardData {
@@ -236,8 +237,8 @@ export default function CustomerDashboard() {
                               className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                             />
                           ) : (
-                            <div className="w-full h-full flex items-center justify-center text-3xl">
-                              {getCategoryIcon(request.category.slug)}
+                            <div className="w-full h-full flex items-center justify-center bg-orange-50">
+                              <CategoryIcon slug={request.category.slug} className="w-8 h-8 text-primary/40" />
                             </div>
                           )}
                         </div>
@@ -255,8 +256,8 @@ export default function CustomerDashboard() {
                         </div>
 
                         <div className="flex items-center gap-3">
-                          <Badge variant="outline" className="gap-1">
-                            <span>{getCategoryIcon(request.category.slug)}</span>
+                          <Badge variant="outline" className="gap-1.5">
+                            <CategoryIcon slug={request.category.slug} className="w-3.5 h-3.5" />
                             <span>{request.category.name}</span>
                           </Badge>
                         </div>
@@ -382,20 +383,18 @@ export default function CustomerDashboard() {
                           Fixer: {job.fixer.name}
                         </p>
                         {job.reviews.length > 0 && (
-                          <div className="flex items-center gap-1 mt-1">
+                          <div className="flex items-center gap-0.5 mt-1">
                             {Array.from({ length: 5 }).map((_, i) => (
-                              <span
+                              <Star
                                 key={i}
-                                className={
+                                className={`w-3.5 h-3.5 ${
                                   i < job.reviews[0].rating
-                                    ? "text-primary"
-                                    : "text-muted"
-                                }
-                              >
-                                ★
-                              </span>
+                                    ? "text-amber-400 fill-amber-400"
+                                    : "text-gray-200"
+                                }`}
+                              />
                             ))}
-                            <span className="text-xs text-muted-foreground ml-1">
+                            <span className="text-xs text-muted-foreground ml-1.5">
                               {job.reviews[0].rating}/5
                             </span>
                           </div>

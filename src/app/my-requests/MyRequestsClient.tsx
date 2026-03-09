@@ -4,8 +4,9 @@ import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { ClipboardList } from "lucide-react";
 import { timeAgo } from "@/lib/utils";
-import { getCategoryIcon } from "@/lib/categoryIcons";
+import { CategoryIcon } from "@/lib/categoryIconsReact";
 
 interface RepairRequest {
   id: string;
@@ -143,7 +144,9 @@ export default function MyRequestsClient({ content }: MyRequestsClientProps) {
         {/* Requests List */}
         {filteredRequests.length === 0 ? (
           <div className="bg-white rounded-xl border border-gray-200 p-8 text-center">
-            <div className="text-5xl mb-3">📝</div>
+            <div className="w-16 h-16 mx-auto mb-3 rounded-full bg-gray-100 flex items-center justify-center">
+              <ClipboardList className="w-8 h-8 text-gray-400" />
+            </div>
             <p className="text-gray-600 mb-4">
               {requests.length === 0
                 ? content["my_requests_empty_none"]
@@ -175,7 +178,7 @@ export default function MyRequestsClient({ content }: MyRequestsClientProps) {
                         className="w-full h-full object-cover"
                       />
                     ) : (
-                      <span className="text-3xl">{getCategoryIcon(request.category.slug)}</span>
+                      <CategoryIcon slug={request.category.slug} className="w-8 h-8 text-primary/40" />
                     )}
                   </div>
 
@@ -194,7 +197,7 @@ export default function MyRequestsClient({ content }: MyRequestsClientProps) {
 
                     <div className="flex items-center gap-2 mb-2">
                       <span className="inline-flex items-center gap-1 px-2 py-1 bg-orange-50 text-primary text-xs font-medium rounded">
-                        <span>{getCategoryIcon(request.category.slug)}</span>
+                        <CategoryIcon slug={request.category.slug} className="w-3.5 h-3.5" />
                         <span>{request.category.name}</span>
                       </span>
                     </div>

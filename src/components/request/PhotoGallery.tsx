@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { getCategoryIcon } from "@/lib/categoryIcons";
+import { CategoryIcon } from "@/lib/categoryIconsReact";
+import { Package } from "lucide-react";
 
 interface PhotoGalleryProps {
   photos: string[];
@@ -14,8 +15,12 @@ export default function PhotoGallery({ photos, categorySlug }: PhotoGalleryProps
   // If no photos, show category emoji placeholder
   if (photos.length === 0) {
     return (
-      <div className="w-full aspect-video bg-gray-100 rounded-xl flex items-center justify-center">
-        <span className="text-9xl">{categorySlug ? getCategoryIcon(categorySlug) : "📦"}</span>
+      <div className="w-full aspect-video bg-orange-50/50 rounded-xl flex items-center justify-center">
+        {categorySlug ? (
+          <CategoryIcon slug={categorySlug} className="w-20 h-20 text-primary/30" />
+        ) : (
+          <Package className="w-20 h-20 text-primary/30" />
+        )}
       </div>
     );
   }

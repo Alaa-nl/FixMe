@@ -120,7 +120,7 @@ export default function CreateUserForm() {
           </Button>
         </Link>
         <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
-          <UserPlus className="text-[#FF6B35]" />
+          <UserPlus className="text-primary" />
           Create New User
         </h1>
         <p className="mt-2 text-gray-600">
@@ -324,7 +324,7 @@ export default function CreateUserForm() {
                   onChange={(e) => setBio(e.target.value)}
                   placeholder="Tell us about your experience..."
                   rows={4}
-                  className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#FF6B35]"
+                  className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
                 />
               </div>
             </div>
@@ -355,7 +355,7 @@ export default function CreateUserForm() {
           <Button
             type="submit"
             disabled={loading}
-            className="bg-[#FF6B35] hover:bg-[#FF6B35]/90"
+            className="bg-primary hover:bg-primary/90"
           >
             {loading && <Loader2 className="mr-2 animate-spin" size={18} />}
             Create User

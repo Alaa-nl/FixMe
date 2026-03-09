@@ -129,7 +129,7 @@ export default function AddStaffForm({ roles }: AddStaffFormProps) {
           </Button>
         </Link>
         <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
-          <UserPlus className="text-[#FF6B35]" />
+          <UserPlus className="text-primary" />
           Add Staff Member
         </h1>
         <p className="mt-2 text-gray-600">
@@ -184,7 +184,7 @@ export default function AddStaffForm({ roles }: AddStaffFormProps) {
           {selectedUser && (
             <div className="bg-green-50 border border-green-200 rounded-lg p-4">
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-full bg-[#FF6B35] text-white flex items-center justify-center font-semibold text-lg">
+                <div className="w-12 h-12 rounded-full bg-primary text-white flex items-center justify-center font-semibold text-lg">
                   {selectedUser.name.charAt(0).toUpperCase()}
                 </div>
                 <div>
@@ -255,7 +255,7 @@ export default function AddStaffForm({ roles }: AddStaffFormProps) {
               <Button
                 type="submit"
                 disabled={loading || !roleId}
-                className="bg-[#FF6B35] hover:bg-[#FF6B35]/90"
+                className="bg-primary hover:bg-primary/90"
               >
                 {loading && <Loader2 className="mr-2 animate-spin" size={18} />}
                 Add Staff Member
@@ -298,7 +298,7 @@ export default function AddStaffForm({ roles }: AddStaffFormProps) {
             You need to create at least one role before adding staff members.
           </p>
           <Link href="/admin/staff/roles/new">
-            <Button className="bg-[#FF6B35] hover:bg-[#FF6B35]/90">
+            <Button className="bg-primary hover:bg-primary/90">
               Create a Role
             </Button>
           </Link>

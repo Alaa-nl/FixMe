@@ -54,7 +54,7 @@ export default async function StaffPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
-            <UsersIcon className="text-[#FF6B35]" />
+            <UsersIcon className="text-primary" />
             Staff Management
           </h1>
           <p className="mt-2 text-gray-600">
@@ -70,7 +70,7 @@ export default async function StaffPage() {
               </Button>
             </Link>
             <Link href="/admin/staff/add">
-              <Button className="bg-[#FF6B35] hover:bg-[#FF6B35]/90 gap-2">
+              <Button className="bg-primary hover:bg-primary/90 gap-2">
                 <UserPlus size={18} />
                 Add Staff Member
               </Button>
@@ -95,7 +95,7 @@ export default async function StaffPage() {
             </p>
             {canCreate && (
               <Link href="/admin/staff/add">
-                <Button className="bg-[#FF6B35] hover:bg-[#FF6B35]/90">
+                <Button className="bg-primary hover:bg-primary/90">
                   <UserPlus size={18} className="mr-2" />
                   Add Staff Member
                 </Button>
@@ -138,7 +138,7 @@ export default async function StaffPage() {
                               className="w-10 h-10 rounded-full object-cover"
                             />
                           ) : (
-                            <div className="w-10 h-10 rounded-full bg-[#FF6B35] text-white flex items-center justify-center font-semibold">
+                            <div className="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center font-semibold">
                               {staff.user.name.charAt(0).toUpperCase()}
                             </div>
                           )}

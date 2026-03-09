@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Star } from "lucide-react";
 
 interface StarRatingProps {
   rating: number;
@@ -20,9 +21,9 @@ export default function StarRating({
   const [hoveredRating, setHoveredRating] = useState<number | null>(null);
 
   const sizeMap = {
-    sm: "text-base",
-    md: "text-2xl",
-    lg: "text-3xl",
+    sm: "w-4 h-4",
+    md: "w-6 h-6",
+    lg: "w-8 h-8",
   };
 
   const displayRating = hoveredRating !== null ? hoveredRating : rating;
@@ -59,14 +60,16 @@ export default function StarRating({
               onMouseEnter={() => handleMouseEnter(value)}
               onMouseLeave={handleMouseLeave}
               disabled={readOnly}
-              className={`${sizeMap[size]} ${
+              className={`${
                 readOnly ? "cursor-default" : "cursor-pointer hover:scale-110"
-              } transition-all duration-150 ${
-                isFilled ? "text-yellow-500" : "text-gray-300"
-              }`}
+              } transition-all duration-150`}
               aria-label={`${value} star${value !== 1 ? "s" : ""}`}
             >
-              {isFilled ? "★" : "☆"}
+              <Star
+                className={`${sizeMap[size]} ${
+                  isFilled ? "text-amber-400 fill-amber-400" : "text-gray-300"
+                }`}
+              />
             </button>
           );
         })}

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { FileDown } from "lucide-react";
+import { FileDown, CheckCircle2, Check, AlertTriangle, Star, Wrench } from "lucide-react";
 
 interface JobActionsProps {
   job: {
@@ -141,13 +141,13 @@ export default function JobActions({
                 disabled={isLoading}
                 className="w-full px-6 py-3 bg-green-600 text-white rounded-lg font-bold hover:bg-green-700 transition-colors disabled:opacity-50 text-lg"
               >
-                {isLoading ? "Processing..." : "✅ Confirm job completed"}
+                {isLoading ? "Processing..." : <span className="flex items-center justify-center gap-2"><CheckCircle2 className="w-5 h-5" /> Confirm job completed</span>}
               </button>
               <a
                 href="#dispute-section"
                 className="block text-center text-sm text-red-600 hover:underline"
               >
-                ⚠️ Open dispute
+                <span className="inline-flex items-center gap-1"><AlertTriangle className="w-3.5 h-3.5" /> Open dispute</span>
               </a>
             </>
           )}
@@ -155,14 +155,14 @@ export default function JobActions({
           {job.status === "COMPLETED" && !userHasReviewed && (
             <Link href={`/jobs/${job.id}/review`}>
               <button className="w-full px-6 py-3 bg-primary text-white rounded-lg font-bold hover:bg-orange-600 transition-colors">
-                ⭐ Leave a review
+                <span className="inline-flex items-center justify-center gap-2"><Star className="w-5 h-5" /> Leave a review</span>
               </button>
             </Link>
           )}
 
           {job.status === "COMPLETED" && userHasReviewed && (
             <div className="bg-green-50 border border-green-200 rounded-lg p-4 text-center">
-              <p className="text-green-700 font-medium">✓ You left a review</p>
+              <p className="text-green-700 font-medium flex items-center justify-center gap-1.5"><Check className="w-4 h-4" /> You left a review</p>
             </div>
           )}
         </>
@@ -178,7 +178,7 @@ export default function JobActions({
                 disabled={isLoading}
                 className="w-full px-6 py-3 bg-primary text-white rounded-lg font-bold hover:bg-orange-600 transition-colors disabled:opacity-50 text-lg"
               >
-                {isLoading ? "Starting..." : "🔧 Start job"}
+                {isLoading ? "Starting..." : <span className="inline-flex items-center justify-center gap-2"><Wrench className="w-5 h-5" /> Start job</span>}
               </button>
               <button
                 onClick={handleCancelJob}
@@ -201,14 +201,14 @@ export default function JobActions({
           {job.status === "COMPLETED" && !userHasReviewed && (
             <Link href={`/jobs/${job.id}/review`}>
               <button className="w-full px-6 py-3 bg-primary text-white rounded-lg font-bold hover:bg-orange-600 transition-colors">
-                ⭐ Leave a review for customer
+                <span className="inline-flex items-center justify-center gap-2"><Star className="w-5 h-5" /> Leave a review for customer</span>
               </button>
             </Link>
           )}
 
           {job.status === "COMPLETED" && userHasReviewed && (
             <div className="bg-green-50 border border-green-200 rounded-lg p-4 text-center">
-              <p className="text-green-700 font-medium">✓ You left a review</p>
+              <p className="text-green-700 font-medium flex items-center justify-center gap-1.5"><Check className="w-4 h-4" /> You left a review</p>
             </div>
           )}
         </>

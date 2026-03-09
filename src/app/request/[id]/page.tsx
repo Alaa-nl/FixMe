@@ -1,7 +1,8 @@
 import { notFound } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
-import { getCategoryIcon } from "@/lib/categoryIcons";
+import { CategoryIcon } from "@/lib/categoryIconsReact";
+import { Wrench, CheckCircle2, XCircle, AlertTriangle, MapPin, Briefcase, Wallet, Clock, Package, Eye, MessageSquare } from "lucide-react";
 import { timeAgo } from "@/lib/utils";
 import PhotoGallery from "@/components/request/PhotoGallery";
 import DiagnosisCard from "@/components/ai/DiagnosisCard";
@@ -209,7 +210,7 @@ export default async function RequestPage({ params }: RequestPageProps) {
               {/* Category Badge */}
               <div className="mb-4">
                 <span className="inline-flex items-center gap-1 px-3 py-1 bg-orange-50 text-primary text-sm font-medium rounded-full">
-                  <span>{getCategoryIcon(request.category.slug)}</span>
+                  <CategoryIcon slug={request.category.slug} className="w-4 h-4" />
                   <span>{request.category.name}</span>
                 </span>
               </div>
@@ -226,11 +227,11 @@ export default async function RequestPage({ params }: RequestPageProps) {
                     : "bg-yellow-50 border-yellow-200 text-yellow-800"
                 }`}>
                   <div className="flex items-center gap-2">
-                    <span className="font-semibold">
-                      {request.status === "IN_PROGRESS" && "🔧 In Progress"}
-                      {request.status === "COMPLETED" && "✅ Completed"}
-                      {request.status === "CANCELLED" && "❌ Cancelled"}
-                      {request.status === "DISPUTED" && "⚠️ Disputed"}
+                    <span className="font-semibold flex items-center gap-1.5">
+                      {request.status === "IN_PROGRESS" && <><Wrench className="w-4 h-4" /> In Progress</>}
+                      {request.status === "COMPLETED" && <><CheckCircle2 className="w-4 h-4" /> Completed</>}
+                      {request.status === "CANCELLED" && <><XCircle className="w-4 h-4" /> Cancelled</>}
+                      {request.status === "DISPUTED" && <><AlertTriangle className="w-4 h-4" /> Disputed</>}
                     </span>
                     <span className="text-sm">
                       {request.status === "IN_PROGRESS" && "An offer has been accepted and work is underway"}
@@ -291,7 +292,7 @@ export default async function RequestPage({ params }: RequestPageProps) {
 
               {/* Location */}
               <div className="flex items-center gap-2 text-gray-600 mb-6">
-                <span>📍</span>
+                <MapPin className="w-4 h-4 text-gray-400 flex-shrink-0" />
                 <span>
                   {request.city}
                   {request.address && `, ${request.address}`}
@@ -322,7 +323,9 @@ export default async function RequestPage({ params }: RequestPageProps) {
 
               {request.offers.length === 0 ? (
                 <div className="text-center py-8">
-                  <div className="text-5xl mb-3">💼</div>
+                  <div className="w-14 h-14 mx-auto bg-gray-100 rounded-full flex items-center justify-center mb-3">
+                    <Briefcase className="w-7 h-7 text-gray-400" />
+                  </div>
                   <p className="text-gray-600">
                     {isRequestOwner
                       ? "No offers yet. Your request is visible to fixers in your area."
@@ -349,7 +352,7 @@ export default async function RequestPage({ params }: RequestPageProps) {
                 {/* Estimated Cost — only visible to fixers */}
                 {isFixer && (
                   <div>
-                    <div className="text-sm text-gray-600 mb-1">💰 Estimated cost</div>
+                    <div className="text-sm text-gray-600 mb-1 flex items-center gap-1.5"><Wallet className="w-3.5 h-3.5" /> Estimated cost</div>
                     {aiDiagnosis ? (
                       <div className="text-lg font-semibold text-primary">
                         €{aiDiagnosis.estimatedCostMin} — €{aiDiagnosis.estimatedCostMax}
@@ -362,25 +365,25 @@ export default async function RequestPage({ params }: RequestPageProps) {
 
                 {/* Location */}
                 <div>
-                  <div className="text-sm text-gray-600 mb-1">📍 Location</div>
+                  <div className="text-sm text-gray-600 mb-1 flex items-center gap-1.5"><MapPin className="w-3.5 h-3.5" /> Location</div>
                   <div className="text-sm font-medium text-gray-800">{request.city}</div>
                 </div>
 
                 {/* Timeline */}
                 <div>
-                  <div className="text-sm text-gray-600 mb-1">⏰ Timeline</div>
+                  <div className="text-sm text-gray-600 mb-1 flex items-center gap-1.5"><Clock className="w-3.5 h-3.5" /> Timeline</div>
                   <div className="text-sm font-medium text-gray-800">{timelineBadge.text}</div>
                 </div>
 
                 {/* Mobility */}
                 <div>
-                  <div className="text-sm text-gray-600 mb-1">📦 Mobility</div>
+                  <div className="text-sm text-gray-600 mb-1 flex items-center gap-1.5"><Package className="w-3.5 h-3.5" /> Mobility</div>
                   <div className="text-sm font-medium text-gray-800">{mobilityText}</div>
                 </div>
 
                 {/* Views (placeholder) */}
                 <div>
-                  <div className="text-sm text-gray-600 mb-1">👁 Views</div>
+                  <div className="text-sm text-gray-600 mb-1 flex items-center gap-1.5"><Eye className="w-3.5 h-3.5" /> Views</div>
                   <div className="text-sm font-medium text-gray-800">
                     {Math.floor(Math.random() * 100) + 20}
                   </div>
@@ -388,7 +391,7 @@ export default async function RequestPage({ params }: RequestPageProps) {
 
                 {/* Offers */}
                 <div>
-                  <div className="text-sm text-gray-600 mb-1">💬 Offers</div>
+                  <div className="text-sm text-gray-600 mb-1 flex items-center gap-1.5"><MessageSquare className="w-3.5 h-3.5" /> Offers</div>
                   <div className="text-sm font-medium text-gray-800">
                     {request._count.offers}
                   </div>
@@ -404,7 +407,7 @@ export default async function RequestPage({ params }: RequestPageProps) {
             {/* Location Map */}
             {request.locationLat && request.locationLng && (
               <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-200">
-                <h3 className="text-sm font-semibold text-gray-700 mb-2">📍 Location</h3>
+                <h3 className="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-1.5"><MapPin className="w-3.5 h-3.5" /> Location</h3>
                 <RequestLocationMapClient
                   lat={request.locationLat}
                   lng={request.locationLng}

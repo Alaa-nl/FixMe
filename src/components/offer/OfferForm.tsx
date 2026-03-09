@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Button from "@/components/ui/button";
-import { Calendar, Plus, X, Clock } from "lucide-react";
+import { Calendar, Plus, X, Clock, CheckCircle2 } from "lucide-react";
 
 interface OfferFormProps {
   repairRequestId: string;
@@ -117,7 +117,7 @@ export default function OfferForm({ repairRequestId, onSuccess }: OfferFormProps
     return (
       <div className="bg-white rounded-xl border-2 border-primary p-6">
         <div className="text-center">
-          <div className="text-5xl mb-3">✅</div>
+          <CheckCircle2 className="w-12 h-12 text-green-500 mx-auto mb-3" />
           <h3 className="text-xl font-bold text-gray-800 mb-2">Offer sent!</h3>
           <p className="text-gray-600">
             The customer will be notified and can accept your offer.

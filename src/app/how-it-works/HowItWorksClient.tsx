@@ -84,7 +84,7 @@ export default function HowItWorksClient({ content }: HowItWorksClientProps) {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Hero Section */}
-      <section className="bg-gradient-to-r from-[#1B4965] to-[#2d6a8c] text-white py-16 md:py-24">
+      <section className="bg-gradient-to-r from-secondary to-secondary/70 text-white py-16 md:py-24">
         <div className="max-w-7xl mx-auto px-4 text-center">
           <h1 className="text-4xl md:text-5xl font-bold mb-4">
             {content["how_it_works_title"]}
@@ -102,7 +102,7 @@ export default function HowItWorksClient({ content }: HowItWorksClientProps) {
             onClick={() => setActiveTab("customers")}
             className={`px-8 py-4 rounded-lg font-semibold text-lg transition-all ${
               activeTab === "customers"
-                ? "bg-[#FF6B35] text-white shadow-md"
+                ? "bg-primary text-white shadow-md"
                 : "text-gray-600 hover:bg-gray-50"
             }`}
           >
@@ -112,7 +112,7 @@ export default function HowItWorksClient({ content }: HowItWorksClientProps) {
             onClick={() => setActiveTab("fixers")}
             className={`px-8 py-4 rounded-lg font-semibold text-lg transition-all ${
               activeTab === "fixers"
-                ? "bg-[#FF6B35] text-white shadow-md"
+                ? "bg-primary text-white shadow-md"
                 : "text-gray-600 hover:bg-gray-50"
             }`}
           >
@@ -134,11 +134,11 @@ export default function HowItWorksClient({ content }: HowItWorksClientProps) {
                 >
                   {/* Step Number */}
                   <div className="flex items-center gap-4 mb-4">
-                    <div className="w-12 h-12 rounded-full bg-[#FF6B35] text-white flex items-center justify-center text-xl font-bold flex-shrink-0">
+                    <div className="w-12 h-12 rounded-full bg-primary text-white flex items-center justify-center text-xl font-bold flex-shrink-0">
                       {index + 1}
                     </div>
                     <div className="w-12 h-12 rounded-full bg-orange-50 flex items-center justify-center flex-shrink-0">
-                      <Icon className="w-6 h-6 text-[#FF6B35]" />
+                      <Icon className="w-6 h-6 text-primary" />
                     </div>
                   </div>
 
@@ -177,7 +177,7 @@ export default function HowItWorksClient({ content }: HowItWorksClientProps) {
                     {faq.question}
                   </span>
                   {openFaq === index ? (
-                    <ChevronUp className="w-5 h-5 text-[#FF6B35] flex-shrink-0" />
+                    <ChevronUp className="w-5 h-5 text-primary flex-shrink-0" />
                   ) : (
                     <ChevronDown className="w-5 h-5 text-gray-400 flex-shrink-0" />
                   )}
@@ -195,7 +195,7 @@ export default function HowItWorksClient({ content }: HowItWorksClientProps) {
       </section>
 
       {/* CTA Section */}
-      <section className="bg-[#1B4965] text-white py-16 md:py-24">
+      <section className="bg-secondary text-white py-16 md:py-24">
         <div className="max-w-4xl mx-auto px-4 text-center">
           <h2 className="text-3xl md:text-4xl font-bold mb-4">
             {content["hiw_cta_title"]}
@@ -214,7 +214,7 @@ export default function HowItWorksClient({ content }: HowItWorksClientProps) {
               <Button
                 variant="outline"
                 size="lg"
-                className="w-full sm:w-auto bg-white text-[#1B4965] border-white hover:bg-blue-50"
+                className="w-full sm:w-auto bg-white text-secondary border-white hover:bg-blue-50"
               >
                 {content["hiw_cta_fixer_button"]}
               </Button>

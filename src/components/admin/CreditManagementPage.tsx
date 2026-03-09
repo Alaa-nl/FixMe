@@ -195,7 +195,7 @@ export default function CreditManagementPage() {
           <Button
             onClick={searchUser}
             disabled={searching}
-            className="bg-[#FF6B35] hover:bg-[#FF6B35]/90"
+            className="bg-primary hover:bg-primary/90"
           >
             {searching ? (
               <Loader2 className="animate-spin" size={18} />
@@ -262,7 +262,7 @@ export default function CreditManagementPage() {
               </h2>
               <Button
                 onClick={() => setShowAddForm(!showAddForm)}
-                className="bg-[#FF6B35] hover:bg-[#FF6B35]/90"
+                className="bg-primary hover:bg-primary/90"
               >
                 {showAddForm ? "Cancel" : "Add/Remove Credit"}
               </Button>
@@ -322,7 +322,7 @@ export default function CreditManagementPage() {
                 <Button
                   onClick={handleAddCredit}
                   disabled={submitting}
-                  className="bg-[#FF6B35] hover:bg-[#FF6B35]/90"
+                  className="bg-primary hover:bg-primary/90"
                 >
                   {submitting && (
                     <Loader2 className="mr-2 animate-spin" size={18} />

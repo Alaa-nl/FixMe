@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/db";
 import StarRating from "@/components/review/StarRating";
 import ReviewList from "@/components/review/ReviewList";
-import { getCategoryIcon } from "@/lib/categoryIcons";
+import { CategoryIcon } from "@/lib/categoryIconsReact";
 import { MapPin, Briefcase, Calendar, ShieldCheck, Zap, Star } from "lucide-react";
 import ServiceAreaPreviewClient from "@/components/map/ServiceAreaPreviewClient";
 
@@ -137,7 +137,7 @@ export default async function PublicProfilePage({ params }: ProfilePageProps) {
                   key={cat.id}
                   className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-orange-50 text-primary text-sm font-medium rounded-full"
                 >
-                  <span>{getCategoryIcon(cat.slug)}</span>
+                  <CategoryIcon slug={cat.slug} className="w-4 h-4" />
                   {cat.name}
                 </span>
               ))}

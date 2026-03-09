@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Users, Wrench, Briefcase, CheckCircle, AlertTriangle, Euro, Clock, TrendingUp, ArrowRight } from "lucide-react";
+import { Users, Wrench, Briefcase, CheckCircle, AlertTriangle, Euro, Clock, TrendingUp, ArrowRight, UserPlus, FileText, Handshake, CheckCircle2, Star, Pin } from "lucide-react";
+import { ReactNode } from "react";
 import { timeAgo } from "@/lib/utils";
 
 interface Stats {
@@ -87,22 +88,22 @@ export default function AdminDashboard() {
     : "0.00";
 
   // Get activity icon and color
-  const getActivityStyle = (type: string) => {
+  const getActivityStyle = (type: string): { icon: ReactNode; color: string } => {
     switch (type) {
       case "user_registered":
-        return { icon: "👤", color: "bg-blue-100 text-blue-600" };
+        return { icon: <UserPlus className="w-5 h-5" />, color: "bg-blue-100 text-blue-600" };
       case "request_posted":
-        return { icon: "📝", color: "bg-purple-100 text-purple-600" };
+        return { icon: <FileText className="w-5 h-5" />, color: "bg-purple-100 text-purple-600" };
       case "offer_accepted":
-        return { icon: "🤝", color: "bg-green-100 text-green-600" };
+        return { icon: <Handshake className="w-5 h-5" />, color: "bg-green-100 text-green-600" };
       case "job_completed":
-        return { icon: "✅", color: "bg-green-100 text-green-600" };
+        return { icon: <CheckCircle2 className="w-5 h-5" />, color: "bg-green-100 text-green-600" };
       case "dispute_opened":
-        return { icon: "⚠️", color: "bg-red-100 text-red-600" };
+        return { icon: <AlertTriangle className="w-5 h-5" />, color: "bg-red-100 text-red-600" };
       case "review_left":
-        return { icon: "⭐", color: "bg-yellow-100 text-yellow-600" };
+        return { icon: <Star className="w-5 h-5" />, color: "bg-yellow-100 text-yellow-600" };
       default:
-        return { icon: "📌", color: "bg-gray-100 text-gray-600" };
+        return { icon: <Pin className="w-5 h-5" />, color: "bg-gray-100 text-gray-600" };
     }
   };
 
@@ -245,7 +246,7 @@ export default function AdminDashboard() {
 
           <div className="mt-4 pt-4 border-t border-gray-200">
             <p className="text-xs text-gray-500">
-              💡 Shows platform commission (15%) from completed jobs
+              Shows platform commission (15%) from completed jobs
             </p>
           </div>
         </div>
@@ -272,7 +273,7 @@ export default function AdminDashboard() {
                     href={activity.link}
                     className="flex items-start gap-3 p-3 rounded-lg hover:bg-gray-50 transition-colors border border-transparent hover:border-gray-200"
                   >
-                    <div className={`flex-shrink-0 w-10 h-10 rounded-lg ${style.color} flex items-center justify-center text-lg`}>
+                    <div className={`flex-shrink-0 w-10 h-10 rounded-lg ${style.color} flex items-center justify-center`}>
                       {style.icon}
                     </div>
                     <div className="flex-1 min-w-0">

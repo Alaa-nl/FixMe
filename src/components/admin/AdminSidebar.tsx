@@ -207,7 +207,7 @@ export default function AdminSidebar({
       {/* Mobile menu button */}
       <button
         onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-        className="lg:hidden fixed top-20 left-4 z-50 p-2 bg-[#1B4965] text-white rounded-lg"
+        className="lg:hidden fixed top-20 left-4 z-50 p-2 bg-secondary text-white rounded-lg"
       >
         {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
       </button>
@@ -222,7 +222,7 @@ export default function AdminSidebar({
 
       {/* Sidebar */}
       <aside
-        className={`fixed top-16 left-0 z-40 h-[calc(100vh-4rem)] w-64 bg-[#1B4965] transition-transform ${
+        className={`fixed top-16 left-0 z-40 h-[calc(100vh-4rem)] w-64 bg-secondary transition-transform ${
           isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"
         } lg:translate-x-0`}
       >
@@ -267,7 +267,7 @@ export default function AdminSidebar({
                     <span
                       className={`ml-auto px-2 py-0.5 text-white text-xs font-bold rounded-full ${
                         item.badge === "escalated_support"
-                          ? "bg-[#FF6B35]"
+                          ? "bg-primary"
                           : "bg-red-500"
                       }`}
                     >

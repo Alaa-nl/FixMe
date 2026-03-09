@@ -177,7 +177,7 @@ export default function AdminLogsPage() {
                 setSelectedUser(e.target.value);
                 setPagination((prev) => ({ ...prev, page: 1 }));
               }}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#FF6B35]"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary"
             >
               <option value="">All Staff</option>
               {availableUsers.map((user) => (
@@ -200,7 +200,7 @@ export default function AdminLogsPage() {
                 setSelectedAction(e.target.value);
                 setPagination((prev) => ({ ...prev, page: 1 }));
               }}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#FF6B35]"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary"
             >
               <option value="">All Actions</option>
               {availableActions.map((action) => (
@@ -321,7 +321,7 @@ export default function AdminLogsPage() {
                             className="w-8 h-8 rounded-full object-cover"
                           />
                         ) : (
-                          <div className="w-8 h-8 rounded-full bg-[#FF6B35] text-white flex items-center justify-center text-xs font-semibold">
+                          <div className="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center text-xs font-semibold">
                             {log.user.name.charAt(0).toUpperCase()}
                           </div>
                         )}
@@ -422,7 +422,7 @@ export default function AdminLogsPage() {
                         size="sm"
                         className={
                           pagination.page === page
-                            ? "bg-[#FF6B35] hover:bg-[#FF6B35]/90"
+                            ? "bg-primary hover:bg-primary/90"
                             : ""
                         }
                       >

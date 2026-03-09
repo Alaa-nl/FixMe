@@ -82,7 +82,7 @@ export default function AdminSupportPage() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <div className="animate-spin w-8 h-8 border-3 border-[#FF6B35] border-t-transparent rounded-full" />
+        <div className="animate-spin w-8 h-8 border-3 border-primary border-t-transparent rounded-full" />
       </div>
     );
   }
@@ -92,7 +92,7 @@ export default function AdminSupportPage() {
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
-          <Headset className="w-7 h-7 text-[#1B4965]" />
+          <Headset className="w-7 h-7 text-secondary" />
           <div>
             <h1 className="text-2xl font-bold text-gray-800">
               Support Conversations
@@ -116,7 +116,7 @@ export default function AdminSupportPage() {
             onClick={() => setFilter(tab.key)}
             className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
               filter === tab.key
-                ? "bg-[#1B4965] text-white"
+                ? "bg-secondary text-white"
                 : "bg-gray-100 text-gray-600 hover:bg-gray-200"
             }`}
           >
@@ -147,7 +147,7 @@ export default function AdminSupportPage() {
                 key={conv.id}
                 href={`/admin/support/${conv.id}`}
                 className={`flex items-start gap-4 p-4 border-b border-gray-100 last:border-b-0 hover:bg-gray-50 transition-colors ${
-                  hasUnread ? "border-l-4 border-l-[#FF6B35]" : ""
+                  hasUnread ? "border-l-4 border-l-primary" : ""
                 }`}
               >
                 {/* User info */}
@@ -172,7 +172,7 @@ export default function AdminSupportPage() {
                   {conv.lastMessage && (
                     <p className="text-sm text-gray-500 truncate">
                       {conv.lastMessage.senderType === "ADMIN" && (
-                        <span className="text-[#1B4965] font-medium">
+                        <span className="text-secondary font-medium">
                           You:{" "}
                         </span>
                       )}
@@ -208,7 +208,7 @@ export default function AdminSupportPage() {
                   )}
 
                   {hasUnread && (
-                    <span className="w-5 h-5 rounded-full bg-[#FF6B35] text-white text-[10px] font-bold flex items-center justify-center">
+                    <span className="w-5 h-5 rounded-full bg-primary text-white text-[10px] font-bold flex items-center justify-center">
                       {conv.unreadCount > 9 ? "9+" : conv.unreadCount}
                     </span>
                   )}

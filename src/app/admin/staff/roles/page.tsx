@@ -49,7 +49,7 @@ export default async function RolesPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
-            <Shield className="text-[#FF6B35]" />
+            <Shield className="text-primary" />
             Role Management
           </h1>
           <p className="mt-2 text-gray-600">
@@ -58,7 +58,7 @@ export default async function RolesPage() {
         </div>
         {canCreate && (
           <Link href="/admin/staff/roles/new">
-            <Button className="bg-[#FF6B35] hover:bg-[#FF6B35]/90 gap-2">
+            <Button className="bg-primary hover:bg-primary/90 gap-2">
               <Plus size={18} />
               Create Role
             </Button>
@@ -86,19 +86,19 @@ export default async function RolesPage() {
                       <p className="text-sm text-gray-600">{role.description}</p>
                     )}
                   </div>
-                  <Shield className="text-[#1B4965] flex-shrink-0 ml-2" size={24} />
+                  <Shield className="text-secondary flex-shrink-0 ml-2" size={24} />
                 </div>
 
                 {/* Stats */}
                 <div className="grid grid-cols-2 gap-4 mb-4">
                   <div className="bg-blue-50 rounded-lg p-3">
-                    <div className="text-2xl font-bold text-[#1B4965]">
+                    <div className="text-2xl font-bold text-secondary">
                       {permissions.length}
                     </div>
                     <div className="text-xs text-gray-600">Permissions</div>
                   </div>
                   <div className="bg-orange-50 rounded-lg p-3">
-                    <div className="text-2xl font-bold text-[#FF6B35]">
+                    <div className="text-2xl font-bold text-primary">
                       {role._count.staffMembers}
                     </div>
                     <div className="text-xs text-gray-600">Staff Members</div>
@@ -152,7 +152,7 @@ export default async function RolesPage() {
             </p>
             {canCreate && (
               <Link href="/admin/staff/roles/new">
-                <Button className="bg-[#FF6B35] hover:bg-[#FF6B35]/90">
+                <Button className="bg-primary hover:bg-primary/90">
                   <Plus size={18} className="mr-2" />
                   Create Role
                 </Button>

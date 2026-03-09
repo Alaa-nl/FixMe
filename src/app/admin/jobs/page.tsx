@@ -44,7 +44,7 @@ export default function AdminJobsPage() {
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold text-gray-800">Jobs & Repair Requests</h1>
         <Link href="/admin/jobs/new">
-          <button className="flex items-center gap-2 px-4 py-2 bg-[#FF6B35] text-white rounded-lg hover:bg-[#FF6B35]/90 font-medium transition-colors">
+          <button className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 font-medium transition-colors">
             <Plus size={20} />
             Create Request
           </button>

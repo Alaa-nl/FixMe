@@ -1,12 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { Bot } from "lucide-react";
 
 export default function DiagnosisLoading() {
   const [messageIndex, setMessageIndex] = useState(0);
 
   const messages = [
-    "🔍 Analyzing your item...",
+    "Analyzing your item...",
     "Looking at the damage...",
     "Estimating repair cost...",
     "Almost done...",
@@ -27,7 +28,7 @@ export default function DiagnosisLoading() {
         <div className="relative w-20 h-20">
           <div className="absolute inset-0 bg-primary rounded-full animate-ping opacity-75"></div>
           <div className="relative flex items-center justify-center w-20 h-20 bg-primary rounded-full">
-            <span className="text-3xl">🤖</span>
+            <Bot className="w-8 h-8 text-white" />
           </div>
         </div>
 

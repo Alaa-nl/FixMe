@@ -1,4 +1,5 @@
 import { DiagnosisResult } from "@/lib/claude";
+import { CheckCircle2, XCircle, Scale, Bot } from "lucide-react";
 
 interface DiagnosisCardProps {
   diagnosis: DiagnosisResult;
@@ -43,7 +44,7 @@ export default function DiagnosisCard({ diagnosis, userType }: DiagnosisCardProp
       return (
         <div className="bg-green-50 border-2 border-green-200 rounded-lg p-4">
           <div className="flex items-start gap-3">
-            <span className="text-2xl">✅</span>
+            <CheckCircle2 className="w-7 h-7 text-green-600 flex-shrink-0" />
             <div>
               <h4 className="font-semibold text-green-800 mb-1">
                 Worth repairing
@@ -57,7 +58,7 @@ export default function DiagnosisCard({ diagnosis, userType }: DiagnosisCardProp
       return (
         <div className="bg-red-50 border-2 border-red-200 rounded-lg p-4">
           <div className="flex items-start gap-3">
-            <span className="text-2xl">❌</span>
+            <XCircle className="w-7 h-7 text-red-600 flex-shrink-0" />
             <div>
               <h4 className="font-semibold text-red-800 mb-1">
                 Consider replacing
@@ -71,7 +72,7 @@ export default function DiagnosisCard({ diagnosis, userType }: DiagnosisCardProp
       return (
         <div className="bg-yellow-50 border-2 border-yellow-200 rounded-lg p-4">
           <div className="flex items-start gap-3">
-            <span className="text-2xl">⚖️</span>
+            <Scale className="w-7 h-7 text-yellow-600 flex-shrink-0" />
             <div>
               <h4 className="font-semibold text-yellow-800 mb-1">
                 Could go either way
@@ -89,7 +90,7 @@ export default function DiagnosisCard({ diagnosis, userType }: DiagnosisCardProp
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <h3 className="text-xl md:text-2xl font-bold text-gray-800 flex items-center gap-2">
-          🤖 AI Diagnosis
+          <Bot className="w-6 h-6" /> AI Diagnosis
         </h3>
         <span
           className={`px-3 py-1 rounded-full text-xs font-semibold border ${getConfidenceColor(

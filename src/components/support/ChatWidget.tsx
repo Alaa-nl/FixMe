@@ -307,7 +307,7 @@ export default function ChatWidget() {
       {!isOpen && (
         <button
           onClick={handleOpen}
-          className="fixed bottom-24 right-5 md:bottom-8 md:right-8 z-[9999] w-14 h-14 rounded-full bg-[#FF6B35] text-white shadow-lg hover:shadow-xl hover:scale-105 transition-all flex items-center justify-center"
+          className="fixed bottom-24 right-5 md:bottom-8 md:right-8 z-[9999] w-14 h-14 rounded-full bg-primary text-white shadow-lg hover:shadow-xl hover:scale-105 transition-all flex items-center justify-center"
           aria-label="Open support chat"
         >
           <MessageCircle className="w-6 h-6" />
@@ -323,8 +323,8 @@ export default function ChatWidget() {
           }}
         >
           {/* Header */}
-          <div className="bg-[#1B4965] px-4 py-3 flex items-center gap-3 shrink-0">
-            <div className="w-9 h-9 rounded-full bg-[#FF6B35] flex items-center justify-center">
+          <div className="bg-secondary px-4 py-3 flex items-center gap-3 shrink-0">
+            <div className="w-9 h-9 rounded-full bg-primary flex items-center justify-center">
               <MessageCircle className="w-5 h-5 text-white" />
             </div>
             <div className="flex-1 min-w-0">
@@ -351,13 +351,13 @@ export default function ChatWidget() {
           >
             {isLoading ? (
               <div className="flex items-center justify-center h-full">
-                <div className="animate-spin w-6 h-6 border-2 border-[#FF6B35] border-t-transparent rounded-full" />
+                <div className="animate-spin w-6 h-6 border-2 border-primary border-t-transparent rounded-full" />
               </div>
             ) : messages.length === 0 ? (
               /* Welcome screen */
               <div className="flex flex-col items-center justify-center h-full text-center px-4">
-                <div className="w-14 h-14 rounded-full bg-[#FF6B35]/10 flex items-center justify-center mb-4">
-                  <MessageCircle className="w-7 h-7 text-[#FF6B35]" />
+                <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center mb-4">
+                  <MessageCircle className="w-7 h-7 text-primary" />
                 </div>
                 <h4 className="text-gray-800 font-semibold mb-1 text-sm">
                   Hi {userName}!
@@ -473,14 +473,14 @@ export default function ChatWidget() {
                       : "Ask a question..."
                   }
                   rows={1}
-                  className="flex-1 px-3.5 py-2 border border-gray-300 rounded-full resize-none focus:outline-none focus:ring-2 focus:ring-[#FF6B35] text-sm max-h-24"
+                  className="flex-1 px-3.5 py-2 border border-gray-300 rounded-full resize-none focus:outline-none focus:ring-2 focus:ring-primary text-sm max-h-24"
                   style={{ minHeight: "2.25rem" }}
                   disabled={isSending || isLoading}
                 />
                 <button
                   type="submit"
                   disabled={!newMessage.trim() || isSending || isLoading}
-                  className="flex-shrink-0 w-9 h-9 rounded-full bg-[#FF6B35] text-white flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed hover:bg-orange-600 transition-colors"
+                  className="flex-shrink-0 w-9 h-9 rounded-full bg-primary text-white flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed hover:bg-orange-600 transition-colors"
                 >
                   {isSending ? (
                     <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full" />

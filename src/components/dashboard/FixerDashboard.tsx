@@ -7,7 +7,7 @@ import Link from "next/link";
 import { timeAgo } from "@/lib/utils";
 import RequestCard from "@/components/request/RequestCard";
 import DisputeCard from "@/components/dispute/DisputeCard";
-import { AlertTriangle, Package } from "lucide-react";
+import { AlertTriangle, Package, CheckCircle2, Wrench, Star, Coins } from "lucide-react";
 
 interface DashboardData {
   nearbyRequests: any[];
@@ -130,7 +130,7 @@ export default function FixerDashboard() {
         {/* Stat Cards */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <div className="bg-white rounded-xl border border-gray-200 p-6">
-            <div className="text-4xl mb-2">🔧</div>
+            <Wrench className="w-10 h-10 text-primary mb-2" />
             <div className="text-3xl font-bold text-primary mb-1">
               {dashboardData.stats.activeJobCount}
             </div>
@@ -138,7 +138,7 @@ export default function FixerDashboard() {
           </div>
 
           <div className="bg-white rounded-xl border border-gray-200 p-6">
-            <div className="text-4xl mb-2">✅</div>
+            <CheckCircle2 className="w-10 h-10 text-green-500 mb-2" />
             <div className="text-3xl font-bold text-primary mb-1">
               {dashboardData.stats.completedCount}
             </div>
@@ -146,7 +146,7 @@ export default function FixerDashboard() {
           </div>
 
           <div className="bg-white rounded-xl border border-gray-200 p-6">
-            <div className="text-4xl mb-2">⭐</div>
+            <Star className="w-10 h-10 text-amber-400 fill-amber-400 mb-2" />
             <div className="text-3xl font-bold text-primary mb-1">
               {dashboardData.stats.averageRating.toFixed(1)}
             </div>
@@ -154,7 +154,7 @@ export default function FixerDashboard() {
           </div>
 
           <div className="bg-white rounded-xl border border-gray-200 p-6">
-            <div className="text-4xl mb-2">💰</div>
+            <Coins className="w-10 h-10 text-yellow-500 mb-2" />
             <div className="text-3xl font-bold text-primary mb-1">
               €{dashboardData.stats.totalEarnings}
             </div>

@@ -215,7 +215,7 @@ export default function ContentManagementPage() {
                     }}
                     className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${
                       selectedSection === section
-                        ? "bg-[#FF6B35] text-white font-medium"
+                        ? "bg-primary text-white font-medium"
                         : "text-gray-700 hover:bg-gray-100"
                     }`}
                   >
@@ -271,7 +271,7 @@ export default function ContentManagementPage() {
                       key={item.id}
                       className={`border rounded-lg p-4 transition-colors ${
                         editingItem?.id === item.id
-                          ? "border-[#FF6B35] bg-orange-50"
+                          ? "border-primary bg-orange-50"
                           : "border-gray-200 hover:border-gray-300"
                       }`}
                     >
@@ -310,7 +310,7 @@ export default function ContentManagementPage() {
                                 onClick={handleSave}
                                 disabled={saving}
                                 size="sm"
-                                className="bg-[#FF6B35] hover:bg-[#FF6B35]/90"
+                                className="bg-primary hover:bg-primary/90"
                               >
                                 {saving ? (
                                   <Loader2 className="animate-spin" size={14} />
@@ -356,7 +356,7 @@ export default function ContentManagementPage() {
                         <div className="mt-2">
                           {item.type === "markdown" ? (
                             markdownPreview ? (
-                              <div className="border rounded-lg p-4 bg-white prose prose-sm max-w-none prose-headings:text-gray-800 prose-p:text-gray-700 prose-a:text-[#FF6B35]">
+                              <div className="border rounded-lg p-4 bg-white prose prose-sm max-w-none prose-headings:text-gray-800 prose-p:text-gray-700 prose-a:text-primary">
                                 <ReactMarkdown>{editValue}</ReactMarkdown>
                               </div>
                             ) : (
@@ -364,7 +364,7 @@ export default function ContentManagementPage() {
                                 value={editValue}
                                 onChange={(e) => setEditValue(e.target.value)}
                                 rows={20}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md font-mono text-sm focus:outline-none focus:ring-2 focus:ring-[#FF6B35]"
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md font-mono text-sm focus:outline-none focus:ring-2 focus:ring-primary"
                                 placeholder="Enter markdown content..."
                               />
                             )
@@ -379,7 +379,7 @@ export default function ContentManagementPage() {
                               value={editValue}
                               onChange={(e) => setEditValue(e.target.value)}
                               rows={item.type === "html" ? 8 : 4}
-                              className="w-full px-3 py-2 border border-gray-300 rounded-md font-mono text-sm focus:outline-none focus:ring-2 focus:ring-[#FF6B35]"
+                              className="w-full px-3 py-2 border border-gray-300 rounded-md font-mono text-sm focus:outline-none focus:ring-2 focus:ring-primary"
                             />
                           )}
                           <p className="text-xs text-gray-500 mt-1">

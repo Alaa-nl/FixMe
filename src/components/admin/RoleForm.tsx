@@ -142,7 +142,7 @@ export default function RoleForm({ mode, roleId, initialData }: RoleFormProps) {
           </Button>
         </Link>
         <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
-          <Shield className="text-[#FF6B35]" />
+          <Shield className="text-primary" />
           {mode === "create" ? "Create New Role" : "Edit Role"}
         </h1>
         <p className="mt-2 text-gray-600">
@@ -295,7 +295,7 @@ export default function RoleForm({ mode, roleId, initialData }: RoleFormProps) {
           <Button
             type="submit"
             disabled={loading}
-            className="bg-[#FF6B35] hover:bg-[#FF6B35]/90"
+            className="bg-primary hover:bg-primary/90"
           >
             {loading && <Loader2 className="mr-2 animate-spin" size={18} />}
             {mode === "create" ? "Create Role" : "Update Role"}

@@ -44,7 +44,7 @@ export default function SupportMessage({
             className={`flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center mt-1 ${
               isAI
                 ? "bg-gray-200 text-gray-600"
-                : "bg-[#1B4965] text-white"
+                : "bg-secondary text-white"
             }`}
           >
             {isAI ? (
@@ -69,9 +69,9 @@ export default function SupportMessage({
               failed
                 ? "bg-red-100 text-red-800 border border-red-300"
                 : isUser
-                ? "bg-[#FF6B35] text-white rounded-br-sm"
+                ? "bg-primary text-white rounded-br-sm"
                 : isAdmin
-                ? "bg-[#1B4965] text-white rounded-bl-sm"
+                ? "bg-secondary text-white rounded-bl-sm"
                 : "bg-gray-100 text-gray-800 rounded-bl-sm"
             }`}
           >

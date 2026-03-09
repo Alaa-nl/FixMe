@@ -2,7 +2,7 @@ import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/db";
 import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Check } from "lucide-react";
 import ReviewForm from "@/components/review/ReviewForm";
 import ReviewCard from "@/components/review/ReviewCard";
 
@@ -123,7 +123,7 @@ export default async function ReviewPage({ params }: ReviewPageProps) {
         ) : (
           <div className="space-y-4">
             <div className="bg-green-50 border border-green-200 rounded-xl p-5 text-center">
-              <div className="text-3xl mb-2">✓</div>
+              <Check className="w-8 h-8 text-green-600 mx-auto mb-2" />
               <p className="font-semibold text-green-800">
                 You already left a review
               </p>

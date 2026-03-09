@@ -3,7 +3,8 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/db";
 import { getPlatformSettings } from "@/lib/platformSettings";
 import Link from "next/link";
-import { getCategoryIcon } from "@/lib/categoryIcons";
+import { CheckCircle2, Star, Calendar, Wrench, AlertTriangle, RefreshCcw, Bot, MessageCircle } from "lucide-react";
+import { CategoryIcon } from "@/lib/categoryIconsReact";
 import { DiagnosisResult } from "@/lib/claude";
 import JobTimeline from "@/components/job/JobTimeline";
 import JobActions from "@/components/job/JobActions";
@@ -140,28 +141,28 @@ export default async function JobPage({ params }: JobPageProps) {
         return {
           bg: "bg-blue-500",
           text: job.scheduledAt
-            ? `🗓 Scheduled for ${new Date(job.scheduledAt).toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" })} at ${new Date(job.scheduledAt).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })}`
-            : "🗓 Job Scheduled — waiting for the fixer to start",
+            ? <span className="inline-flex items-center gap-1.5"><Calendar className="w-4 h-4" /> Scheduled for {new Date(job.scheduledAt).toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" })} at {new Date(job.scheduledAt).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })}</span>
+            : <span className="inline-flex items-center gap-1.5"><Calendar className="w-4 h-4" /> Job Scheduled — waiting for the fixer to start</span>,
         };
       case "IN_PROGRESS":
         return {
           bg: "bg-primary",
-          text: "🔧 Repair In Progress",
+          text: <span className="inline-flex items-center gap-1.5"><Wrench className="w-4 h-4" /> Repair In Progress</span>,
         };
       case "COMPLETED":
         return {
           bg: "bg-green-600",
-          text: "✅ Job Completed",
+          text: <span className="inline-flex items-center gap-1.5"><CheckCircle2 className="w-4 h-4" /> Job Completed</span>,
         };
       case "DISPUTED":
         return {
           bg: "bg-red-600",
-          text: "⚠️ Dispute Open",
+          text: <span className="inline-flex items-center gap-1.5"><AlertTriangle className="w-4 h-4" /> Dispute Open</span>,
         };
       case "REFUNDED":
         return {
           bg: "bg-gray-500",
-          text: "💸 Refunded",
+          text: <span className="inline-flex items-center gap-1.5"><RefreshCcw className="w-4 h-4" /> Refunded</span>,
         };
       default:
         return {
@@ -197,7 +198,7 @@ export default async function JobPage({ params }: JobPageProps) {
             {job.repairRequest.title}
           </h1>
           <span className="inline-flex items-center gap-1 px-3 py-1 bg-orange-50 text-primary text-sm font-medium rounded-full">
-            <span>{getCategoryIcon(job.repairRequest.category.slug)}</span>
+            <CategoryIcon slug={job.repairRequest.category.slug} className="w-4 h-4" />
             <span>{job.repairRequest.category.name}</span>
           </span>
         </div>
@@ -236,7 +237,7 @@ export default async function JobPage({ params }: JobPageProps) {
               {aiDiagnosis && (
                 <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
                   <div className="flex items-center gap-2 mb-2">
-                    <span className="text-2xl">🤖</span>
+                    <Bot className="w-6 h-6 text-purple-700" />
                     <h3 className="font-semibold text-purple-900">AI Diagnosis</h3>
                   </div>
                   <div className="space-y-2 text-sm">
@@ -270,7 +271,7 @@ export default async function JobPage({ params }: JobPageProps) {
                 className="block bg-white rounded-xl border border-gray-200 p-4 hover:shadow-md transition-shadow"
               >
                 <div className="flex items-center gap-3">
-                  <span className="text-3xl">💬</span>
+                  <MessageCircle className="w-7 h-7 text-primary" />
                   <div>
                     <h3 className="font-semibold text-gray-800">
                       Chat with {otherPerson.name}
@@ -396,7 +397,7 @@ export default async function JobPage({ params }: JobPageProps) {
                       <p className="font-medium text-gray-800 group-hover:text-primary transition-colors">{job.fixer.name}</p>
                       <p className="text-xs text-gray-500">
                         {job.fixer.fixerProfile && (
-                          <>⭐ {job.fixer.fixerProfile.averageRating.toFixed(1)} · </>
+                          <><Star className="w-3.5 h-3.5 text-amber-400 fill-amber-400 inline" /> {job.fixer.fixerProfile.averageRating.toFixed(1)} · </>
                         )}
                         {job.fixer._count.reviewsReceived} review{job.fixer._count.reviewsReceived !== 1 ? "s" : ""}
                         {" · "}
@@ -437,7 +438,7 @@ export default async function JobPage({ params }: JobPageProps) {
               {job.scheduledAt && (
                 <div className="border-t border-gray-200 pt-4 mb-4">
                   <div className="flex items-start gap-3 p-3 bg-blue-50 rounded-lg border border-blue-100">
-                    <span className="text-xl mt-0.5">🗓</span>
+                    <Calendar className="w-5 h-5 text-blue-700 mt-0.5 flex-shrink-0" />
                     <div>
                       <p className="text-sm font-semibold text-blue-900">Scheduled appointment</p>
                       <p className="text-sm text-blue-800 mt-0.5">

@@ -158,7 +158,7 @@ export default function CreateRepairRequestForm({
           </Button>
         </Link>
         <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
-          <Wrench className="text-[#FF6B35]" />
+          <Wrench className="text-primary" />
           Create Repair Request
         </h1>
         <p className="mt-2 text-gray-600">
@@ -211,7 +211,7 @@ export default function CreateRepairRequestForm({
             {selectedCustomer && (
               <div className="bg-green-50 border border-green-200 rounded-lg p-4">
                 <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-full bg-[#FF6B35] text-white flex items-center justify-center font-semibold text-lg">
+                  <div className="w-12 h-12 rounded-full bg-primary text-white flex items-center justify-center font-semibold text-lg">
                     {selectedCustomer.name.charAt(0).toUpperCase()}
                   </div>
                   <div>
@@ -260,7 +260,7 @@ export default function CreateRepairRequestForm({
                     onChange={(e) => setDescription(e.target.value)}
                     placeholder="Detailed description of the issue..."
                     rows={4}
-                    className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#FF6B35]"
+                    className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
                     required
                   />
                 </div>
@@ -371,7 +371,7 @@ export default function CreateRepairRequestForm({
                   onChange={(e) => setAdminNotes(e.target.value)}
                   placeholder="Internal notes about this request (not visible to customer or fixers)"
                   rows={3}
-                  className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#FF6B35]"
+                  className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
                 />
                 <p className="text-sm text-gray-500 mt-1">
                   Add notes like: "Customer called from phone", "Requested by
@@ -385,7 +385,7 @@ export default function CreateRepairRequestForm({
               <Button
                 type="submit"
                 disabled={loading}
-                className="bg-[#FF6B35] hover:bg-[#FF6B35]/90"
+                className="bg-primary hover:bg-primary/90"
               >
                 {loading && <Loader2 className="mr-2 animate-spin" size={18} />}
                 Create Repair Request

@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
+import { Camera, X, ImagePlus } from "lucide-react";
 import Button from "@/components/ui/button";
 import DiagnosisLoading from "@/components/ai/DiagnosisLoading";
 import DiagnosisCard from "@/components/ai/DiagnosisCard";
@@ -262,10 +263,10 @@ export default function PostClient({ content }: PostClientProps) {
       <div className="max-w-3xl mx-auto px-4 py-8 md:py-12">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl md:text-4xl font-bold text-gray-800 mb-2">
+          <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2 font-display">
             {content["post_title"]}
           </h1>
-          <p className="text-gray-600">
+          <p className="text-gray-500">
             {content["post_subtitle"]}
           </p>
         </div>
@@ -303,14 +304,14 @@ export default function PostClient({ content }: PostClientProps) {
 
         {/* Error Message */}
         {error && (
-          <div className="mb-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+          <div className="mb-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl text-sm font-medium">
             {error}
           </div>
         )}
 
         {/* Step 1: Photos */}
         {step === 1 && (
-          <div className="bg-white rounded-xl p-6 md:p-8 shadow-sm">
+          <div className="bg-white rounded-xl p-6 md:p-8 shadow-sm border border-gray-100">
             <h2 className="text-2xl font-bold text-gray-800 mb-4">
               {content["post_step1_heading"]}
             </h2>
@@ -332,7 +333,7 @@ export default function PostClient({ content }: PostClientProps) {
                     onClick={() => removePhoto(index)}
                     className="absolute top-2 right-2 bg-red-500 text-white w-8 h-8 rounded-full flex items-center justify-center hover:bg-red-600 transition-colors"
                   >
-                    ✕
+                    <X className="w-4 h-4" />
                   </button>
                 </div>
               ))}
@@ -340,8 +341,8 @@ export default function PostClient({ content }: PostClientProps) {
               {/* Upload Button */}
               {photos.length < 5 && (
                 <label className="aspect-square border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-primary hover:bg-orange-50 transition-colors">
-                  <span className="text-4xl mb-2">📸</span>
-                  <span className="text-sm text-gray-600">{content["post_photo_add"]}</span>
+                  <ImagePlus className="w-8 h-8 text-gray-400 mb-2" />
+                  <span className="text-sm text-gray-500">{content["post_photo_add"]}</span>
                   <input
                     type="file"
                     accept="image/*"
@@ -379,7 +380,7 @@ export default function PostClient({ content }: PostClientProps) {
 
         {/* Step 2: Category */}
         {step === 2 && (
-          <div className="bg-white rounded-xl p-6 md:p-8 shadow-sm">
+          <div className="bg-white rounded-xl p-6 md:p-8 shadow-sm border border-gray-100">
             <h2 className="text-2xl font-bold text-gray-800 mb-4">
               {content["post_step2_heading"]}
             </h2>
@@ -431,7 +432,7 @@ export default function PostClient({ content }: PostClientProps) {
         {step === 3 && (
           <form
             onSubmit={handleSubmit}
-            className="bg-white rounded-xl p-6 md:p-8 shadow-sm"
+            className="bg-white rounded-xl p-6 md:p-8 shadow-sm border border-gray-100"
           >
             <h2 className="text-2xl font-bold text-gray-800 mb-6">
               {content["post_step3_heading"]}

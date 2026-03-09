@@ -24,6 +24,7 @@ import {
   UserCog,
   CheckCircle,
   XCircle,
+  Star,
 } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
@@ -261,7 +262,7 @@ export default function UserDetailView({
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <Loader2 className="animate-spin text-[#FF6B35]" size={48} />
+        <Loader2 className="animate-spin text-primary" size={48} />
       </div>
     );
   }
@@ -292,7 +293,7 @@ export default function UserDetailView({
         <div className="flex items-start justify-between">
           <div>
             <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
-              <UserCog className="text-[#FF6B35]" />
+              <UserCog className="text-primary" />
               {user.name}
             </h1>
             <p className="mt-2 text-gray-600">{user.email}</p>
@@ -344,7 +345,7 @@ export default function UserDetailView({
           <div className="bg-white rounded-lg shadow p-4">
             <div className="text-sm text-gray-600">Average Rating</div>
             <div className="text-2xl font-bold text-gray-900 mt-1">
-              {statistics.averageRating.toFixed(1)} ⭐
+              <span className="inline-flex items-center gap-1">{statistics.averageRating.toFixed(1)} <Star className="w-5 h-5 text-amber-400 fill-amber-400" /></span>
             </div>
           </div>
         </div>
@@ -545,7 +546,7 @@ export default function UserDetailView({
                 <Button
                   onClick={handleSave}
                   disabled={saving}
-                  className="bg-[#FF6B35] hover:bg-[#FF6B35]/90 gap-2"
+                  className="bg-primary hover:bg-primary/90 gap-2"
                 >
                   {saving ? (
                     <Loader2 className="animate-spin" size={18} />

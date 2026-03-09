@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { redirect } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { Bell } from "lucide-react";
+import { Bell, Coins, CheckCircle2, XCircle, Wrench, PartyPopper, Star, AlertTriangle, MessageCircle, Megaphone } from "lucide-react";
 import { timeAgo } from "@/lib/utils";
 import Button from "@/components/ui/button";
 
@@ -18,16 +18,16 @@ interface Notification {
   createdAt: Date | string;
 }
 
-const NOTIFICATION_ICONS: { [key: string]: string } = {
-  NEW_OFFER: "💰",
-  OFFER_ACCEPTED: "✅",
-  OFFER_REJECTED: "❌",
-  JOB_STARTED: "🔧",
-  JOB_COMPLETED: "🎉",
-  NEW_REVIEW: "⭐",
-  DISPUTE_OPENED: "⚠️",
-  DISPUTE_RESOLVED: "✅",
-  NEW_MESSAGE: "💬",
+const NOTIFICATION_ICONS: { [key: string]: React.ReactNode } = {
+  NEW_OFFER: <Coins className="w-8 h-8 text-amber-500" />,
+  OFFER_ACCEPTED: <CheckCircle2 className="w-8 h-8 text-green-500" />,
+  OFFER_REJECTED: <XCircle className="w-8 h-8 text-red-500" />,
+  JOB_STARTED: <Wrench className="w-8 h-8 text-blue-500" />,
+  JOB_COMPLETED: <PartyPopper className="w-8 h-8 text-green-500" />,
+  NEW_REVIEW: <Star className="w-8 h-8 text-amber-400 fill-amber-400" />,
+  DISPUTE_OPENED: <AlertTriangle className="w-8 h-8 text-red-500" />,
+  DISPUTE_RESOLVED: <CheckCircle2 className="w-8 h-8 text-green-500" />,
+  NEW_MESSAGE: <MessageCircle className="w-8 h-8 text-blue-500" />,
 };
 
 interface NotificationsClientProps {
@@ -191,8 +191,8 @@ export default function NotificationsClient({ content }: NotificationsClientProp
                 }`}
               >
                 <div className="flex items-start gap-4">
-                  <div className="text-4xl flex-shrink-0">
-                    {NOTIFICATION_ICONS[notification.type] || "📢"}
+                  <div className="flex-shrink-0">
+                    {NOTIFICATION_ICONS[notification.type] || <Megaphone className="w-8 h-8 text-gray-500" />}
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-start justify-between gap-4 mb-2">

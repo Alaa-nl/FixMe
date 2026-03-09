@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { timeAgo } from "@/lib/utils";
-import { Search } from "lucide-react";
+import { Search, MessageCircle } from "lucide-react";
 
 interface Conversation {
   id: string;
@@ -92,7 +92,9 @@ export default function ConversationList() {
       <div className="flex-1 overflow-y-auto">
         {filteredConversations.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full p-8 text-center">
-            <div className="text-6xl mb-4">💬</div>
+            <div className="w-14 h-14 rounded-full bg-gray-100 flex items-center justify-center mb-4">
+              <MessageCircle className="w-7 h-7 text-gray-400" />
+            </div>
             <h3 className="text-lg font-semibold text-gray-800 mb-2">
               No messages yet
             </h3>

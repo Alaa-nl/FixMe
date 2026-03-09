@@ -6,7 +6,7 @@ export default async function Footer() {
   const content = await getContentBySection("footer");
 
   return (
-    <footer className="hidden md:block bg-[#1B4965] text-white mt-auto">
+    <footer className="hidden md:block bg-secondary text-white mt-auto">
       <div className="max-w-7xl mx-auto px-4 py-12">
         {/* Logo and Slogan */}
         <div className="mb-8">
@@ -148,7 +148,7 @@ export default async function Footer() {
               {content["footer_copyright"]}
             </p>
             <p className="text-blue-200 text-sm">
-              Made with ❤️ in Amsterdam, Netherlands
+              Made with love in Amsterdam, Netherlands
             </p>
           </div>
         </div>

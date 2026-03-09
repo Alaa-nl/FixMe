@@ -1,6 +1,7 @@
 "use client";
 
 import { MapContainer, TileLayer, Circle, Marker } from "react-leaflet";
+import { MapPin } from "lucide-react";
 import MapWrapper from "./MapWrapper";
 
 interface ServiceAreaPreviewProps {
@@ -47,8 +48,8 @@ export default function ServiceAreaPreview({ lat, lng, radiusKm, city }: Service
         </MapContainer>
       </div>
 
-      <p className="mt-2 text-xs text-gray-500">
-        📍 {city} · {radiusKm} km service radius
+      <p className="mt-2 text-xs text-gray-500 flex items-center gap-1">
+        <MapPin className="w-3.5 h-3.5" /> {city} · {radiusKm} km service radius
       </p>
     </MapWrapper>
   );

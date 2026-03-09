@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Loader2, AlertTriangle, X } from "lucide-react";
+import { Loader2, AlertTriangle, X, Check, XCircle } from "lucide-react";
 import { toast } from "sonner";
 
 interface DeleteUserModalProps {
@@ -158,22 +158,22 @@ export default function DeleteUserModal({
             <ul className="text-sm text-gray-700 space-y-1">
               {deleteType === "anonymize" ? (
                 <>
-                  <li>✓ Name changed to "Deleted User"</li>
-                  <li>✓ Email anonymized</li>
-                  <li>✓ Personal data removed</li>
-                  <li>✓ Reviews kept but anonymized</li>
-                  <li>✓ Job history visible but anonymized</li>
-                  <li>✓ Messages deleted</li>
+                  <li className="flex items-center gap-1.5"><Check className="w-3.5 h-3.5 text-green-600 flex-shrink-0" /> Name changed to &quot;Deleted User&quot;</li>
+                  <li className="flex items-center gap-1.5"><Check className="w-3.5 h-3.5 text-green-600 flex-shrink-0" /> Email anonymized</li>
+                  <li className="flex items-center gap-1.5"><Check className="w-3.5 h-3.5 text-green-600 flex-shrink-0" /> Personal data removed</li>
+                  <li className="flex items-center gap-1.5"><Check className="w-3.5 h-3.5 text-green-600 flex-shrink-0" /> Reviews kept but anonymized</li>
+                  <li className="flex items-center gap-1.5"><Check className="w-3.5 h-3.5 text-green-600 flex-shrink-0" /> Job history visible but anonymized</li>
+                  <li className="flex items-center gap-1.5"><Check className="w-3.5 h-3.5 text-green-600 flex-shrink-0" /> Messages deleted</li>
                 </>
               ) : (
                 <>
-                  <li>✗ All user data deleted</li>
-                  <li>✗ Profile completely removed</li>
-                  <li>✗ All requests deleted</li>
-                  <li>✗ All offers deleted</li>
-                  <li>✗ All jobs deleted</li>
-                  <li>✗ All messages deleted</li>
-                  <li>✗ All reviews deleted</li>
+                  <li className="flex items-center gap-1.5"><XCircle className="w-3.5 h-3.5 text-red-500 flex-shrink-0" /> All user data deleted</li>
+                  <li className="flex items-center gap-1.5"><XCircle className="w-3.5 h-3.5 text-red-500 flex-shrink-0" /> Profile completely removed</li>
+                  <li className="flex items-center gap-1.5"><XCircle className="w-3.5 h-3.5 text-red-500 flex-shrink-0" /> All requests deleted</li>
+                  <li className="flex items-center gap-1.5"><XCircle className="w-3.5 h-3.5 text-red-500 flex-shrink-0" /> All offers deleted</li>
+                  <li className="flex items-center gap-1.5"><XCircle className="w-3.5 h-3.5 text-red-500 flex-shrink-0" /> All jobs deleted</li>
+                  <li className="flex items-center gap-1.5"><XCircle className="w-3.5 h-3.5 text-red-500 flex-shrink-0" /> All messages deleted</li>
+                  <li className="flex items-center gap-1.5"><XCircle className="w-3.5 h-3.5 text-red-500 flex-shrink-0" /> All reviews deleted</li>
                 </>
               )}
             </ul>

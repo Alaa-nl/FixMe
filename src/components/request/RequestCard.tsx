@@ -1,6 +1,7 @@
 import Link from "next/link";
+import { MapPin, Clock, AlertTriangle, CheckCircle2, CircleDot } from "lucide-react";
 import { timeAgo } from "@/lib/utils";
-import { getCategoryIcon } from "@/lib/categoryIcons";
+import { CategoryIcon } from "@/lib/categoryIconsReact";
 
 interface RequestCardProps {
   request: {
@@ -36,17 +37,33 @@ export default function RequestCard({ request }: RequestCardProps) {
   const getTimelineBadge = () => {
     switch (request.timeline) {
       case "URGENT":
-        return { text: "Urgent", color: "bg-red-500 text-white" };
+        return { text: "Urgent", className: "bg-red-50 text-red-700 border border-red-200", icon: AlertTriangle };
       case "THIS_WEEK":
-        return { text: "This week", color: "bg-yellow-500 text-white" };
+        return { text: "This week", className: "bg-amber-50 text-amber-700 border border-amber-200", icon: Clock };
       case "NO_RUSH":
-        return { text: "No rush", color: "bg-green-500 text-white" };
+        return { text: "No rush", className: "bg-emerald-50 text-emerald-700 border border-emerald-200", icon: CheckCircle2 };
       default:
-        return { text: "", color: "" };
+        return { text: "", className: "", icon: CircleDot };
+    }
+  };
+
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case "IN_PROGRESS":
+        return { text: "In Progress", className: "bg-blue-50 text-blue-700 border border-blue-200" };
+      case "COMPLETED":
+        return { text: "Completed", className: "bg-emerald-50 text-emerald-700 border border-emerald-200" };
+      case "CANCELLED":
+        return { text: "Cancelled", className: "bg-gray-100 text-gray-600 border border-gray-200" };
+      case "DISPUTED":
+        return { text: "Disputed", className: "bg-amber-50 text-amber-700 border border-amber-200" };
+      default:
+        return { text: status, className: "bg-gray-100 text-gray-600 border border-gray-200" };
     }
   };
 
   const timelineBadge = getTimelineBadge();
+  const TimelineIcon = timelineBadge.icon;
   const coverImage = request.photos.length > 0 ? request.photos[0] : null;
   const totalJobs = request.customer._count
     ? request.customer._count.jobsAsCustomer + request.customer._count.jobsAsFixer
@@ -54,7 +71,7 @@ export default function RequestCard({ request }: RequestCardProps) {
   const reviewCount = request.customer._count?.reviewsReceived ?? 0;
 
   return (
-    <div className="relative bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow overflow-hidden group">
+    <div className="relative bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden group">
       {/* Invisible card link (covers entire card) */}
       <Link
         href={`/request/${request.id}`}
@@ -63,7 +80,7 @@ export default function RequestCard({ request }: RequestCardProps) {
       />
 
       {/* Cover Image */}
-      <div className="relative h-[100px] bg-gray-200">
+      <div className="relative h-40 bg-gray-50">
         {coverImage ? (
           <img
             src={coverImage}
@@ -71,36 +88,22 @@ export default function RequestCard({ request }: RequestCardProps) {
             className="w-full h-full object-cover"
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center bg-gray-100">
-            <span className="text-4xl">{getCategoryIcon(request.category.slug)}</span>
+          <div className="w-full h-full flex items-center justify-center bg-orange-50/50">
+            <CategoryIcon slug={request.category.slug} className="w-10 h-10 text-primary/40" />
           </div>
         )}
 
         {/* Badges */}
-        <div className="absolute top-3 right-3 flex flex-col gap-2 items-end">
+        <div className="absolute top-2.5 right-2.5 flex flex-col gap-1.5 items-end">
           {request.status && request.status !== "OPEN" && (
-            <span
-              className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                request.status === "IN_PROGRESS"
-                  ? "bg-blue-500 text-white"
-                  : request.status === "COMPLETED"
-                  ? "bg-green-500 text-white"
-                  : request.status === "CANCELLED"
-                  ? "bg-gray-500 text-white"
-                  : "bg-yellow-500 text-white"
-              }`}
-            >
-              {request.status === "IN_PROGRESS" && "In Progress"}
-              {request.status === "COMPLETED" && "Completed"}
-              {request.status === "CANCELLED" && "Cancelled"}
-              {request.status === "DISPUTED" && "Disputed"}
+            <span className={`px-2.5 py-1 rounded-full text-[11px] font-semibold ${getStatusBadge(request.status).className}`}>
+              {getStatusBadge(request.status).text}
             </span>
           )}
 
           {timelineBadge.text && (
-            <span
-              className={`px-3 py-1 rounded-full text-xs font-semibold ${timelineBadge.color}`}
-            >
+            <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold ${timelineBadge.className}`}>
+              <TimelineIcon className="w-3 h-3" />
               {timelineBadge.text}
             </span>
           )}
@@ -111,18 +114,18 @@ export default function RequestCard({ request }: RequestCardProps) {
       <div className="p-4">
         {/* Category Badge */}
         <div className="mb-2">
-          <span className="inline-flex items-center gap-1 px-3 py-1 bg-orange-50 text-primary text-xs font-medium rounded-full">
-            <span>{getCategoryIcon(request.category.slug)}</span>
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-orange-50 text-primary text-xs font-medium rounded-full">
+            <CategoryIcon slug={request.category.slug} className="w-3.5 h-3.5" />
             <span>{request.category.name}</span>
           </span>
         </div>
 
         {/* Title */}
-        <h3 className="font-semibold text-gray-800 mb-2 truncate group-hover:text-primary transition-colors">
+        <h3 className="font-semibold text-gray-900 mb-2 truncate group-hover:text-primary transition-colors text-[15px]">
           {request.title}
         </h3>
 
-        {/* Customer Info Row — clickable to profile */}
+        {/* Customer Info Row */}
         {request.customer.id ? (
           <Link
             href={`/profile/${request.customer.id}`}
@@ -132,18 +135,18 @@ export default function RequestCard({ request }: RequestCardProps) {
               <img
                 src={request.customer.avatarUrl}
                 alt={request.customer.name}
-                className="w-6 h-6 rounded-full object-cover"
+                className="w-6 h-6 rounded-full object-cover ring-1 ring-gray-100"
               />
             ) : (
-              <div className="w-6 h-6 rounded-full bg-gray-200 flex items-center justify-center text-gray-500 text-xs font-semibold">
+              <div className="w-6 h-6 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs font-semibold">
                 {request.customer.name.charAt(0).toUpperCase()}
               </div>
             )}
-            <span className="text-sm text-gray-700 font-medium truncate hover:text-primary transition-colors">
+            <span className="text-sm text-gray-600 font-medium truncate hover:text-primary transition-colors">
               {request.customer.name}
             </span>
             {request.customer._count && (
-              <span className="text-xs text-gray-400 ml-auto whitespace-nowrap">
+              <span className="text-[11px] text-gray-400 ml-auto whitespace-nowrap">
                 {reviewCount} review{reviewCount !== 1 ? "s" : ""} · {totalJobs} job{totalJobs !== 1 ? "s" : ""}
               </span>
             )}
@@ -154,18 +157,18 @@ export default function RequestCard({ request }: RequestCardProps) {
               <img
                 src={request.customer.avatarUrl}
                 alt={request.customer.name}
-                className="w-6 h-6 rounded-full object-cover"
+                className="w-6 h-6 rounded-full object-cover ring-1 ring-gray-100"
               />
             ) : (
-              <div className="w-6 h-6 rounded-full bg-gray-200 flex items-center justify-center text-gray-500 text-xs font-semibold">
+              <div className="w-6 h-6 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs font-semibold">
                 {request.customer.name.charAt(0).toUpperCase()}
               </div>
             )}
-            <span className="text-sm text-gray-700 font-medium truncate">
+            <span className="text-sm text-gray-600 font-medium truncate">
               {request.customer.name}
             </span>
             {request.customer._count && (
-              <span className="text-xs text-gray-400 ml-auto whitespace-nowrap">
+              <span className="text-[11px] text-gray-400 ml-auto whitespace-nowrap">
                 {reviewCount} review{reviewCount !== 1 ? "s" : ""} · {totalJobs} job{totalJobs !== 1 ? "s" : ""}
               </span>
             )}
@@ -173,8 +176,8 @@ export default function RequestCard({ request }: RequestCardProps) {
         )}
 
         {/* Location */}
-        <div className="flex items-center gap-1 text-sm text-gray-500 mb-3">
-          <span>📍</span>
+        <div className="flex items-center gap-1.5 text-sm text-gray-500 mb-3">
+          <MapPin className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
           <span>{request.city}</span>
           {request.distanceKm != null && (
             <span className="ml-auto text-xs font-medium text-primary">
@@ -186,7 +189,7 @@ export default function RequestCard({ request }: RequestCardProps) {
         </div>
 
         {/* Bottom Row */}
-        <div className="flex items-center justify-between text-sm text-gray-500">
+        <div className="flex items-center justify-between pt-3 border-t border-gray-100 text-sm text-gray-400">
           <span suppressHydrationWarning>{timeAgo(request.createdAt)}</span>
           <span className="font-medium text-primary">
             {request._count.offers === 0

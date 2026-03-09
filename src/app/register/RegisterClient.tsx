@@ -5,6 +5,7 @@ import { signIn, getProviders } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
+import { Wrench, Hammer } from "lucide-react";
 import Button from "@/components/ui/button";
 import Input from "@/components/ui/input";
 import PasswordInput from "@/components/ui/password-input";
@@ -225,7 +226,9 @@ export default function RegisterClient({ content }: RegisterClientProps) {
                     : "border-gray-300 bg-white hover:border-gray-400"
                 }`}
               >
-                <div className="text-3xl mb-2">🔧</div>
+                <div className="w-10 h-10 mx-auto mb-2 rounded-full bg-orange-50 flex items-center justify-center">
+                  <Wrench className={`w-5 h-5 ${userType === "CUSTOMER" ? "text-primary" : "text-gray-400"}`} />
+                </div>
                 <div className="text-sm font-medium text-gray-800">
                   {content["register_type_customer"]}
                 </div>
@@ -240,7 +243,9 @@ export default function RegisterClient({ content }: RegisterClientProps) {
                     : "border-gray-300 bg-white hover:border-gray-400"
                 }`}
               >
-                <div className="text-3xl mb-2">🧰</div>
+                <div className="w-10 h-10 mx-auto mb-2 rounded-full bg-orange-50 flex items-center justify-center">
+                  <Hammer className={`w-5 h-5 ${userType === "FIXER" ? "text-primary" : "text-gray-400"}`} />
+                </div>
                 <div className="text-sm font-medium text-gray-800">
                   {content["register_type_fixer"]}
                 </div>

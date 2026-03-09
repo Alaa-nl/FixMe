@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { PartyPopper } from "lucide-react";
 import StarRating from "./StarRating";
 
 interface ReviewFormProps {
@@ -23,15 +24,15 @@ export default function ReviewForm({
   const getRatingLabel = (rating: number) => {
     switch (rating) {
       case 1:
-        return "Poor 😞";
+        return "Poor";
       case 2:
-        return "Below average 😕";
+        return "Below average";
       case 3:
-        return "Average 😐";
+        return "Average";
       case 4:
-        return "Good 😊";
+        return "Good";
       case 5:
-        return "Excellent 🤩";
+        return "Excellent";
       default:
         return "Select a rating";
     }
@@ -87,7 +88,7 @@ export default function ReviewForm({
   if (showSuccess) {
     return (
       <div className="bg-white rounded-xl border border-gray-200 p-8 text-center">
-        <div className="text-5xl mb-3">🎉</div>
+        <PartyPopper className="w-12 h-12 text-primary mx-auto mb-3" />
         <h3 className="text-xl font-bold text-gray-800 mb-2">Thank you!</h3>
         <p className="text-gray-600">Your review has been submitted successfully.</p>
       </div>

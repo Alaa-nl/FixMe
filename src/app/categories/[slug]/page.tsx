@@ -1,7 +1,8 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { prisma } from "@/lib/db";
-import { getCategoryIcon } from "@/lib/categoryIcons";
+import { CategoryIcon } from "@/lib/categoryIconsReact";
+import { Wrench } from "lucide-react";
 import Button from "@/components/ui/button";
 import { getContentBySection } from "@/lib/siteContent";
 
@@ -36,8 +37,8 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
         {/* Category Header */}
         <div className="bg-white rounded-xl p-8 md:p-12 mb-8 shadow-sm">
           <div className="flex flex-col md:flex-row items-center gap-6">
-            <div className="text-7xl md:text-8xl">
-              {getCategoryIcon(category.slug)}
+            <div className="w-20 h-20 bg-orange-50 rounded-2xl flex items-center justify-center flex-shrink-0">
+              <CategoryIcon slug={category.slug} className="w-10 h-10 text-primary" />
             </div>
             <div className="text-center md:text-left flex-1">
               <h1 className="text-3xl md:text-4xl font-bold text-gray-800 mb-3">
@@ -70,7 +71,9 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
           {/* Empty State */}
           <div className="bg-white rounded-xl p-12 text-center shadow-sm">
             <div className="max-w-md mx-auto">
-              <div className="text-6xl mb-4">🔧</div>
+              <div className="w-16 h-16 mx-auto bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                <Wrench className="w-8 h-8 text-gray-400" />
+              </div>
               <h3 className="text-xl font-semibold text-gray-800 mb-3">
                 {content["category_empty_title"]}
               </h3>

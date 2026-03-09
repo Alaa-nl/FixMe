@@ -29,6 +29,8 @@ export default function PlatformSettingsForm({
   canEdit,
 }: PlatformSettingsFormProps) {
   const router = useRouter();
+  const safeFloat = (v: string, fallback = 0) => { const n = parseFloat(v); return isNaN(n) ? fallback : n; };
+  const safeInt = (v: string, fallback = 0) => { const n = parseInt(v); return isNaN(n) ? fallback : n; };
   const [loading, setLoading] = useState(false);
 
   // Financial Settings
@@ -190,9 +192,7 @@ export default function PlatformSettingsForm({
               max="50"
               step="0.1"
               value={commissionPercentage}
-              onChange={(e) =>
-                setCommissionPercentage(parseFloat(e.target.value))
-              }
+              onChange={(e) => setCommissionPercentage(safeFloat(e.target.value))}
               disabled={!canEdit}
               className="mt-1"
             />
@@ -218,7 +218,7 @@ export default function PlatformSettingsForm({
                 min="0"
                 step="0.01"
                 value={minJobFee}
-                onChange={(e) => setMinJobFee(parseFloat(e.target.value))}
+                onChange={(e) => setMinJobFee(safeFloat(e.target.value))}
                 disabled={!canEdit}
                 className="mt-1"
               />
@@ -252,7 +252,7 @@ export default function PlatformSettingsForm({
               min="1"
               step="1"
               value={autoReleaseHours}
-              onChange={(e) => setAutoReleaseHours(parseInt(e.target.value))}
+              onChange={(e) => setAutoReleaseHours(safeInt(e.target.value, 1))}
               disabled={!canEdit}
               className="mt-1"
             />
@@ -273,7 +273,7 @@ export default function PlatformSettingsForm({
               max="25"
               step="0.1"
               value={repairVatRate}
-              onChange={(e) => setRepairVatRate(parseFloat(e.target.value))}
+              onChange={(e) => setRepairVatRate(safeFloat(e.target.value))}
               disabled={!canEdit}
               className="mt-1"
             />
@@ -289,7 +289,7 @@ export default function PlatformSettingsForm({
       {/* Platform Rules */}
       <div className="bg-white rounded-xl border p-6">
         <div className="flex items-center gap-3 mb-6">
-          <Settings className="text-[#FF6B35]" size={24} />
+          <Settings className="text-primary" size={24} />
           <h2 className="text-2xl font-bold text-gray-900">Platform Rules</h2>
         </div>
 
@@ -308,7 +308,7 @@ export default function PlatformSettingsForm({
                 step="1"
                 value={maxPhotosPerRequest}
                 onChange={(e) =>
-                  setMaxPhotosPerRequest(parseInt(e.target.value))
+                  setMaxPhotosPerRequest(safeInt(e.target.value, 1))
                 }
                 disabled={!canEdit}
                 className="mt-1"
@@ -324,7 +324,7 @@ export default function PlatformSettingsForm({
                 min="10"
                 step="10"
                 value={maxVideoSeconds}
-                onChange={(e) => setMaxVideoSeconds(parseInt(e.target.value))}
+                onChange={(e) => setMaxVideoSeconds(safeInt(e.target.value, 0))}
                 disabled={!canEdit}
                 className="mt-1"
               />
@@ -342,7 +342,7 @@ export default function PlatformSettingsForm({
                 step="1"
                 value={maxOffersPerRequest}
                 onChange={(e) =>
-                  setMaxOffersPerRequest(parseInt(e.target.value))
+                  setMaxOffersPerRequest(safeInt(e.target.value, 1))
                 }
                 disabled={!canEdit}
                 className="mt-1"
@@ -360,7 +360,7 @@ export default function PlatformSettingsForm({
                 step="1"
                 value={disputeWindowHours}
                 onChange={(e) =>
-                  setDisputeWindowHours(parseInt(e.target.value))
+                  setDisputeWindowHours(safeInt(e.target.value, 1))
                 }
                 disabled={!canEdit}
                 className="mt-1"
@@ -382,7 +382,7 @@ export default function PlatformSettingsForm({
                 min="0"
                 step="1"
                 value={reviewEditDays}
-                onChange={(e) => setReviewEditDays(parseInt(e.target.value))}
+                onChange={(e) => setReviewEditDays(safeInt(e.target.value, 0))}
                 disabled={!canEdit}
                 className="mt-1"
               />
@@ -398,7 +398,7 @@ export default function PlatformSettingsForm({
                 step="1"
                 value={accountDeletionDays}
                 onChange={(e) =>
-                  setAccountDeletionDays(parseInt(e.target.value))
+                  setAccountDeletionDays(safeInt(e.target.value, 0))
                 }
                 disabled={!canEdit}
                 className="mt-1"
@@ -471,7 +471,7 @@ export default function PlatformSettingsForm({
                 max="5"
                 step="0.1"
                 value={minFixerRating}
-                onChange={(e) => setMinFixerRating(parseFloat(e.target.value))}
+                onChange={(e) => setMinFixerRating(safeFloat(e.target.value))}
                 disabled={!canEdit}
                 className="mt-1"
               />
@@ -596,7 +596,7 @@ export default function PlatformSettingsForm({
           <Button
             type="submit"
             disabled={loading}
-            className="bg-[#FF6B35] hover:bg-[#FF6B35]/90"
+            className="bg-primary hover:bg-primary/90"
           >
             {loading && <Loader2 className="mr-2 animate-spin" size={18} />}
             <Save className="mr-2" size={18} />

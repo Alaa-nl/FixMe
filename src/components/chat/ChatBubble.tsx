@@ -1,4 +1,5 @@
 import { timeAgo } from "@/lib/utils";
+import { Check, CheckCheck } from "lucide-react";
 
 interface ChatBubbleProps {
   message: {
@@ -58,10 +59,10 @@ export default function ChatBubble({ message, isOwn, onRetry }: ChatBubbleProps)
             </button>
           )}
           {isOwn && !message.sending && !message.failed && message.read && (
-            <span className="text-xs text-blue-500">✓✓</span>
+            <CheckCheck className="w-3.5 h-3.5 text-blue-500" />
           )}
           {isOwn && !message.sending && !message.failed && !message.read && (
-            <span className="text-xs text-gray-400">✓</span>
+            <Check className="w-3.5 h-3.5 text-gray-400" />
           )}
         </div>
       </div>

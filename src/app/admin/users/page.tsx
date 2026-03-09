@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Search, UserPlus } from "lucide-react";
+import { Search, UserPlus, Star, Check } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
@@ -72,7 +72,7 @@ export default function AdminUsersPage() {
       <div className="flex items-center justify-between">
         <h1 className="text-3xl md:text-4xl font-bold text-gray-800">Users</h1>
         <Link href="/admin/users/new">
-          <button className="flex items-center gap-2 px-4 py-2 bg-[#FF6B35] text-white rounded-lg hover:bg-[#FF6B35]/90 font-medium transition-colors">
+          <button className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 font-medium transition-colors">
             <UserPlus size={20} />
             Create User
           </button>
@@ -148,9 +148,9 @@ export default function AdminUsersPage() {
                       <div>
                         <p className="font-medium text-gray-800">{user.name}</p>
                         {user.fixerProfile && (
-                          <p className="text-sm text-gray-500">
-                            ⭐ {user.fixerProfile.averageRating.toFixed(1)} • {user.fixerProfile.totalJobs} jobs
-                            {user.fixerProfile.verifiedBadge && " • ✓ Verified"}
+                          <p className="text-sm text-gray-500 flex items-center gap-1">
+                            <Star className="w-3.5 h-3.5 text-amber-400 fill-amber-400" /> {user.fixerProfile.averageRating.toFixed(1)} • {user.fixerProfile.totalJobs} jobs
+                            {user.fixerProfile.verifiedBadge && <span className="flex items-center gap-0.5"> • <Check className="w-3.5 h-3.5 text-green-600" /> Verified</span>}
                           </p>
                         )}
                       </div>

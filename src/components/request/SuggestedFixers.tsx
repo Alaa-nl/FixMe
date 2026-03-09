@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ShieldCheck, Star, ChevronRight } from "lucide-react";
 
 interface SuggestedFixer {
   id: string;
@@ -49,12 +50,14 @@ export default function SuggestedFixers({ fixers }: SuggestedFixersProps) {
                   {fixer.name}
                 </span>
                 {fixer.verifiedBadge && (
-                  <span title="Verified fixer">✅</span>
+                  <span title="Verified fixer">
+                    <ShieldCheck className="w-4 h-4 text-green-500 flex-shrink-0" />
+                  </span>
                 )}
               </div>
               <div className="flex items-center gap-3 text-xs text-gray-500 mt-0.5">
                 <span className="flex items-center gap-0.5">
-                  <span className="text-yellow-500">★</span>
+                  <Star className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
                   {fixer.averageRating.toFixed(1)}
                 </span>
                 <span>
@@ -69,9 +72,7 @@ export default function SuggestedFixers({ fixers }: SuggestedFixersProps) {
             </div>
 
             {/* Arrow */}
-            <span className="text-gray-300 group-hover:text-primary transition-colors text-sm">
-              ›
-            </span>
+            <ChevronRight className="w-4 h-4 text-gray-300 group-hover:text-primary transition-colors" />
           </Link>
         ))}
       </div>

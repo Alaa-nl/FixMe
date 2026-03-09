@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { prisma } from "@/lib/db";
-import { getCategoryIcon } from "@/lib/categoryIcons";
+import { CategoryIcon } from "@/lib/categoryIconsReact";
 import { getContentBySection } from "@/lib/siteContent";
 
 export const dynamic = "force-dynamic";
@@ -41,8 +41,8 @@ export default async function CategoriesPage() {
               className="bg-white rounded-xl border-2 border-gray-200 p-6 hover:border-primary hover:shadow-lg transition-all group"
             >
               <div className="text-center">
-                <div className="text-4xl md:text-5xl mb-3 group-hover:scale-110 transition-transform">
-                  {getCategoryIcon(category.slug)}
+                <div className="w-12 h-12 mx-auto bg-orange-50 rounded-xl flex items-center justify-center mb-3 group-hover:bg-orange-100 group-hover:scale-105 transition-all">
+                  <CategoryIcon slug={category.slug} className="w-6 h-6 text-primary" />
                 </div>
                 <h3 className="text-sm md:text-base font-semibold text-gray-700 group-hover:text-primary transition-colors mb-2">
                   {category.name}

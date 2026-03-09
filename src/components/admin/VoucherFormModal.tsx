@@ -304,7 +304,7 @@ export default function VoucherFormModal({
               onChange={(e) => setDescription(e.target.value)}
               placeholder="e.g., Summer promotion, Referral reward..."
               rows={3}
-              className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#FF6B35]"
+              className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
             />
           </div>
 
@@ -328,7 +328,7 @@ export default function VoucherFormModal({
             <Button
               type="submit"
               disabled={loading}
-              className="bg-[#FF6B35] hover:bg-[#FF6B35]/90"
+              className="bg-primary hover:bg-primary/90"
             >
               {loading && <Loader2 className="mr-2 animate-spin" size={18} />}
               {isEdit ? "Update Voucher" : "Create Voucher"}
