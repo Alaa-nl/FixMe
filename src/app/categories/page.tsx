@@ -1,19 +1,23 @@
 import Link from "next/link";
 import { prisma } from "@/lib/db";
 import { getCategoryIcon } from "@/lib/categoryIcons";
+import { getContentBySection } from "@/lib/siteContent";
 
 export const dynamic = "force-dynamic";
 
 export default async function CategoriesPage() {
-  const categories = await prisma.category.findMany({
-    where: { isActive: true },
-    orderBy: { name: "asc" },
-    include: {
-      _count: {
-        select: { repairRequests: true },
+  const [categories, content] = await Promise.all([
+    prisma.category.findMany({
+      where: { isActive: true },
+      orderBy: { name: "asc" },
+      include: {
+        _count: {
+          select: { repairRequests: true },
+        },
       },
-    },
-  });
+    }),
+    getContentBySection("categories"),
+  ]);
 
   return (
     <div className="flex-1 bg-white">
@@ -21,10 +25,10 @@ export default async function CategoriesPage() {
         {/* Header */}
         <div className="text-center mb-12">
           <h1 className="text-4xl md:text-5xl font-bold text-gray-800 mb-4">
-            All categories
+            {content["categories_page_title"]}
           </h1>
           <p className="text-lg md:text-xl text-gray-600">
-            What needs fixing?
+            {content["categories_page_subtitle"]}
           </p>
         </div>
 
@@ -37,28 +41,21 @@ export default async function CategoriesPage() {
               className="bg-white rounded-xl border-2 border-gray-200 p-6 hover:border-primary hover:shadow-lg transition-all group"
             >
               <div className="text-center">
-                {/* Emoji Icon */}
                 <div className="text-4xl md:text-5xl mb-3 group-hover:scale-110 transition-transform">
                   {getCategoryIcon(category.slug)}
                 </div>
-
-                {/* Category Name */}
                 <h3 className="text-sm md:text-base font-semibold text-gray-700 group-hover:text-primary transition-colors mb-2">
                   {category.name}
                 </h3>
-
-                {/* Description */}
                 <p className="text-xs text-gray-500 mb-3 line-clamp-2 min-h-[2.5rem]">
                   {category.description}
                 </p>
-
-                {/* Request Count */}
                 <div className="text-xs text-primary font-medium">
                   {category._count.repairRequests === 0
-                    ? "No requests yet"
+                    ? content["categories_count_zero"]
                     : category._count.repairRequests === 1
-                    ? "1 active request"
-                    : `${category._count.repairRequests} active requests`}
+                    ? content["categories_count_singular"]
+                    : content["categories_count_plural"].replace("{n}", category._count.repairRequests.toString())}
                 </div>
               </div>
             </Link>
@@ -69,7 +66,7 @@ export default async function CategoriesPage() {
         {categories.length === 0 && (
           <div className="text-center py-16">
             <p className="text-gray-500 text-lg mb-4">
-              No categories available yet.
+              {content["categories_empty"]}
             </p>
           </div>
         )}

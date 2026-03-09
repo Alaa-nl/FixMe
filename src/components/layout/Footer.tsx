@@ -1,6 +1,9 @@
 import Link from "next/link";
+import { getContentBySection } from "@/lib/siteContent";
 
-export default function Footer() {
+export default async function Footer() {
+  const content = await getContentBySection("footer");
+
   return (
     <footer className="hidden md:block bg-[#1B4965] text-white mt-auto">
       <div className="max-w-7xl mx-auto px-4 py-12">
@@ -9,7 +12,7 @@ export default function Footer() {
           <Link href="/" className="inline-block">
             <h2 className="text-3xl font-bold mb-2">FixMe</h2>
           </Link>
-          <p className="text-blue-200 text-lg">Don't throw it away. Fix it.</p>
+          <p className="text-blue-200 text-lg">{content["footer_tagline"]}</p>
         </div>
 
         {/* Links Grid */}
@@ -124,11 +127,18 @@ export default function Footer() {
           </div>
         </div>
 
+        {/* About Text */}
+        <div className="border-t border-blue-800 pt-6 mb-6">
+          <p className="text-blue-200 text-sm max-w-2xl">
+            {content["footer_about"]}
+          </p>
+        </div>
+
         {/* Bottom Bar */}
         <div className="border-t border-blue-800 pt-6">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <p className="text-blue-200 text-sm">
-              © 2026 FixMe B.V. All rights reserved.
+              {content["footer_copyright"]}
             </p>
             <p className="text-blue-200 text-sm">
               Made with ❤️ in Amsterdam, Netherlands

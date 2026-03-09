@@ -8,13 +8,19 @@ import { Search, MessageCircle, Bell, User, LogOut, ChevronDown } from "lucide-r
 import Button from "@/components/ui/button";
 import NotificationBell from "@/components/layout/NotificationBell";
 
-export default function Navbar() {
+interface NavbarProps {
+  content?: Record<string, string>;
+}
+
+export default function Navbar({ content = {} }: NavbarProps) {
   const { data: session, status } = useSession();
   const router = useRouter();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
   const [navSearchQuery, setNavSearchQuery] = useState("");
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  const t = (key: string, fallback: string) => content[key] || fallback;
 
   const handleNavSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -85,7 +91,7 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto px-4 h-full flex items-center justify-between gap-4">
         {/* Logo */}
         <Link href="/" className="text-2xl font-bold text-primary hover:opacity-80 transition-opacity">
-          FixMe
+          {t("navbar_logo", "FixMe")}
         </Link>
 
         {/* Search Bar - Hidden on mobile, visible on md+ */}
@@ -96,7 +102,7 @@ export default function Navbar() {
               type="text"
               value={navSearchQuery}
               onChange={(e) => setNavSearchQuery(e.target.value)}
-              placeholder="Search for repairs..."
+              placeholder={t("navbar_search_placeholder", "Search for repairs...")}
               className="w-full pl-12 pr-4 py-2.5 bg-gray-100 rounded-full focus:outline-none focus:ring-2 focus:ring-primary focus:bg-white transition-all"
             />
           </div>
@@ -111,7 +117,7 @@ export default function Navbar() {
               {/* Post a Request Button - Hidden on smallest screens */}
               <Link href="/post" className="hidden sm:block">
                 <Button variant="primary" size="sm" className="rounded-full font-bold">
-                  Post a request
+                  {t("navbar_post_request", "Post a request")}
                 </Button>
               </Link>
 
@@ -166,7 +172,7 @@ export default function Navbar() {
                       className="block px-4 py-2 text-gray-700 hover:bg-gray-100 transition-colors"
                       onClick={() => setDropdownOpen(false)}
                     >
-                      Dashboard
+                      {t("navbar_dashboard", "Dashboard")}
                     </Link>
 
                     <Link
@@ -174,7 +180,7 @@ export default function Navbar() {
                       className="block px-4 py-2 text-gray-700 hover:bg-gray-100 transition-colors"
                       onClick={() => setDropdownOpen(false)}
                     >
-                      My Profile
+                      {t("navbar_my_profile", "My Profile")}
                     </Link>
 
                     <Link
@@ -182,7 +188,7 @@ export default function Navbar() {
                       className="block px-4 py-2 text-gray-700 hover:bg-gray-100 transition-colors"
                       onClick={() => setDropdownOpen(false)}
                     >
-                      Settings
+                      {t("navbar_settings", "Settings")}
                     </Link>
 
                     <div className="border-t border-gray-200 my-2"></div>
@@ -195,7 +201,7 @@ export default function Navbar() {
                       className="w-full text-left px-4 py-2 text-red-600 hover:bg-gray-100 transition-colors flex items-center gap-2"
                     >
                       <LogOut className="w-4 h-4" />
-                      Log out
+                      {t("navbar_logout", "Log out")}
                     </button>
                   </div>
                 )}
@@ -206,12 +212,12 @@ export default function Navbar() {
               {/* Login and Register Buttons */}
               <Link href="/login">
                 <button className="text-gray-700 font-medium hover:text-primary transition-colors">
-                  Log in
+                  {t("navbar_login", "Log in")}
                 </button>
               </Link>
               <Link href="/register">
                 <Button variant="primary" size="sm">
-                  Register
+                  {t("navbar_register", "Register")}
                 </Button>
               </Link>
             </>

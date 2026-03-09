@@ -4,39 +4,45 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Home, Search, PlusCircle, MessageCircle, User } from "lucide-react";
 
-export default function BottomNav() {
+interface BottomNavProps {
+  content?: Record<string, string>;
+}
+
+export default function BottomNav({ content = {} }: BottomNavProps) {
   const pathname = usePathname();
+
+  const t = (key: string, fallback: string) => content[key] || fallback;
 
   const navItems = [
     {
       href: "/",
       icon: Home,
-      label: "Home",
+      label: t("bottomnav_home", "Home"),
       isActive: pathname === "/",
     },
     {
       href: "/browse",
       icon: Search,
-      label: "Search",
+      label: t("bottomnav_search", "Search"),
       isActive: pathname === "/browse",
     },
     {
       href: "/post",
       icon: PlusCircle,
-      label: "Post",
+      label: t("bottomnav_post", "Post"),
       isActive: pathname === "/post",
       isSpecial: true, // Orange circle style
     },
     {
       href: "/messages",
       icon: MessageCircle,
-      label: "Messages",
+      label: t("bottomnav_messages", "Messages"),
       isActive: pathname === "/messages",
     },
     {
       href: "/dashboard",
       icon: User,
-      label: "Profile",
+      label: t("bottomnav_profile", "Profile"),
       isActive: pathname === "/dashboard" || pathname.startsWith("/profile"),
     },
   ];
