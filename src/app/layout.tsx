@@ -6,6 +6,7 @@ import Navbar from "@/components/layout/Navbar";
 import BottomNav from "@/components/layout/BottomNav";
 import Footer from "@/components/layout/Footer";
 import { Toaster } from "@/components/ui/sonner";
+import ChatWidget from "@/components/support/ChatWidget";
 import { getContentBySection } from "@/lib/siteContent";
 
 const dmSans = DM_Sans({
@@ -99,6 +100,7 @@ export default async function RootLayout({
           </main>
           <Footer />
           <BottomNav content={bottomNavContent} />
+          <ChatWidget />
           <Toaster />
         </SessionProvider>
       </body>

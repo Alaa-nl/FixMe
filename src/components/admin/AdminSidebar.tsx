@@ -21,6 +21,7 @@ import {
   Euro,
   FileText,
   ScrollText,
+  Headset,
 } from "lucide-react";
 
 interface AdminSidebarProps {
@@ -62,6 +63,13 @@ const allNavigationItems = [
     icon: AlertTriangle,
     requiredPermission: "disputes.view",
     badge: "pending_disputes", // Will show count of pending disputes
+  },
+  {
+    name: "Support Chat",
+    href: "/admin/support",
+    icon: Headset,
+    requiredPermission: null, // Visible to all admins/staff
+    badge: "escalated_support",
   },
   {
     name: "Finance",
@@ -141,12 +149,24 @@ export default function AdminSidebar({
   useEffect(() => {
     const fetchBadgeCounts = async () => {
       try {
-        // Fetch pending disputes count
-        const response = await fetch("/api/admin/disputes/count");
-        if (response.ok) {
-          const data = await response.json();
-          setBadgeCounts({ pending_disputes: data.count || 0 });
+        // Fetch counts in parallel
+        const [disputeRes, supportRes] = await Promise.all([
+          fetch("/api/admin/disputes/count"),
+          fetch("/api/admin/support/count"),
+        ]);
+
+        const counts: Record<string, number> = {};
+
+        if (disputeRes.ok) {
+          const data = await disputeRes.json();
+          counts.pending_disputes = data.count || 0;
         }
+        if (supportRes.ok) {
+          const data = await supportRes.json();
+          counts.escalated_support = data.count || 0;
+        }
+
+        setBadgeCounts(counts);
       } catch (error) {
         console.error("Error fetching badge counts:", error);
       }
@@ -236,7 +256,13 @@ export default function AdminSidebar({
                   <Icon size={20} />
                   <span className="font-medium">{item.name}</span>
                   {item.badge && badgeCounts[item.badge] > 0 && (
-                    <span className="ml-auto px-2 py-0.5 bg-red-500 text-white text-xs font-bold rounded-full">
+                    <span
+                      className={`ml-auto px-2 py-0.5 text-white text-xs font-bold rounded-full ${
+                        item.badge === "escalated_support"
+                          ? "bg-[#FF6B35]"
+                          : "bg-red-500"
+                      }`}
+                    >
                       {badgeCounts[item.badge]}
                     </span>
                   )}

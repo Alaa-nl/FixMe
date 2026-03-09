@@ -68,6 +68,24 @@ enum PaymentStatus {
   REFUNDED
 }
 
+enum SupportConversationStatus {
+  OPEN
+  ESCALATED
+  RESOLVED
+}
+
+enum SupportUserType {
+  VISITOR
+  CUSTOMER
+  FIXER
+}
+
+enum SupportSenderType {
+  USER
+  AI
+  ADMIN
+}
+
 // Models
 model User {
   id           String    @id @default(uuid())
@@ -108,6 +126,7 @@ model User {
   voucherRedemptions  VoucherRedemption[]
   credits             UserCredit[]
   adminLogs           AdminLog[]
+  supportConversations SupportConversation[]
 
   @@index([email])
   @@index([userType])
@@ -570,5 +589,41 @@ model AdminLog {
   @@index([userId])
   @@index([action])
   @@index([targetType])
+  @@index([createdAt])
+}
+
+// Support Chat Models
+model SupportConversation {
+  id               String                    @id @default(cuid())
+  userId           String?
+  visitorSessionId String?
+  userName         String
+  userType         SupportUserType           @default(VISITOR)
+  userCity         String?
+  status           SupportConversationStatus @default(OPEN)
+  createdAt        DateTime                  @default(now())
+  updatedAt        DateTime                  @updatedAt
+
+  // Relations
+  user     User?            @relation(fields: [userId], references: [id], onDelete: SetNull)
+  messages SupportMessage[]
+
+  @@index([userId])
+  @@index([visitorSessionId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model SupportMessage {
+  id             String            @id @default(cuid())
+  conversationId String
+  senderType     SupportSenderType
+  content        String            @db.Text
+  createdAt      DateTime          @default(now())
+
+  // Relations
+  conversation SupportConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId])
   @@index([createdAt])
 }
