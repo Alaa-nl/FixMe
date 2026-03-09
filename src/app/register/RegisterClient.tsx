@@ -149,17 +149,17 @@ export default function RegisterClient({ content }: RegisterClientProps) {
       <div className="max-w-md w-full bg-card rounded-xl shadow-lg p-8">
         {/* Logo */}
         <div className="text-center mb-8">
-          <Link href="/">
+          <Link href="/" className="inline-block">
             <Image
-              src="/images/fixme-logo.svg"
+              src="/FixMe_logo_letters.svg"
               alt="FixMe"
-              width={180}
-              height={50}
-              className="mx-auto mb-4"
+              width={240}
+              height={114}
+              className="mx-auto w-[180px] md:w-[220px] h-auto"
               priority
             />
           </Link>
-          <h2 className="text-2xl font-semibold text-gray-800">{content["register_title"]}</h2>
+          <h2 className="mt-6 text-2xl font-semibold text-gray-800">{content["register_title"]}</h2>
         </div>
 
         {/* Error Message */}

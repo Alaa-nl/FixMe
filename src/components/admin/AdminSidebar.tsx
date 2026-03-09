@@ -231,11 +231,11 @@ export default function AdminSidebar({
           <div className="p-6 border-b border-white/10">
             <div className="flex items-center gap-3">
               <Image
-                src="/images/fixme-app-icon.png"
+                src="/FixMe_logo_letters.svg"
                 alt="FixMe"
-                width={36}
-                height={36}
-                className="rounded-lg"
+                width={100}
+                height={47}
+                className="h-7 w-auto brightness-0 invert"
               />
               <h1 className="text-2xl font-bold text-white">FixMe</h1>
               <span className="px-2 py-1 bg-orange-500 text-white text-xs font-bold rounded">

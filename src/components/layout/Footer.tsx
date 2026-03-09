@@ -10,15 +10,14 @@ export default async function Footer() {
       <div className="max-w-7xl mx-auto px-4 py-12">
         {/* Logo and Slogan */}
         <div className="mb-8">
-          <Link href="/" className="inline-flex items-center gap-3 mb-2">
+          <Link href="/" className="inline-block mb-2">
             <Image
-              src="/images/fixme-app-icon.png"
+              src="/FixMe_logo_letters.svg"
               alt="FixMe"
-              width={48}
-              height={48}
-              className="rounded-xl"
+              width={160}
+              height={76}
+              className="h-10 w-auto brightness-0 invert"
             />
-            <span className="text-3xl font-bold text-white">FixMe</span>
           </Link>
           <p className="text-blue-200 text-lg">{content["footer_tagline"]}</p>
         </div>

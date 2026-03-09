@@ -124,8 +124,8 @@ export async function notifyAndEmail(
         <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 12px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); overflow: hidden;">
           <!-- Header -->
           <tr>
-            <td style="background-color: #f97316; padding: 30px; text-align: center;">
-              <h1 style="margin: 0; color: #ffffff; font-size: 32px; font-weight: bold;">FixMe</h1>
+            <td style="background-color: #ffffff; padding: 30px; text-align: center;">
+              <img src="${appUrl}/FixMe_full_logo.png" alt="FixMe" style="max-width: 160px; height: auto;" />
             </td>
           </tr>
 

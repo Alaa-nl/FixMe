@@ -92,22 +92,12 @@ export default function Navbar({ content = {} }: NavbarProps) {
       <div className="max-w-7xl mx-auto px-4 h-full flex items-center justify-between gap-4">
         {/* Logo */}
         <Link href="/" className="flex-shrink-0 hover:opacity-80 transition-opacity">
-          {/* Full horizontal logo on md+ screens */}
           <Image
-            src="/images/fixme-logo.svg"
+            src="/FixMe_logo_letters.svg"
             alt="FixMe"
-            width={160}
-            height={45}
-            className="hidden md:block"
-            priority
-          />
-          {/* Square app icon on mobile */}
-          <Image
-            src="/images/fixme-app-icon.png"
-            alt="FixMe"
-            width={40}
-            height={40}
-            className="block md:hidden rounded-lg"
+            width={120}
+            height={56}
+            className="h-8 md:h-9 w-auto"
             priority
           />
         </Link>
