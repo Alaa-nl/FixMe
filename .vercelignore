@@ -1,0 +1,21 @@
+# SQLite database files (local development only)
+*.db
+*.db-journal
+dev.db
+dev.db-journal
+
+# Prisma migrations (will be run in Vercel)
+# Uncomment if you want to exclude:
+# prisma/migrations
+
+# Local environment files
+.env.local
+.env*.local
+
+# Development files
+.vscode
+.idea
+
+# OS files
+.DS_Store
+Thumbs.db
