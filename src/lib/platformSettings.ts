@@ -41,9 +41,41 @@ export interface PlatformSettings {
   updatedBy: string | null;
 }
 
+// Sensible defaults when database is unreachable (e.g., during build)
+const DEFAULT_SETTINGS: PlatformSettings = {
+  id: "default",
+  commissionPercentage: 15,
+  minJobFee: 10,
+  maxJobFee: null,
+  autoReleaseHours: 72,
+  maxPhotosPerRequest: 5,
+  maxVideoSeconds: 30,
+  maxOffersPerRequest: 10,
+  disputeWindowHours: 48,
+  repairVatRate: 9,
+  reviewEditDays: 7,
+  accountDeletionDays: 30,
+  requireKvk: false,
+  allowUnverifiedFixers: true,
+  minFixerRating: 0,
+  activeCities: ["Amsterdam"],
+  notificationSettings: {
+    welcome: true,
+    newOffer: true,
+    offerAccepted: true,
+    jobCompleted: true,
+    reviewReceived: true,
+    disputeUpdates: true,
+    appointmentReminder: true,
+  },
+  updatedAt: new Date(),
+  updatedBy: null,
+};
+
 /**
  * Get platform settings with caching
  * Creates default settings if none exist
+ * Falls back to DEFAULT_SETTINGS if DB is unreachable (e.g., during build)
  */
 export async function getPlatformSettings(): Promise<PlatformSettings> {
   // Check cache
@@ -52,37 +84,42 @@ export async function getPlatformSettings(): Promise<PlatformSettings> {
     return settingsCache;
   }
 
-  // Fetch from database
-  let settings = await prisma.platformSettings.findUnique({
-    where: { id: "default" },
-  });
-
-  // Create default settings if none exist
-  if (!settings) {
-    settings = await prisma.platformSettings.create({
-      data: {
-        id: "default",
-      },
+  try {
+    // Fetch from database
+    let settings = await prisma.platformSettings.findUnique({
+      where: { id: "default" },
     });
+
+    // Create default settings if none exist
+    if (!settings) {
+      settings = await prisma.platformSettings.create({
+        data: {
+          id: "default",
+        },
+      });
+    }
+
+    // Parse JSON fields
+    const parsedSettings: PlatformSettings = {
+      ...settings,
+      activeCities: Array.isArray(settings.activeCities)
+        ? (settings.activeCities as string[])
+        : JSON.parse(settings.activeCities as string),
+      notificationSettings:
+        typeof settings.notificationSettings === "object"
+          ? (settings.notificationSettings as any)
+          : JSON.parse(settings.notificationSettings as string),
+    };
+
+    // Update cache
+    settingsCache = parsedSettings;
+    cacheTimestamp = now;
+
+    return parsedSettings;
+  } catch {
+    // DB unreachable (build time, cold start, etc.) — use defaults
+    return DEFAULT_SETTINGS;
   }
-
-  // Parse JSON fields
-  const parsedSettings: PlatformSettings = {
-    ...settings,
-    activeCities: Array.isArray(settings.activeCities)
-      ? (settings.activeCities as string[])
-      : JSON.parse(settings.activeCities as string),
-    notificationSettings:
-      typeof settings.notificationSettings === "object"
-        ? (settings.notificationSettings as any)
-        : JSON.parse(settings.notificationSettings as string),
-  };
-
-  // Update cache
-  settingsCache = parsedSettings;
-  cacheTimestamp = now;
-
-  return parsedSettings;
 }
 
 /**

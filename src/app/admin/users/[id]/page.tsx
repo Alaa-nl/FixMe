@@ -3,6 +3,8 @@ import { requireAdmin } from "@/lib/adminAuth";
 import { hasPermission } from "@/lib/checkPermission";
 import UserDetailView from "@/components/admin/UserDetailView";
 
+export const dynamic = "force-dynamic";
+
 export default async function UserDetailPage({
   params,
 }: {

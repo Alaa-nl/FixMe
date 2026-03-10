@@ -12,6 +12,8 @@ import ReviewForm from "@/components/review/ReviewForm";
 import ReviewCard from "@/components/review/ReviewCard";
 import DisputeForm from "@/components/dispute/DisputeForm";
 
+export const dynamic = "force-dynamic";
+
 interface JobPageProps {
   params: Promise<{ id: string }>;
 }
