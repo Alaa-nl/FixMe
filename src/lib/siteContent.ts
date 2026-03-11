@@ -31,6 +31,7 @@ const CACHE_TTL = 5 * 60 * 1000; // 5 minutes TTL
 
 /**
  * Get a single content item by ID
+ * Falls back to DEFAULT_CONTENT if the database is unreachable (e.g., during build)
  */
 export async function getContent(id: string): Promise<string> {
   const cache = globalForCache.__siteContentCache!;
@@ -42,22 +43,28 @@ export async function getContent(id: string): Promise<string> {
     return cache[id];
   }
 
-  // Fetch from database
-  const content = await prisma.siteContent.findUnique({
-    where: { id },
-  });
+  // Fetch from database, gracefully falling back if DB is unavailable
+  try {
+    const content = await prisma.siteContent.findUnique({
+      where: { id },
+    });
 
-  const value = content?.value || DEFAULT_CONTENT[id] || "";
+    const value = content?.value || DEFAULT_CONTENT[id] || "";
 
-  // Update cache
-  cache[id] = value;
-  globalForCache.__siteContentCacheTimestamp = now;
+    // Update cache
+    cache[id] = value;
+    globalForCache.__siteContentCacheTimestamp = now;
 
-  return value;
+    return value;
+  } catch {
+    // DB unreachable (build time, cold start, etc.) — use defaults
+    return DEFAULT_CONTENT[id] || "";
+  }
 }
 
 /**
  * Get multiple content items in a single query (batch)
+ * Falls back to DEFAULT_CONTENT if the database is unreachable (e.g., during build)
  */
 export async function getContentBatch(
   ids: string[]
@@ -77,29 +84,39 @@ export async function getContentBatch(
     return result;
   }
 
-  // Fetch from database
-  const contents = await prisma.siteContent.findMany({
-    where: { id: { in: ids } },
-  });
+  // Fetch from database, gracefully falling back if DB is unavailable
+  try {
+    const contents = await prisma.siteContent.findMany({
+      where: { id: { in: ids } },
+    });
 
-  // Build result with defaults
-  const result: Record<string, string> = {};
-  ids.forEach((id) => {
-    const found = contents.find((c) => c.id === id);
-    result[id] = found?.value || DEFAULT_CONTENT[id] || "";
+    // Build result with defaults
+    const result: Record<string, string> = {};
+    ids.forEach((id) => {
+      const found = contents.find((c) => c.id === id);
+      result[id] = found?.value || DEFAULT_CONTENT[id] || "";
 
-    // Update cache
-    cache[id] = result[id];
-  });
+      // Update cache
+      cache[id] = result[id];
+    });
 
-  globalForCache.__siteContentCacheTimestamp = now;
+    globalForCache.__siteContentCacheTimestamp = now;
 
-  return result;
+    return result;
+  } catch {
+    // DB unreachable — return all defaults
+    const result: Record<string, string> = {};
+    ids.forEach((id) => {
+      result[id] = DEFAULT_CONTENT[id] || "";
+    });
+    return result;
+  }
 }
 
 /**
  * Get all content for a section in one query.
  * Returns Record<id, value> with defaults for any missing keys.
+ * Falls back to DEFAULT_CONTENT if the database is unreachable (e.g., during build)
  */
 export async function getContentBySection(
   section: string
@@ -120,30 +137,39 @@ export async function getContentBySection(
     return result;
   }
 
-  // Fetch all items for this section from DB
-  const contents = await prisma.siteContent.findMany({
-    where: { section },
-  });
+  try {
+    // Fetch all items for this section from DB
+    const contents = await prisma.siteContent.findMany({
+      where: { section },
+    });
 
-  // Build result: DB value → default → empty string
-  const result: Record<string, string> = {};
-  sectionIds.forEach((id) => {
-    const found = contents.find((c) => c.id === id);
-    result[id] = found?.value || DEFAULT_CONTENT[id] || "";
-    cache[id] = result[id];
-  });
+    // Build result: DB value → default → empty string
+    const result: Record<string, string> = {};
+    sectionIds.forEach((id) => {
+      const found = contents.find((c) => c.id === id);
+      result[id] = found?.value || DEFAULT_CONTENT[id] || "";
+      cache[id] = result[id];
+    });
 
-  // Also cache any DB items not in defaults (custom admin-added items)
-  contents.forEach((c) => {
-    if (!result[c.id]) {
-      result[c.id] = c.value;
-      cache[c.id] = c.value;
-    }
-  });
+    // Also cache any DB items not in defaults (custom admin-added items)
+    contents.forEach((c) => {
+      if (!result[c.id]) {
+        result[c.id] = c.value;
+        cache[c.id] = c.value;
+      }
+    });
 
-  globalForCache.__siteContentCacheTimestamp = now;
+    globalForCache.__siteContentCacheTimestamp = now;
 
-  return result;
+    return result;
+  } catch {
+    // DB unreachable — return all defaults for this section
+    const result: Record<string, string> = {};
+    sectionIds.forEach((id) => {
+      result[id] = DEFAULT_CONTENT[id] || "";
+    });
+    return result;
+  }
 }
 
 /**
@@ -156,6 +182,7 @@ export function clearContentCache() {
 
 /**
  * Get all content grouped by section
+ * Returns empty object if the database is unreachable
  */
 export async function getAllContent(): Promise<
   Record<
@@ -171,21 +198,25 @@ export async function getAllContent(): Promise<
     }>
   >
 > {
-  const contents = await prisma.siteContent.findMany({
-    orderBy: [{ section: "asc" }, { id: "asc" }],
-  });
+  try {
+    const contents = await prisma.siteContent.findMany({
+      orderBy: [{ section: "asc" }, { id: "asc" }],
+    });
 
-  // Group by section
-  const grouped: Record<string, any[]> = {};
+    // Group by section
+    const grouped: Record<string, any[]> = {};
 
-  contents.forEach((content) => {
-    if (!grouped[content.section]) {
-      grouped[content.section] = [];
-    }
-    grouped[content.section].push(content);
-  });
+    contents.forEach((content) => {
+      if (!grouped[content.section]) {
+        grouped[content.section] = [];
+      }
+      grouped[content.section].push(content);
+    });
 
-  return grouped;
+    return grouped;
+  } catch {
+    return {};
+  }
 }
 
 /**
@@ -199,8 +230,12 @@ export function getDefaultContent(id: string): string {
  * Check if content exists in database
  */
 export async function contentExists(id: string): Promise<boolean> {
-  const content = await prisma.siteContent.findUnique({
-    where: { id },
-  });
-  return !!content;
+  try {
+    const content = await prisma.siteContent.findUnique({
+      where: { id },
+    });
+    return !!content;
+  } catch {
+    return false;
+  }
 }
