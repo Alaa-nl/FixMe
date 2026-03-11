@@ -5,8 +5,6 @@ import { getContentBySection } from "@/lib/siteContent";
 
 export const dynamic = "force-dynamic";
 
-export const dynamic = "force-dynamic";
-
 export const metadata: Metadata = {
   title: "Terms & Conditions",
   description: "Read FixMe's terms and conditions for using our repair marketplace platform. Learn about user responsibilities, payments, disputes, and more.",
