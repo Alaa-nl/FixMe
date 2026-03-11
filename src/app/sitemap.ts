@@ -62,52 +62,53 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     },
   ];
 
-  // Dynamic: Categories
-  const categories = await prisma.category.findMany({
-    where: { isActive: true },
-    select: { slug: true },
-  });
+  // Dynamic pages — wrapped in try/catch so builds succeed when DB is unreachable
+  try {
+    const categories = await prisma.category.findMany({
+      where: { isActive: true },
+      select: { slug: true },
+    });
 
-  const categoryPages: MetadataRoute.Sitemap = categories.map((category) => ({
-    url: `${baseUrl}/categories/${category.slug}`,
-    lastModified: new Date(),
-    changeFrequency: "weekly",
-    priority: 0.7,
-  }));
+    const categoryPages: MetadataRoute.Sitemap = categories.map((category) => ({
+      url: `${baseUrl}/categories/${category.slug}`,
+      lastModified: new Date(),
+      changeFrequency: "weekly",
+      priority: 0.7,
+    }));
 
-  // Dynamic: Open repair requests (public)
-  const requests = await prisma.repairRequest.findMany({
-    where: { status: "OPEN" },
-    select: { id: true, updatedAt: true },
-    take: 500, // Limit to most recent 500 to avoid sitemap becoming too large
-    orderBy: { createdAt: "desc" },
-  });
+    const requests = await prisma.repairRequest.findMany({
+      where: { status: "OPEN" },
+      select: { id: true, updatedAt: true },
+      take: 500,
+      orderBy: { createdAt: "desc" },
+    });
 
-  const requestPages: MetadataRoute.Sitemap = requests.map((request) => ({
-    url: `${baseUrl}/request/${request.id}`,
-    lastModified: request.updatedAt || new Date(),
-    changeFrequency: "daily",
-    priority: 0.6,
-  }));
+    const requestPages: MetadataRoute.Sitemap = requests.map((request) => ({
+      url: `${baseUrl}/request/${request.id}`,
+      lastModified: request.updatedAt || new Date(),
+      changeFrequency: "daily",
+      priority: 0.6,
+    }));
 
-  // Dynamic: Fixer profiles (public)
-  const fixers = await prisma.user.findMany({
-    where: {
-      userType: "FIXER",
-      fixerProfile: {
-        isNot: null,
+    const fixers = await prisma.user.findMany({
+      where: {
+        userType: "FIXER",
+        fixerProfile: { isNot: null },
       },
-    },
-    select: { id: true, updatedAt: true },
-    take: 500, // Limit to avoid sitemap becoming too large
-  });
+      select: { id: true, updatedAt: true },
+      take: 500,
+    });
 
-  const fixerPages: MetadataRoute.Sitemap = fixers.map((fixer) => ({
-    url: `${baseUrl}/fixer/${fixer.id}`,
-    lastModified: fixer.updatedAt || new Date(),
-    changeFrequency: "weekly",
-    priority: 0.6,
-  }));
+    const fixerPages: MetadataRoute.Sitemap = fixers.map((fixer) => ({
+      url: `${baseUrl}/fixer/${fixer.id}`,
+      lastModified: fixer.updatedAt || new Date(),
+      changeFrequency: "weekly",
+      priority: 0.6,
+    }));
 
-  return [...staticPages, ...categoryPages, ...requestPages, ...fixerPages];
+    return [...staticPages, ...categoryPages, ...requestPages, ...fixerPages];
+  } catch {
+    // DB unavailable at build time — return static pages only
+    return staticPages;
+  }
 }
