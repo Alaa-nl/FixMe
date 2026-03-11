@@ -6,11 +6,16 @@ export default async function Footer() {
   const content = await getContentBySection("footer");
 
   return (
-    <footer className="hidden md:block bg-secondary text-white mt-auto">
-      <div className="max-w-7xl mx-auto px-4 py-12">
-        {/* Logo and Slogan */}
-        <div className="mb-8">
-          <Link href="/" className="inline-block mb-2">
+    <footer className="hidden md:block bg-secondary relative overflow-hidden mt-auto">
+      {/* Subtle noise texture */}
+      <div className="absolute inset-0 noise-bg opacity-5" />
+      {/* Decorative gradient blob */}
+      <div className="absolute bottom-0 right-0 w-80 h-80 bg-primary/[0.06] rounded-full blur-[100px] pointer-events-none" />
+
+      <div className="max-w-7xl mx-auto px-4 py-14 relative z-10">
+        {/* Top row — logo + tagline */}
+        <div className="mb-10">
+          <Link href="/" className="inline-block mb-3">
             <Image
               src="/FixMe_logo_letters.svg"
               alt="FixMe"
@@ -19,136 +24,88 @@ export default async function Footer() {
               className="h-10 w-auto brightness-0 invert"
             />
           </Link>
-          <p className="text-blue-200 text-lg">{content["footer_tagline"]}</p>
+          <p className="text-lg font-medium" style={{ color: "rgba(255,255,255,0.45)" }}>
+            {content["footer_tagline"] || "Don't throw it away. Fix it."}
+          </p>
         </div>
 
-        {/* Links Grid */}
-        <div className="grid grid-cols-3 gap-8 mb-8">
-          {/* For Customers */}
+        {/* Links grid */}
+        <div className="grid grid-cols-3 gap-8 mb-10">
           <div>
-            <h3 className="font-bold text-lg mb-4">For Customers</h3>
-            <ul className="space-y-2">
-              <li>
-                <Link
-                  href="/post"
-                  className="text-blue-100 hover:text-white transition-colors"
-                >
-                  Post a Request
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/browse"
-                  className="text-blue-100 hover:text-white transition-colors"
-                >
-                  Browse Requests
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/how-it-works"
-                  className="text-blue-100 hover:text-white transition-colors"
-                >
-                  How It Works
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/categories"
-                  className="text-blue-100 hover:text-white transition-colors"
-                >
-                  Categories
-                </Link>
-              </li>
+            <h3 className="font-display font-bold text-white text-sm uppercase tracking-wider mb-4">Voor klanten</h3>
+            <ul className="space-y-2.5">
+              {[
+                { href: "/post", label: "Plaats een verzoek" },
+                { href: "/browse", label: "Bekijk verzoeken" },
+                { href: "/how-it-works", label: "Hoe het werkt" },
+                { href: "/categories", label: "Categorieën" },
+              ].map((link) => (
+                <li key={link.href}>
+                  <Link href={link.href} className="text-sm hover:text-white transition-colors" style={{ color: "rgba(255,255,255,0.5)" }}>
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
 
-          {/* For Fixers */}
           <div>
-            <h3 className="font-bold text-lg mb-4">For Fixers</h3>
-            <ul className="space-y-2">
-              <li>
-                <Link
-                  href="/register"
-                  className="text-blue-100 hover:text-white transition-colors"
-                >
-                  Become a Fixer
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/browse"
-                  className="text-blue-100 hover:text-white transition-colors"
-                >
-                  Find Jobs
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/how-it-works"
-                  className="text-blue-100 hover:text-white transition-colors"
-                >
-                  How to Get Started
-                </Link>
-              </li>
+            <h3 className="font-display font-bold text-white text-sm uppercase tracking-wider mb-4">Voor fixers</h3>
+            <ul className="space-y-2.5">
+              {[
+                { href: "/register", label: "Word een Fixer" },
+                { href: "/browse", label: "Vind klussen" },
+                { href: "/how-it-works", label: "Hoe te beginnen" },
+              ].map((link) => (
+                <li key={link.href}>
+                  <Link href={link.href} className="text-sm hover:text-white transition-colors" style={{ color: "rgba(255,255,255,0.5)" }}>
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
 
-          {/* Company */}
           <div>
-            <h3 className="font-bold text-lg mb-4">Company</h3>
-            <ul className="space-y-2">
-              <li>
-                <Link
-                  href="/how-it-works"
-                  className="text-blue-100 hover:text-white transition-colors"
-                >
-                  About FixMe
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/terms"
-                  className="text-blue-100 hover:text-white transition-colors"
-                >
-                  Terms & Conditions
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/privacy"
-                  className="text-blue-100 hover:text-white transition-colors"
-                >
-                  Privacy Policy
-                </Link>
-              </li>
-              <li>
-                <a
-                  href="mailto:info@fixme.nl"
-                  className="text-blue-100 hover:text-white transition-colors"
-                >
-                  Contact Us
-                </a>
-              </li>
+            <h3 className="font-display font-bold text-white text-sm uppercase tracking-wider mb-4">Bedrijf</h3>
+            <ul className="space-y-2.5">
+              {[
+                { href: "/how-it-works", label: "Over FixMe" },
+                { href: "/terms", label: "Voorwaarden" },
+                { href: "/privacy", label: "Privacybeleid" },
+                { href: "mailto:info@fixme.nl", label: "Contact", external: true },
+              ].map((link) => (
+                <li key={link.href}>
+                  {link.external ? (
+                    <a href={link.href} className="text-sm hover:text-white transition-colors" style={{ color: "rgba(255,255,255,0.5)" }}>
+                      {link.label}
+                    </a>
+                  ) : (
+                    <Link href={link.href} className="text-sm hover:text-white transition-colors" style={{ color: "rgba(255,255,255,0.5)" }}>
+                      {link.label}
+                    </Link>
+                  )}
+                </li>
+              ))}
             </ul>
           </div>
         </div>
 
-        {/* About Text */}
-        <div className="border-t border-blue-800 pt-6 mb-6">
-          <p className="text-blue-200 text-sm max-w-2xl">
+        {/* About text */}
+        <div className="border-t border-white/10 pt-6 mb-6">
+          <p className="text-sm max-w-2xl leading-relaxed" style={{ color: "rgba(255,255,255,0.3)" }}>
             {content["footer_about"]}
           </p>
         </div>
 
-        {/* Bottom Bar */}
-        <div className="border-t border-blue-800 pt-6">
+        {/* Bottom bar */}
+        <div className="border-t border-white/10 pt-6">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-            <p className="text-blue-200 text-sm">
-              {content["footer_copyright"]}
+            <p className="text-xs" style={{ color: "rgba(255,255,255,0.3)" }}>
+              {content["footer_copyright"] || "© 2025 FixMe B.V. Alle rechten voorbehouden."}
             </p>
-            <p className="text-blue-200 text-sm">
-              Made with love in Amsterdam, Netherlands
+            <p className="text-xs" style={{ color: "rgba(255,255,255,0.25)" }}>
+              Gemaakt met ❤️ in Amsterdam
             </p>
           </div>
         </div>

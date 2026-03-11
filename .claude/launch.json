@@ -3,11 +3,11 @@
   "configurations": [
     {
       "name": "next-dev",
-      "runtimeExecutable": "/usr/local/bin/npm",
+      "runtimeExecutable": "/Users/alaadrobe/.nvm/versions/node/v24.2.0/bin/npm",
       "runtimeArgs": ["run", "dev"],
       "port": 3000,
       "env": {
-        "PATH": "/bin:/usr/bin:/usr/local/bin:/usr/local/Cellar/node/23.11.0/bin"
+        "PATH": "/Users/alaadrobe/.nvm/versions/node/v24.2.0/bin:/bin:/usr/bin:/usr/local/bin"
       }
     },
     {

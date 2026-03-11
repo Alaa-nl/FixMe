@@ -174,7 +174,7 @@ function BecomeFixerPage() {
             <Sparkles className="w-4 h-4" />
             {isSetup ? "Profile setup" : "Upgrade your account"}
           </div>
-          <h1 className="text-3xl md:text-4xl font-bold text-gray-900 font-[family-name:var(--font-syne)]">
+          <h1 className="text-3xl md:text-4xl font-bold text-gray-900 font-[family-name:var(--font-bricolage)]">
             {headingText}
           </h1>
           <p className="text-gray-500 mt-2 max-w-md mx-auto">{subtitleText}</p>

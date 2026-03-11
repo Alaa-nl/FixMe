@@ -141,7 +141,7 @@ export default function CustomerDashboard() {
       <div className="relative">
         <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-secondary/10 rounded-3xl blur-3xl -z-10" />
         <div className="space-y-2">
-          <h1 className="font-[family-name:var(--font-syne)] text-4xl md:text-6xl font-bold tracking-tight bg-gradient-to-br from-foreground to-foreground/70 bg-clip-text text-transparent">
+          <h1 className="font-[family-name:var(--font-bricolage)] text-4xl md:text-6xl font-bold tracking-tight bg-gradient-to-br from-foreground to-foreground/70 bg-clip-text text-transparent">
             Welcome back, {session?.user?.name?.split(" ")[0]}!
           </h1>
           <p className="text-lg text-muted-foreground font-medium">
@@ -166,7 +166,7 @@ export default function CustomerDashboard() {
                 <TrendingUp className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
               </div>
               <div className="space-y-1">
-                <div className="font-[family-name:var(--font-syne)] text-3xl md:text-4xl font-bold tracking-tight">
+                <div className="font-[family-name:var(--font-bricolage)] text-3xl md:text-4xl font-bold tracking-tight">
                   {stat.value}
                 </div>
                 <div className="text-sm font-medium text-muted-foreground">
@@ -185,7 +185,7 @@ export default function CustomerDashboard() {
       {/* Active Requests Section */}
       <div className="space-y-6">
         <div className="flex items-center justify-between">
-          <h2 className="font-[family-name:var(--font-syne)] text-3xl md:text-4xl font-bold tracking-tight">
+          <h2 className="font-[family-name:var(--font-bricolage)] text-3xl md:text-4xl font-bold tracking-tight">
             My Active Requests
           </h2>
           {dashboardData.activeRequests.length > 0 && (
@@ -205,7 +205,7 @@ export default function CustomerDashboard() {
               <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center mb-6">
                 <FileText className="w-10 h-10 text-primary" />
               </div>
-              <h3 className="font-[family-name:var(--font-syne)] text-2xl font-bold mb-2">
+              <h3 className="font-[family-name:var(--font-bricolage)] text-2xl font-bold mb-2">
                 No active requests yet
               </h3>
               <p className="text-muted-foreground mb-6 text-center max-w-md">
@@ -247,7 +247,7 @@ export default function CustomerDashboard() {
                       {/* Content */}
                       <div className="flex-1 min-w-0 space-y-3">
                         <div className="flex items-start justify-between gap-4">
-                          <h3 className="font-[family-name:var(--font-syne)] text-xl font-bold group-hover:text-primary transition-colors">
+                          <h3 className="font-[family-name:var(--font-bricolage)] text-xl font-bold group-hover:text-primary transition-colors">
                             {request.title}
                           </h3>
                           <Badge variant={getStatusColor(request.status)}>
@@ -287,7 +287,7 @@ export default function CustomerDashboard() {
       {/* Active Jobs Section */}
       {dashboardData.activeJobs.length > 0 && (
         <div className="space-y-6">
-          <h2 className="font-[family-name:var(--font-syne)] text-3xl md:text-4xl font-bold tracking-tight">
+          <h2 className="font-[family-name:var(--font-bricolage)] text-3xl md:text-4xl font-bold tracking-tight">
             Active Jobs
           </h2>
 
@@ -309,7 +309,7 @@ export default function CustomerDashboard() {
                         </Link>
 
                         <div className="flex-1 space-y-2">
-                          <h3 className="font-[family-name:var(--font-syne)] text-lg font-bold">
+                          <h3 className="font-[family-name:var(--font-bricolage)] text-lg font-bold">
                             {job.repairRequest.title}
                           </h3>
                           <Link href={`/profile/${job.fixer.id}`} className="relative z-10 text-sm text-muted-foreground hover:text-primary transition-colors block w-fit">
@@ -322,7 +322,7 @@ export default function CustomerDashboard() {
                       </div>
 
                       <div className="text-right">
-                        <div className="font-[family-name:var(--font-syne)] text-3xl font-bold text-primary">
+                        <div className="font-[family-name:var(--font-bricolage)] text-3xl font-bold text-primary">
                           €{job.agreedPrice}
                         </div>
                         <div className="text-xs text-muted-foreground mt-1">Agreed price</div>
@@ -341,7 +341,7 @@ export default function CustomerDashboard() {
         <div className="space-y-6">
           <div className="flex items-center gap-3">
             <AlertTriangle className="w-8 h-8 text-destructive" />
-            <h2 className="font-[family-name:var(--font-syne)] text-3xl md:text-4xl font-bold tracking-tight">
+            <h2 className="font-[family-name:var(--font-bricolage)] text-3xl md:text-4xl font-bold tracking-tight">
               Active Disputes
             </h2>
           </div>
@@ -357,7 +357,7 @@ export default function CustomerDashboard() {
       {dashboardData.pastJobs.length > 0 && (
         <div className="space-y-6">
           <div className="flex items-center justify-between">
-            <h2 className="font-[family-name:var(--font-syne)] text-3xl md:text-4xl font-bold tracking-tight">
+            <h2 className="font-[family-name:var(--font-bricolage)] text-3xl md:text-4xl font-bold tracking-tight">
               Recent Completions
             </h2>
             <Link

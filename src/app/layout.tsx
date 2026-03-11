@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { DM_Sans, Syne } from "next/font/google";
+import { DM_Sans, Bricolage_Grotesque } from "next/font/google";
 import "./globals.css";
 import SessionProvider from "@/components/SessionProvider";
 import Navbar from "@/components/layout/Navbar";
@@ -15,9 +15,9 @@ const dmSans = DM_Sans({
   weight: ["400", "500", "700"],
 });
 
-const syne = Syne({
+const bricolage = Bricolage_Grotesque({
   subsets: ["latin"],
-  variable: "--font-syne",
+  variable: "--font-bricolage",
   weight: ["400", "600", "700", "800"],
 });
 
@@ -105,7 +105,7 @@ export default async function RootLayout({
           crossOrigin=""
         />
       </head>
-      <body className={`${dmSans.variable} ${syne.variable} font-sans antialiased`}>
+      <body className={`${dmSans.variable} ${bricolage.variable} font-sans antialiased`}>
         <SessionProvider>
           <Navbar content={navbarContent} />
           <main className="pt-16 pb-20 md:pb-0 min-h-screen flex flex-col">
