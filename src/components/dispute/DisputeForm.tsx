@@ -103,6 +103,7 @@ export default function DisputeForm({ jobId, disputeWindowHours = 72 }: DisputeF
       for (const photo of photos) {
         const formData = new FormData();
         formData.append("file", photo);
+        formData.append("bucket", "dispute-evidence");
         const uploadRes = await fetch("/api/upload", { method: "POST", body: formData });
         if (!uploadRes.ok) {
           throw new Error("Failed to upload evidence photo");

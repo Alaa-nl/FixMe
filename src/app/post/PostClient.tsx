@@ -101,46 +101,47 @@ export default function PostClient({ content }: PostClientProps) {
       return;
     }
 
-    // Convert files to base64
-    const base64Photos: string[] = [];
-    for (const file of newFiles) {
-      const reader = new FileReader();
-      const base64Promise = new Promise<string>((resolve) => {
-        reader.onloadend = () => {
-          resolve(reader.result as string);
-        };
-        reader.readAsDataURL(file);
-      });
-      const base64 = await base64Promise;
-      base64Photos.push(base64);
-    }
+    // Create object URLs for previews (faster than base64, no memory bloat)
+    const previewUrls = newFiles.map((file) => URL.createObjectURL(file));
 
-    setPhotos([...photos, ...base64Photos]);
+    setPhotos([...photos, ...previewUrls]);
     setPhotoFiles([...photoFiles, ...newFiles]);
     setError("");
   };
 
   // Remove photo
   const removePhoto = (index: number) => {
+    URL.revokeObjectURL(photos[index]);
     setPhotos(photos.filter((_, i) => i !== index));
     setPhotoFiles(photoFiles.filter((_, i) => i !== index));
   };
 
+  // Convert File to base64 (used only for AI diagnosis)
+  const fileToBase64 = (file: File): Promise<string> =>
+    new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result as string);
+      reader.readAsDataURL(file);
+    });
+
   // Trigger AI diagnosis
   const triggerDiagnosis = async () => {
-    if (photos.length === 0) return;
+    if (photoFiles.length === 0) return;
 
     setIsAnalyzing(true);
     setError("");
 
     try {
+      // Convert files to base64 on-demand for the AI endpoint
+      const base64Images = await Promise.all(photoFiles.map(fileToBase64));
+
       const res = await fetch("/api/ai-diagnosis", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          images: photos,
+          images: base64Images,
         }),
       });
 
@@ -161,7 +162,7 @@ export default function PostClient({ content }: PostClientProps) {
   // Move to next step
   const handleNextStep = () => {
     if (step === 1) {
-      if (photos.length === 0) {
+      if (photoFiles.length === 0) {
         setError(content["post_error_no_photos"]);
         return;
       }
@@ -202,10 +203,20 @@ export default function PostClient({ content }: PostClientProps) {
     setError("");
 
     try {
-      console.log("🚀 Submitting repair request...");
+      // Upload photos to Supabase Storage first
+      const uploadedUrls: string[] = [];
+      for (const file of photoFiles) {
+        const formData = new FormData();
+        formData.append("file", file);
+        formData.append("bucket", "repair-media");
+        const uploadRes = await fetch("/api/upload", { method: "POST", body: formData });
+        if (!uploadRes.ok) {
+          throw new Error("Failed to upload photo");
+        }
+        const uploadData = await uploadRes.json();
+        uploadedUrls.push(uploadData.url);
+      }
 
-      // For now, we're using base64 encoded photos directly
-      // In production, you would upload to cloud storage (S3, Cloudinary, etc.)
       const res = await fetch("/api/requests", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -213,7 +224,7 @@ export default function PostClient({ content }: PostClientProps) {
           title,
           description,
           categoryId: selectedCategoryId,
-          photos: photos, // base64 encoded photos
+          photos: uploadedUrls,
           city,
           address,
           locationLat,

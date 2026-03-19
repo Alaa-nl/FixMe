@@ -292,6 +292,7 @@ export default function ChatWindow({ conversationId }: ChatWindowProps) {
       try {
         const formData = new FormData();
         formData.append("file", selectedFile);
+        formData.append("bucket", "repair-media");
 
         const uploadRes = await fetch("/api/upload", {
           method: "POST",

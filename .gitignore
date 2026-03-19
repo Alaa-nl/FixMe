@@ -34,6 +34,9 @@ yarn-error.log*
 .env*
 !.env.example
 
+# uploads (legacy local storage, now using Supabase Storage)
+/public/uploads/
+
 # vercel
 .vercel
 

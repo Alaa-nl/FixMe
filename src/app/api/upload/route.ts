@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
-import { writeFile, mkdir } from "fs/promises";
-import { join } from "path";
 import { randomUUID } from "crypto";
 import sharp from "sharp";
+import { supabaseAdmin } from "@/lib/supabase";
 
 const MAX_IMAGE_SIZE = 10 * 1024 * 1024; // 10MB for images
 const MAX_VIDEO_SIZE = 50 * 1024 * 1024; // 50MB for videos
@@ -13,6 +12,16 @@ const ALLOWED_TYPES = [...ALLOWED_IMAGE_TYPES, ...ALLOWED_VIDEO_TYPES];
 
 const IMAGE_MAX_WIDTH = 1200;
 const IMAGE_QUALITY = 80;
+
+const ALLOWED_BUCKETS = [
+  "profile-images",
+  "repair-media",
+  "dispute-evidence",
+  "fixer-portfolio",
+  "marketing-media",
+] as const;
+
+type BucketName = (typeof ALLOWED_BUCKETS)[number];
 
 export async function POST(request: NextRequest) {
   try {
@@ -26,6 +35,7 @@ export async function POST(request: NextRequest) {
 
     const formData = await request.formData();
     const file = formData.get("file") as File;
+    const bucketParam = (formData.get("bucket") as string) || "repair-media";
 
     if (!file) {
       return NextResponse.json(
@@ -33,6 +43,15 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
+
+    // Validate bucket
+    if (!ALLOWED_BUCKETS.includes(bucketParam as BucketName)) {
+      return NextResponse.json(
+        { error: "Invalid storage bucket" },
+        { status: 400 }
+      );
+    }
+    const bucket = bucketParam as BucketName;
 
     // Validate file type
     if (!ALLOWED_TYPES.includes(file.type)) {
@@ -58,21 +77,21 @@ export async function POST(request: NextRequest) {
     const bytes = await file.arrayBuffer();
     const rawBuffer = Buffer.from(bytes);
 
-    // Determine output filename — images always saved as .webp after compression
+    // Process image or keep video as-is
     const isImage = ALLOWED_IMAGE_TYPES.includes(file.type);
     let outputBuffer: Buffer;
     let filename: string;
+    let contentType: string;
 
     if (isImage) {
-      // Resize and compress images
       outputBuffer = await sharp(rawBuffer)
         .resize({ width: IMAGE_MAX_WIDTH, withoutEnlargement: true })
         .webp({ quality: IMAGE_QUALITY })
         .toBuffer();
 
       filename = `${randomUUID()}.webp`;
+      contentType = "image/webp";
     } else {
-      // Videos: keep original format, derive extension from MIME type
       outputBuffer = rawBuffer;
       const videoMimeToExt: Record<string, string> = {
         "video/mp4": "mp4",
@@ -80,21 +99,34 @@ export async function POST(request: NextRequest) {
       };
       const extension = videoMimeToExt[file.type] || "mp4";
       filename = `${randomUUID()}.${extension}`;
+      contentType = file.type;
     }
 
-    // Create uploads directory if it doesn't exist
-    const uploadsDir = join(process.cwd(), "public", "uploads");
-    await mkdir(uploadsDir, { recursive: true });
+    // Upload to Supabase Storage
+    const storagePath = `${session.user.id}/${filename}`;
 
-    // Save file
-    const filePath = join(uploadsDir, filename);
-    await writeFile(filePath, outputBuffer);
+    const { error: uploadError } = await supabaseAdmin.storage
+      .from(bucket)
+      .upload(storagePath, outputBuffer, {
+        contentType,
+        upsert: false,
+      });
 
-    // Return the public URL
-    const url = `/uploads/${filename}`;
+    if (uploadError) {
+      console.error("Supabase upload error:", uploadError);
+      return NextResponse.json(
+        { error: "Failed to upload file to storage" },
+        { status: 500 }
+      );
+    }
+
+    // Get the public URL
+    const { data: urlData } = supabaseAdmin.storage
+      .from(bucket)
+      .getPublicUrl(storagePath);
 
     return NextResponse.json(
-      { url, filename },
+      { url: urlData.publicUrl, filename },
       { status: 200 }
     );
   } catch (error) {
