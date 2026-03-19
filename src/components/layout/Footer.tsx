@@ -1,6 +1,6 @@
 import Link from "next/link";
-import Image from "next/image";
 import { getContentBySection } from "@/lib/siteContent";
+import { Logo } from "@/components/brand/Logo";
 
 export default async function Footer() {
   const content = await getContentBySection("footer");
@@ -16,13 +16,7 @@ export default async function Footer() {
         {/* Top row — logo + tagline */}
         <div className="mb-10">
           <Link href="/" className="inline-block mb-3">
-            <Image
-              src="/FixMe_logo_letters.svg"
-              alt="FixMe"
-              width={160}
-              height={76}
-              className="h-10 w-auto brightness-0 invert"
-            />
+            <Logo variant="horizontal-dark" size="sm" />
           </Link>
           <p className="text-lg font-medium" style={{ color: "rgba(255,255,255,0.45)" }}>
             {content["footer_tagline"] || "Don't throw it away. Fix it."}

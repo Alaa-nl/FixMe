@@ -4,8 +4,8 @@ import { useState } from "react";
 import { signIn, getProviders } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import Image from "next/image";
 import { Wrench, Hammer } from "lucide-react";
+import { Logo } from "@/components/brand/Logo";
 import Button from "@/components/ui/button";
 import Input from "@/components/ui/input";
 import PasswordInput from "@/components/ui/password-input";
@@ -151,14 +151,7 @@ export default function RegisterClient({ content }: RegisterClientProps) {
         {/* Logo */}
         <div className="text-center mb-8">
           <Link href="/" className="inline-block">
-            <Image
-              src="/FixMe_logo_letters.svg"
-              alt="FixMe"
-              width={240}
-              height={114}
-              className="mx-auto w-[180px] md:w-[220px] h-auto"
-              priority
-            />
+            <Logo variant="stacked" size="xl" priority />
           </Link>
           <h2 className="mt-6 text-2xl font-semibold text-gray-800">{content["register_title"]}</h2>
         </div>

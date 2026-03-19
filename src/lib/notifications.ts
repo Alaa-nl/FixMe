@@ -125,7 +125,7 @@ export async function notifyAndEmail(
           <!-- Header -->
           <tr>
             <td style="background-color: #ffffff; padding: 30px; text-align: center;">
-              <img src="${appUrl}/FixMe_full_logo.png" alt="FixMe" style="max-width: 160px; height: auto;" />
+              <img src="${appUrl}/brand/fixme-logo-horizontal-light.png" alt="FixMe" style="max-width: 160px; height: auto;" />
             </td>
           </tr>
 

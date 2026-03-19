@@ -41,9 +41,9 @@ export const metadata: Metadata = {
     description: "FixMe is the Dutch repair marketplace. Post your broken item and get offers from local repair experts near you.",
     images: [
       {
-        url: "/FixMe_full_logo.png",
-        width: 1200,
-        height: 630,
+        url: "/brand/fixme-app-icon.png",
+        width: 1024,
+        height: 1024,
         alt: "FixMe — Don't throw it away. Fix it.",
       },
     ],
@@ -52,7 +52,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "FixMe — Don't throw it away. Fix it.",
     description: "FixMe is the Dutch repair marketplace. Post your broken item and get offers from local repair experts near you.",
-    images: ["/FixMe_full_logo.png"],
+    images: ["/brand/fixme-app-icon.png"],
   },
   robots: {
     index: true,
@@ -68,15 +68,14 @@ export const metadata: Metadata = {
   icons: {
     icon: [
       { url: "/favicon.ico", sizes: "32x32" },
-      { url: "/FixMe_logo_icon.svg", type: "image/svg+xml" },
       { url: "/favicon-16x16.png", sizes: "16x16", type: "image/png" },
       { url: "/favicon-32x32.png", sizes: "32x32", type: "image/png" },
     ],
     apple: [
-      { url: "/FixMe_logo_icon.png", sizes: "180x180", type: "image/png" },
+      { url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
     ],
     other: [
-      { rel: "icon", url: "/FixMe_logo_icon.png", sizes: "192x192", type: "image/png" },
+      { rel: "icon", url: "/icon-192.png", sizes: "192x192", type: "image/png" },
     ],
   },
   manifest: "/site.webmanifest",

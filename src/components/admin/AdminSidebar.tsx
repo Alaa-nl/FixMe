@@ -2,8 +2,8 @@
 
 import { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { usePathname } from "next/navigation";
+import { Logo } from "@/components/brand/Logo";
 import { signOut } from "next-auth/react";
 import {
   BarChart3,
@@ -230,13 +230,7 @@ export default function AdminSidebar({
           {/* Logo */}
           <div className="p-6 border-b border-white/10">
             <div className="flex items-center gap-3">
-              <Image
-                src="/FixMe_logo_letters.svg"
-                alt="FixMe"
-                width={100}
-                height={47}
-                className="h-7 w-auto brightness-0 invert"
-              />
+              <Logo variant="horizontal-dark" size="sm" />
               <h1 className="text-2xl font-bold text-white">FixMe</h1>
               <span className="px-2 py-1 bg-orange-500 text-white text-xs font-bold rounded">
                 {isSuperAdmin ? "ADMIN" : "STAFF"}

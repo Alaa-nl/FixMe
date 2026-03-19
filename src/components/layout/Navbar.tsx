@@ -8,6 +8,7 @@ import { Search, MessageCircle, User, LogOut, ChevronDown, Wrench, Settings, Lay
 import Image from "next/image";
 import Button from "@/components/ui/button";
 import NotificationBell from "@/components/layout/NotificationBell";
+import { Logo } from "@/components/brand/Logo";
 
 interface NavbarProps {
   content?: Record<string, string>;
@@ -84,15 +85,11 @@ export default function Navbar({ content = {} }: NavbarProps) {
     <nav className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-b border-gray-100/80 h-16">
       <div className="max-w-7xl mx-auto px-4 h-full flex items-center justify-between gap-4">
         {/* Logo */}
-        <Link href="/" className="flex-shrink-0 hover:opacity-80 transition-opacity">
-          <Image
-            src="/FixMe_logo_letters.svg"
-            alt="FixMe"
-            width={120}
-            height={56}
-            className="h-8 md:h-9 w-auto"
-            priority
-          />
+        <Link href="/" className="flex-shrink-0 hover:opacity-80 transition-opacity flex items-center">
+          {/* Full logo on tablet+ */}
+          <Logo variant="horizontal-light" size="md" className="hidden sm:block" priority />
+          {/* Icon only on mobile */}
+          <Logo variant="wrench" size="sm" className="block sm:hidden" priority />
         </Link>
 
         {/* Search bar — desktop */}
