@@ -92,7 +92,7 @@ export default function LoginClient({ content }: LoginClientProps) {
         {/* Logo */}
         <div className="text-center mb-8">
           <Link href="/" className="inline-block">
-            <Logo variant="stacked" size="3xl" priority />
+            <Logo variant="stacked" size="4xl" priority />
           </Link>
           <h2 className="mt-6 text-2xl font-semibold text-gray-800">{content["login_title"]}</h2>
         </div>

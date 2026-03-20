@@ -12,9 +12,11 @@ const SIZES = {
   sm: 32,
   md: 40,
   lg: 48,
+  nav: 56,
   xl: 120,
   "2xl": 160,
   "3xl": 192,
+  "4xl": 280,
 } as const;
 
 type LogoProps = {
