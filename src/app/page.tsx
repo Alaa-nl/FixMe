@@ -60,7 +60,7 @@ export default async function Home() {
                 </div>
 
                 <h1 className="text-4xl md:text-5xl lg:text-[3.5rem] xl:text-6xl font-extrabold text-secondary leading-[1.08] mb-6 font-display tracking-tight">
-                  {content["hero_title"] || "Don't throw it away. Fix it."}
+                  {content["hero_title"] || "Don't throw it away"}
                 </h1>
 
                 <p className="text-lg md:text-xl text-gray-500 mb-8 leading-relaxed max-w-lg">
@@ -105,7 +105,7 @@ export default async function Home() {
                     <div className="absolute inset-0 noise-bg" />
                     <div className="text-center relative z-10">
                       <Wrench className="w-20 h-20 text-primary/25 mx-auto mb-3" strokeWidth={1.2} />
-                      <p className="text-secondary/40 font-display font-bold text-lg">FixMe</p>
+                      <p className="text-secondary/40 font-display font-bold text-xl">FixMe</p>
                     </div>
                   </div>
 

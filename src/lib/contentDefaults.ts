@@ -20,7 +20,7 @@ export interface ContentItem {
 // ─── Homepage ────────────────────────────────────────────
 export const homepageDefaults: ContentItem[] = [
   // Hero
-  { id: "hero_title", section: "homepage", type: "text", value: "Don't throw it away. Fix it.", label: "Hero Title" },
+  { id: "hero_title", section: "homepage", type: "text", value: "Don't throw it away", label: "Hero Title" },
   { id: "hero_subtitle", section: "homepage", type: "text", value: "Find local repair people for bikes, phones, appliances and more.", label: "Hero Subtitle" },
   { id: "hero_image", section: "homepage", type: "image", value: "/images/hero.jpg", label: "Hero Image" },
   { id: "hero_cta_primary", section: "homepage", type: "text", value: "Post a Repair Request", label: "Hero Primary Button" },

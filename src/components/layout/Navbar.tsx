@@ -87,9 +87,9 @@ export default function Navbar({ content = {} }: NavbarProps) {
         {/* Logo */}
         <Link href="/" className="flex-shrink-0 hover:opacity-80 transition-opacity flex items-center">
           {/* Full logo on tablet+ */}
-          <Logo variant="horizontal-light" size="md" className="hidden sm:block" priority />
+          <Logo variant="horizontal-light" size="lg" className="hidden sm:block" priority />
           {/* Icon only on mobile */}
-          <Logo variant="wrench" size="sm" className="block sm:hidden" priority />
+          <Logo variant="wrench" size="md" className="block sm:hidden" priority />
         </Link>
 
         {/* Search bar — desktop */}

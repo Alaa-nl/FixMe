@@ -11,9 +11,10 @@ const VARIANTS = {
 const SIZES = {
   sm: 32,
   md: 40,
-  lg: 64,
+  lg: 48,
   xl: 120,
   "2xl": 160,
+  "3xl": 192,
 } as const;
 
 type LogoProps = {
@@ -36,7 +37,7 @@ export function Logo({
   return (
     <Image
       src={v.src}
-      alt="FixMe — Don't throw it away."
+      alt="FixMe — Don't throw it away"
       height={h}
       width={w}
       className={`w-auto ${className}`}

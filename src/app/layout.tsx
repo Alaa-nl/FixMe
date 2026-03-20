@@ -24,7 +24,7 @@ const bricolage = Bricolage_Grotesque({
 export const metadata: Metadata = {
   metadataBase: new URL('https://fixme.nl'),
   title: {
-    default: "FixMe — Don't throw it away. Fix it.",
+    default: "FixMe — Don't throw it away",
     template: "%s | FixMe — Repair Marketplace",
   },
   description: "FixMe is the Dutch repair marketplace. Post your broken item and get offers from local repair experts near you.",
@@ -37,20 +37,20 @@ export const metadata: Metadata = {
     locale: "nl_NL",
     url: "https://fixme.nl",
     siteName: "FixMe",
-    title: "FixMe — Don't throw it away. Fix it.",
+    title: "FixMe — Don't throw it away",
     description: "FixMe is the Dutch repair marketplace. Post your broken item and get offers from local repair experts near you.",
     images: [
       {
         url: "/brand/fixme-app-icon.png",
         width: 1024,
         height: 1024,
-        alt: "FixMe — Don't throw it away. Fix it.",
+        alt: "FixMe — Don't throw it away",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "FixMe — Don't throw it away. Fix it.",
+    title: "FixMe — Don't throw it away",
     description: "FixMe is the Dutch repair marketplace. Post your broken item and get offers from local repair experts near you.",
     images: ["/brand/fixme-app-icon.png"],
   },

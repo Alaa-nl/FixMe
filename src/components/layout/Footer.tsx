@@ -16,10 +16,10 @@ export default async function Footer() {
         {/* Top row — logo + tagline */}
         <div className="mb-10">
           <Link href="/" className="inline-block mb-3">
-            <Logo variant="horizontal-dark" size="sm" />
+            <Logo variant="horizontal-dark" size="md" />
           </Link>
           <p className="text-lg font-medium" style={{ color: "rgba(255,255,255,0.45)" }}>
-            {content["footer_tagline"] || "Don't throw it away. Fix it."}
+            {content["footer_tagline"] || "Don't throw it away"}
           </p>
         </div>
 

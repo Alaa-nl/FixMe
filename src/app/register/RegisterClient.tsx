@@ -151,7 +151,7 @@ export default function RegisterClient({ content }: RegisterClientProps) {
         {/* Logo */}
         <div className="text-center mb-8">
           <Link href="/" className="inline-block">
-            <Logo variant="stacked" size="xl" priority />
+            <Logo variant="stacked" size="3xl" priority />
           </Link>
           <h2 className="mt-6 text-2xl font-semibold text-gray-800">{content["register_title"]}</h2>
         </div>
