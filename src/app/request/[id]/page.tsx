@@ -3,7 +3,7 @@ import Image from "next/image";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { CategoryIcon } from "@/lib/categoryIconsReact";
-import { Wrench, CheckCircle2, XCircle, AlertTriangle, MapPin, Briefcase, Wallet, Clock, Package, Eye, MessageSquare } from "lucide-react";
+import { Wrench, CheckCircle2, XCircle, AlertTriangle, MapPin, Briefcase, Wallet, Clock, Package, MessageSquare } from "lucide-react";
 import { timeAgo } from "@/lib/utils";
 import PhotoGallery from "@/components/request/PhotoGallery";
 import DiagnosisCard from "@/components/ai/DiagnosisCard";
@@ -80,12 +80,6 @@ export default async function RequestPage({ params }: RequestPageProps) {
   if (!request) {
     notFound();
   }
-
-  // Increment view count (fire-and-forget, don't block page render)
-  prisma.repairRequest.update({
-    where: { id },
-    data: { views: { increment: 1 } },
-  }).catch(() => {});
 
   const isRequestOwner = session?.user?.id === request.customer.id;
   const isLoggedIn = !!session?.user;
@@ -392,14 +386,6 @@ export default async function RequestPage({ params }: RequestPageProps) {
                 <div>
                   <div className="text-sm text-gray-600 mb-1 flex items-center gap-1.5"><Package className="w-3.5 h-3.5" /> Mobility</div>
                   <div className="text-sm font-medium text-gray-800">{mobilityText}</div>
-                </div>
-
-                {/* Views */}
-                <div>
-                  <div className="text-sm text-gray-600 mb-1 flex items-center gap-1.5"><Eye className="w-3.5 h-3.5" /> Views</div>
-                  <div className="text-sm font-medium text-gray-800">
-                    {request.views}
-                  </div>
                 </div>
 
                 {/* Offers */}
