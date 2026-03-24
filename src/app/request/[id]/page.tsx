@@ -15,6 +15,7 @@ import { DiagnosisResult } from "@/lib/claude";
 import { haversineDistance } from "@/lib/geo";
 import SuggestedFixers from "@/components/request/SuggestedFixers";
 import RequestLocationMapClient from "@/components/map/RequestLocationMapClient";
+import DeleteRequestButton from "@/components/request/DeleteRequestButton";
 
 export const dynamic = "force-dynamic";
 
@@ -80,6 +81,12 @@ export default async function RequestPage({ params }: RequestPageProps) {
     notFound();
   }
 
+  // Increment view count (fire-and-forget, don't block page render)
+  prisma.repairRequest.update({
+    where: { id },
+    data: { views: { increment: 1 } },
+  }).catch(() => {});
+
   const isRequestOwner = session?.user?.id === request.customer.id;
   const isLoggedIn = !!session?.user;
 
@@ -92,10 +99,10 @@ export default async function RequestPage({ params }: RequestPageProps) {
     });
     isFixer = user?.userType === "FIXER";
 
-    // Check if fixer has already made an offer
+    // Check if fixer has an active offer (allow re-offering after rejection/withdrawal)
     if (isFixer) {
       const existingOffer = request.offers.find(
-        (offer) => offer.fixer.id === session.user.id
+        (offer) => offer.fixer.id === session.user.id && offer.status !== "REJECTED" && offer.status !== "WITHDRAWN"
       );
       hasAlreadyOffered = !!existingOffer;
     }
@@ -341,6 +348,8 @@ export default async function RequestPage({ params }: RequestPageProps) {
                   offers={request.offers as any}
                   isRequestOwner={isRequestOwner}
                   requestStatus={request.status}
+                  repairRequestId={request.id}
+                  currentUserId={session?.user?.id}
                 />
               )}
             </div>
@@ -385,11 +394,11 @@ export default async function RequestPage({ params }: RequestPageProps) {
                   <div className="text-sm font-medium text-gray-800">{mobilityText}</div>
                 </div>
 
-                {/* Views (placeholder) */}
+                {/* Views */}
                 <div>
                   <div className="text-sm text-gray-600 mb-1 flex items-center gap-1.5"><Eye className="w-3.5 h-3.5" /> Views</div>
                   <div className="text-sm font-medium text-gray-800">
-                    {Math.floor(Math.random() * 100) + 20}
+                    {request.views}
                   </div>
                 </div>
 
@@ -446,6 +455,7 @@ export default async function RequestPage({ params }: RequestPageProps) {
                     Status: <span className="font-semibold">{request.status}</span>
                   </div>
                 )}
+                <DeleteRequestButton requestId={request.id} />
               </div>
             ) : !isFixer ? (
               <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 text-center">

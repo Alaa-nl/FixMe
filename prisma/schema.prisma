@@ -232,6 +232,7 @@ model RepairRequest {
   mobility     Mobility
   status       RepairRequestStatus @default(OPEN)
   aiDiagnosis  Json?
+  views        Int                 @default(0)
   createdAt    DateTime            @default(now())
   updatedAt    DateTime            @updatedAt
 

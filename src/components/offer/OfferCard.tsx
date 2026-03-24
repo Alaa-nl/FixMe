@@ -27,11 +27,13 @@ interface OfferCardProps {
     };
   };
   isRequestOwner?: boolean;
+  isOfferOwner?: boolean;
   requestStatus?: string;
   onAccept?: (offerId: string, scheduledAt?: string) => void;
   onReject?: (offerId: string) => void;
   onMessage?: (fixerId: string) => void;
   onCounterPropose?: (offerId: string, fixerId: string, fixerName: string) => void;
+  onWithdraw?: (offerId: string) => void;
 }
 
 function formatSlot(iso: string): string {
@@ -56,11 +58,13 @@ function formatSlotShort(iso: string): string {
   });
 }
 
-export default function OfferCard({ offer, isRequestOwner, requestStatus, onAccept, onReject, onMessage, onCounterPropose }: OfferCardProps) {
+export default function OfferCard({ offer, isRequestOwner, isOfferOwner, requestStatus, onAccept, onReject, onMessage, onCounterPropose, onWithdraw }: OfferCardProps) {
   const [showFullMessage, setShowFullMessage] = useState(false);
   const [isAccepting, setIsAccepting] = useState(false);
   const [isRejecting, setIsRejecting] = useState(false);
   const [showRejectConfirm, setShowRejectConfirm] = useState(false);
+  const [showWithdrawConfirm, setShowWithdrawConfirm] = useState(false);
+  const [isWithdrawing, setIsWithdrawing] = useState(false);
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
 
   const canAccept = isRequestOwner && requestStatus === "OPEN" && offer.status === "PENDING";
@@ -334,6 +338,50 @@ export default function OfferCard({ offer, isRequestOwner, requestStatus, onAcce
             <Calendar className="w-3.5 h-3.5" />
             Appointment times were proposed
           </span>
+        </div>
+      )}
+
+      {/* Fixer actions — withdraw pending offer */}
+      {isOfferOwner && offer.status === "PENDING" && !showWithdrawConfirm && (
+        <div className="px-5 pb-4">
+          <button
+            onClick={() => setShowWithdrawConfirm(true)}
+            className="inline-flex items-center gap-1 text-xs text-gray-400 hover:text-amber-600 font-medium transition-colors"
+          >
+            <RotateCcw className="w-3 h-3" />
+            Withdraw offer
+          </button>
+        </div>
+      )}
+
+      {/* Withdraw confirmation overlay */}
+      {showWithdrawConfirm && (
+        <div className="mx-5 mb-5 rounded-lg border border-amber-200 bg-amber-50 p-4">
+          <p className="text-sm font-semibold text-gray-800 mb-1">
+            Withdraw this offer?
+          </p>
+          <p className="text-xs text-gray-500 mb-3">
+            The customer will be notified. You can send a new offer later.
+          </p>
+          <div className="flex gap-2">
+            <button
+              onClick={() => setShowWithdrawConfirm(false)}
+              disabled={isWithdrawing}
+              className="flex-1 px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={async () => {
+                setIsWithdrawing(true);
+                onWithdraw?.(offer.id);
+              }}
+              disabled={isWithdrawing}
+              className="flex-1 px-3 py-2 text-sm font-medium text-white bg-amber-500 rounded-lg hover:bg-amber-600 disabled:bg-amber-300 transition-colors"
+            >
+              {isWithdrawing ? "Withdrawing..." : "Yes, withdraw"}
+            </button>
+          </div>
         </div>
       )}
 

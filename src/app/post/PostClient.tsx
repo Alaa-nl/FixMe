@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
-import { Camera, X, ImagePlus } from "lucide-react";
+import { Camera, X, ImagePlus, Video } from "lucide-react";
 import Button from "@/components/ui/button";
 import DiagnosisLoading from "@/components/ai/DiagnosisLoading";
 import DiagnosisCard from "@/components/ai/DiagnosisCard";
@@ -39,6 +39,8 @@ export default function PostClient({ content }: PostClientProps) {
   // Form data
   const [photos, setPhotos] = useState<string[]>([]);
   const [photoFiles, setPhotoFiles] = useState<File[]>([]);
+  const [videoFile, setVideoFile] = useState<File | null>(null);
+  const [videoPreview, setVideoPreview] = useState<string>("");
   const [diagnosis, setDiagnosis] = useState<DiagnosisResult | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [selectedCategoryId, setSelectedCategoryId] = useState("");
@@ -114,6 +116,28 @@ export default function PostClient({ content }: PostClientProps) {
     URL.revokeObjectURL(photos[index]);
     setPhotos(photos.filter((_, i) => i !== index));
     setPhotoFiles(photoFiles.filter((_, i) => i !== index));
+  };
+
+  // Handle video upload (1 video max)
+  const handleVideoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 50 * 1024 * 1024) {
+      setError("Video must be under 50MB");
+      return;
+    }
+
+    if (videoPreview) URL.revokeObjectURL(videoPreview);
+    setVideoFile(file);
+    setVideoPreview(URL.createObjectURL(file));
+    setError("");
+  };
+
+  const removeVideo = () => {
+    if (videoPreview) URL.revokeObjectURL(videoPreview);
+    setVideoFile(null);
+    setVideoPreview("");
   };
 
   // Convert File to base64 (used only for AI diagnosis)
@@ -217,6 +241,20 @@ export default function PostClient({ content }: PostClientProps) {
         uploadedUrls.push(uploadData.url);
       }
 
+      // Upload video if present
+      let videoUrl: string | undefined;
+      if (videoFile) {
+        const formData = new FormData();
+        formData.append("file", videoFile);
+        formData.append("bucket", "repair-media");
+        const uploadRes = await fetch("/api/upload", { method: "POST", body: formData });
+        if (!uploadRes.ok) {
+          throw new Error("Failed to upload video");
+        }
+        const uploadData = await uploadRes.json();
+        videoUrl = uploadData.url;
+      }
+
       const res = await fetch("/api/requests", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -225,6 +263,7 @@ export default function PostClient({ content }: PostClientProps) {
           description,
           categoryId: selectedCategoryId,
           photos: uploadedUrls,
+          videoUrl,
           city,
           address,
           locationLat,
@@ -359,6 +398,41 @@ export default function PostClient({ content }: PostClientProps) {
                     accept="image/*"
                     multiple
                     onChange={handlePhotoUpload}
+                    className="hidden"
+                  />
+                </label>
+              )}
+            </div>
+
+            {/* Video Upload (optional, 1 max) */}
+            <div className="mb-6">
+              <p className="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-1.5">
+                <Video className="w-4 h-4" />
+                Video (optional, 1 max, 50MB)
+              </p>
+              {videoPreview ? (
+                <div className="relative inline-block">
+                  <video
+                    src={videoPreview}
+                    className="h-32 rounded-lg border-2 border-gray-200"
+                    controls
+                  />
+                  <button
+                    type="button"
+                    onClick={removeVideo}
+                    className="absolute top-2 right-2 bg-red-500 text-white w-7 h-7 rounded-full flex items-center justify-center hover:bg-red-600 transition-colors"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              ) : (
+                <label className="inline-flex items-center gap-2 px-4 py-2.5 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-primary hover:bg-orange-50 transition-colors">
+                  <Video className="w-5 h-5 text-gray-400" />
+                  <span className="text-sm text-gray-500">Add a video</span>
+                  <input
+                    type="file"
+                    accept="video/mp4,video/quicktime"
+                    onChange={handleVideoUpload}
                     className="hidden"
                   />
                 </label>

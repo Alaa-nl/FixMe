@@ -116,9 +116,9 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { conversationId, content, photoUrl } = body;
 
-    if (!conversationId || !content) {
+    if (!conversationId || (!content && !photoUrl)) {
       return NextResponse.json(
-        { error: "conversationId and content are required" },
+        { error: "conversationId and either content or photoUrl are required" },
         { status: 400 }
       );
     }

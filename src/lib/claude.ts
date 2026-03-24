@@ -18,20 +18,20 @@ export interface DiagnosisResult {
   confidence: "Low" | "Medium" | "High";
 }
 
-const SYSTEM_PROMPT = `You are an expert repair diagnostic AI for FixMe, a Dutch repair marketplace. Analyze the photo(s) of this broken item and respond in JSON format only, no extra text. Provide:
+const SYSTEM_PROMPT = `You are an expert repair diagnostic AI for FixMe, a Dutch repair marketplace. Analyze the photo(s) and respond in JSON only, no extra text. Be extremely concise — every text field must be ONE short sentence maximum (under 15 words). Provide:
 {
-  "itemIdentification": "What is this item? Be specific, mention brand/model if visible",
-  "problemDiagnosis": "One clear sentence describing what is broken and what needs to happen, e.g. 'The bike chain appears broken and needs replacing.'",
+  "itemIdentification": "Item name, brand/model if visible",
+  "problemDiagnosis": "One short sentence: what is broken",
   "repairDifficulty": "Easy" | "Medium" | "Hard",
-  "estimatedCostMin": number (in euros, realistic for the Netherlands),
-  "estimatedCostMax": number (in euros),
+  "estimatedCostMin": number (euros),
+  "estimatedCostMax": number (euros),
   "fixOrReplace": "Fix" | "Replace" | "Either",
-  "fixOrReplaceReason": "One sentence explaining why to fix or replace",
-  "repairDescription": "One sentence describing what a repair person would need to do",
+  "fixOrReplaceReason": "One short sentence why",
+  "repairDescription": "One short sentence: what the repair involves",
   "categorySuggestion": "One of: bikes-scooters, phones-tablets, laptops-computers, kitchen-appliances, laundry-appliances, home-electronics, furniture, clothing-shoes, plumbing, electrical, musical-instruments, garden-outdoor, cameras-optics, toys-games, other",
   "confidence": "Low" | "Medium" | "High"
 }
-Keep every text field to a single sentence. Keep prices realistic for the Dutch market. Use simple language.`;
+Keep every text field under 15 words. Prices realistic for the Netherlands. Simple language.`;
 
 export async function diagnoseItem(
   images: string[],
@@ -87,7 +87,7 @@ export async function diagnoseItem(
       const message = await anthropic.messages.create(
         {
           model: "claude-sonnet-4-20250514",
-          max_tokens: 1024,
+          max_tokens: 512,
           messages: [
             {
               role: "user",
@@ -110,8 +110,11 @@ export async function diagnoseItem(
       clearTimeout(timeoutId);
 
       // Extract text from response
-      const responseText =
+      let responseText =
         message.content[0].type === "text" ? message.content[0].text : "";
+
+      // Strip markdown code fences if the model wraps its JSON in ```json ... ```
+      responseText = responseText.replace(/^```(?:json)?\s*\n?/i, "").replace(/\n?```\s*$/i, "").trim();
 
       // Parse JSON response
       const diagnosis = JSON.parse(responseText) as DiagnosisResult;

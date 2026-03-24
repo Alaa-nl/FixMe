@@ -8,8 +8,9 @@ export const dynamic = "force-dynamic";
 export default async function UserDetailPage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
+  const { id } = await params;
   const session = await requireAdmin();
 
   if (!session) {
@@ -30,5 +31,5 @@ export default async function UserDetailPage({
     canCreateStaff: await hasPermission(session.user.id, "staff.create"),
   };
 
-  return <UserDetailView userId={params.id} permissions={permissions} />;
+  return <UserDetailView userId={id} permissions={permissions} />;
 }

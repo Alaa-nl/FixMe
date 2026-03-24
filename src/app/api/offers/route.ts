@@ -47,13 +47,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (message.length < 20) {
-      return NextResponse.json(
-        { error: "Message must be at least 20 characters" },
-        { status: 400 }
-      );
-    }
-
     // Validate suggestedTimes if provided
     if (suggestedTimes) {
       if (!Array.isArray(suggestedTimes) || suggestedTimes.length < 1 || suggestedTimes.length > 5) {
@@ -62,9 +55,11 @@ export async function POST(request: NextRequest) {
           { status: 400 }
         );
       }
-      const now = new Date();
+      // Allow a 5-minute grace period so slots valid when the user picked them
+      // aren't rejected due to network latency or slight clock differences
+      const gracePeriod = new Date(Date.now() - 5 * 60 * 1000);
       for (const t of suggestedTimes) {
-        if (isNaN(new Date(t).getTime()) || new Date(t) <= now) {
+        if (isNaN(new Date(t).getTime()) || new Date(t) <= gracePeriod) {
           return NextResponse.json(
             { error: "All suggested times must be valid future dates" },
             { status: 400 }
@@ -92,11 +87,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check if fixer already made an offer
+    // Check if fixer already has an active offer (allow re-offering after rejection/withdrawal)
     const existingOffer = await prisma.offer.findFirst({
       where: {
         repairRequestId,
         fixerId: user.id,
+        status: { notIn: ["REJECTED", "WITHDRAWN"] },
       },
     });
 

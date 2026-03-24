@@ -41,6 +41,9 @@ export async function GET(request: NextRequest) {
             slug: true,
           },
         },
+        customer: {
+          select: { id: true, name: true, avatarUrl: true },
+        },
         _count: {
           select: {
             offers: true,

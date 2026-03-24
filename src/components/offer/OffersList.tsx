@@ -27,9 +27,11 @@ interface OffersListProps {
   }>;
   isRequestOwner: boolean;
   requestStatus: string;
+  repairRequestId: string;
+  currentUserId?: string;
 }
 
-export default function OffersList({ offers, isRequestOwner, requestStatus }: OffersListProps) {
+export default function OffersList({ offers, isRequestOwner, requestStatus, repairRequestId, currentUserId }: OffersListProps) {
   const router = useRouter();
   const [counterProposing, setCounterProposing] = useState<{
     offerId: string;
@@ -75,8 +77,39 @@ export default function OffersList({ offers, isRequestOwner, requestStatus }: Of
     }
   };
 
-  const handleMessage = (fixerId: string) => {
-    router.push(`/messages?userId=${fixerId}`);
+  const handleMessage = async (fixerId: string) => {
+    try {
+      const res = await fetch("/api/conversations", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ otherUserId: fixerId, repairRequestId }),
+      });
+      if (res.ok) {
+        const { conversationId } = await res.json();
+        router.push(`/messages/${conversationId}`);
+      } else {
+        router.push(`/messages?userId=${fixerId}`);
+      }
+    } catch {
+      router.push(`/messages?userId=${fixerId}`);
+    }
+  };
+
+  const withdrawOffer = async (offerId: string) => {
+    try {
+      const res = await fetch(`/api/offers/${offerId}/withdraw`, {
+        method: "POST",
+      });
+
+      if (res.ok) {
+        router.refresh();
+      } else {
+        const data = await res.json();
+        alert(data.error || "Failed to withdraw offer");
+      }
+    } catch {
+      alert("An error occurred. Please try again.");
+    }
   };
 
   const handleCounterPropose = (offerId: string, fixerId: string, fixerName: string) => {
@@ -90,11 +123,13 @@ export default function OffersList({ offers, isRequestOwner, requestStatus }: Of
           key={offer.id}
           offer={offer}
           isRequestOwner={isRequestOwner}
+          isOfferOwner={currentUserId === offer.fixer.id}
           requestStatus={requestStatus}
           onAccept={acceptOffer}
           onReject={rejectOffer}
           onMessage={handleMessage}
           onCounterPropose={handleCounterPropose}
+          onWithdraw={withdrawOffer}
         />
       ))}
 

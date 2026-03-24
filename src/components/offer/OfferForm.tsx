@@ -65,9 +65,13 @@ export default function OfferForm({ repairRequestId, onSuccess }: OfferFormProps
       return;
     }
 
-    if (message.trim().length < 20) {
-      setError("Message must be at least 20 characters");
-      return;
+    // Auto-add a pending time slot if the user filled one in but didn't click "+"
+    let finalTimes = suggestedTimes;
+    if (newTimeSlot) {
+      const iso = new Date(newTimeSlot).toISOString();
+      if (!finalTimes.includes(iso) && finalTimes.length < 5) {
+        finalTimes = [...finalTimes, iso];
+      }
     }
 
     setIsSubmitting(true);
@@ -83,7 +87,7 @@ export default function OfferForm({ repairRequestId, onSuccess }: OfferFormProps
           price: priceNum,
           estimatedTime: estimatedTime.trim(),
           message: message.trim(),
-          suggestedTimes: suggestedTimes.length > 0 ? suggestedTimes : undefined,
+          suggestedTimes: finalTimes.length > 0 ? finalTimes : undefined,
         }),
       });
 
@@ -228,20 +232,16 @@ export default function OfferForm({ repairRequestId, onSuccess }: OfferFormProps
         {/* Message Textarea */}
         <div>
           <label className="block text-sm font-semibold text-gray-700 mb-2">
-            Message * (min. 20 characters)
+            Message *
           </label>
           <textarea
             value={message}
             onChange={(e) => setMessage(e.target.value)}
             placeholder="Introduce yourself and explain how you would fix this"
             rows={5}
-            minLength={20}
             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary resize-none"
             required
           ></textarea>
-          <div className="text-xs text-gray-500 mt-1">
-            {message.length}/20 characters minimum
-          </div>
         </div>
 
         {/* Error Message */}

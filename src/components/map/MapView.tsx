@@ -56,6 +56,22 @@ const createOrangeIcon = () => {
   });
 };
 
+// Fix tile rendering when map container becomes visible after being hidden
+function InvalidateSize() {
+  const map = useMap();
+
+  useEffect(() => {
+    // Leaflet doesn't know the container size when it switches from hidden to visible.
+    // A short delay ensures the DOM layout is settled before recalculating.
+    const timer = setTimeout(() => {
+      map.invalidateSize();
+    }, 100);
+    return () => clearTimeout(timer);
+  }, [map]);
+
+  return null;
+}
+
 // Component to fit map bounds to markers
 function FitBounds({ requests }: { requests: RepairRequest[] }) {
   const map = useMap();
@@ -85,6 +101,7 @@ export default function MapView({ requests, userType }: MapViewProps) {
           className="w-full h-[calc(100vh-200px)] md:h-[calc(100vh-180px)] rounded-lg"
           scrollWheelZoom={true}
         >
+          <InvalidateSize />
           <TileLayer
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"

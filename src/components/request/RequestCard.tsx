@@ -130,7 +130,7 @@ export default function RequestCard({ request }: RequestCardProps) {
         </h3>
 
         {/* Customer info */}
-        {request.customer.id ? (
+        {request.customer?.id ? (
           <Link
             href={`/profile/${request.customer.id}`}
             className="relative z-10 flex items-center gap-2 mb-2.5 hover:opacity-80 transition-opacity"
