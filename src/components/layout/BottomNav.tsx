@@ -18,7 +18,7 @@ export default function BottomNav({ content = {} }: BottomNavProps) {
     { href: "/browse", icon: Search, label: t("bottomnav_search", "Zoeken"), isActive: pathname === "/browse" },
     { href: "/post", icon: Plus, label: t("bottomnav_post", "Plaats"), isActive: pathname === "/post", isCenter: true },
     { href: "/messages", icon: MessageCircle, label: t("bottomnav_messages", "Berichten"), isActive: pathname === "/messages" },
-    { href: "/dashboard", icon: User, label: t("bottomnav_profile", "Profiel"), isActive: pathname === "/dashboard" || pathname.startsWith("/profile") },
+    { href: "/dashboard", icon: User, label: t("bottomnav_profile", "Profiel"), isActive: pathname === "/dashboard" || pathname?.startsWith("/profile") },
   ];
 
   return (

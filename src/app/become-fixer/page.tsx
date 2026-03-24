@@ -40,7 +40,7 @@ function BecomeFixerPage() {
   const { data: session, status, update: updateSession } = useSession();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const isSetup = searchParams.get("setup") === "true";
+  const isSetup = searchParams?.get("setup") === "true";
 
   const [step, setStep] = useState(1);
   const [categories, setCategories] = useState<Category[]>([]);

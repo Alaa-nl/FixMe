@@ -194,7 +194,7 @@ export default function AdminSidebar({
     if (href === "/admin") {
       return pathname === href;
     }
-    return pathname.startsWith(href);
+    return pathname?.startsWith(href) ?? false;
   };
 
   const getInitials = (name?: string | null) => {

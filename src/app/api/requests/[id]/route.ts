@@ -39,11 +39,11 @@ export async function DELETE(
     // Check ownership: must be the customer who created it, or an admin
     const user = await prisma.user.findUnique({
       where: { id: session.user.id },
-      include: { adminProfile: true },
+      include: { staffMember: true },
     });
 
     const isOwner = repairRequest.customerId === session.user.id;
-    const isAdmin = !!user?.adminProfile;
+    const isAdmin = !!user?.staffMember;
 
     if (!isOwner && !isAdmin) {
       return NextResponse.json(

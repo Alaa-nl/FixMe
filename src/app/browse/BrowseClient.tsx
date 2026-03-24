@@ -67,7 +67,7 @@ export default function BrowsePageWrapper({ content }: BrowseClientProps) {
 function BrowsePage({ content }: BrowseClientProps) {
   const { data: session } = useSession();
   const searchParams = useSearchParams();
-  const initialQuery = searchParams.get("q") || "";
+  const initialQuery = searchParams?.get("q") || "";
   const [viewMode, setViewMode] = useState<"list" | "map">("list");
   const [searchQuery, setSearchQuery] = useState(initialQuery);
   const [debouncedQuery, setDebouncedQuery] = useState(initialQuery);
@@ -80,7 +80,7 @@ function BrowsePage({ content }: BrowseClientProps) {
 
   // Sync search state with URL params (e.g. navigating from navbar search)
   useEffect(() => {
-    const urlQuery = searchParams.get("q") || "";
+    const urlQuery = searchParams?.get("q") || "";
     if (urlQuery && urlQuery !== searchQuery) {
       setSearchQuery(urlQuery);
       setDebouncedQuery(urlQuery);
