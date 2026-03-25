@@ -60,9 +60,11 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    if (!photos || !Array.isArray(photos) || photos.length === 0) {
+    const hasPhotos = photos && Array.isArray(photos) && photos.length > 0;
+    const hasVideo = videoUrl && typeof videoUrl === "string" && videoUrl.trim().length > 0;
+    if (!hasPhotos && !hasVideo) {
       return NextResponse.json(
-        { error: "At least one photo is required" },
+        { error: "At least one photo or video is required" },
         { status: 400 }
       );
     }
@@ -114,7 +116,7 @@ export async function POST(req: NextRequest) {
         title: title.trim(),
         description: description.trim(),
         categoryId,
-        photos,
+        photos: hasPhotos ? photos : [],
         videoUrl: videoUrl || null,
         city: city.trim(),
         locationLat: parseFloat(locationLat),

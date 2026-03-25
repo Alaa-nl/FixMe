@@ -205,7 +205,7 @@ export default async function RequestPage({ params }: RequestPageProps) {
           {/* LEFT COLUMN - Main Content */}
           <div className="lg:col-span-2 space-y-6">
             {/* Photo Gallery */}
-            <PhotoGallery photos={request.photos} categorySlug={request.category.slug} />
+            <PhotoGallery photos={request.photos} videoUrl={request.videoUrl} categorySlug={request.category.slug} />
 
             {/* Request Info */}
             <div className="bg-white rounded-xl p-6 md:p-8 shadow-sm border border-gray-200">

@@ -186,7 +186,7 @@ export default function PostClient({ content }: PostClientProps) {
   // Move to next step
   const handleNextStep = () => {
     if (step === 1) {
-      if (photoFiles.length === 0) {
+      if (photoFiles.length === 0 && !videoFile) {
         setError(content["post_error_no_photos"]);
         return;
       }
