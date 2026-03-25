@@ -241,18 +241,38 @@ export default function PostClient({ content }: PostClientProps) {
         uploadedUrls.push(uploadData.url);
       }
 
-      // Upload video if present
+      // Upload video directly to Supabase (bypasses Vercel 4.5MB limit)
       let videoUrl: string | undefined;
       if (videoFile) {
-        const formData = new FormData();
-        formData.append("file", videoFile);
-        formData.append("bucket", "repair-media");
-        const uploadRes = await fetch("/api/upload", { method: "POST", body: formData });
-        if (!uploadRes.ok) {
+        // Step 1: Get a signed upload URL from our API
+        const signedRes = await fetch("/api/upload/signed-url", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            fileType: videoFile.type,
+            fileSize: videoFile.size,
+            bucket: "repair-media",
+          }),
+        });
+        if (!signedRes.ok) {
+          const errData = await signedRes.json();
+          throw new Error(errData.error || "Failed to prepare video upload");
+        }
+        const { signedUrl, publicUrl } = await signedRes.json();
+
+        // Step 2: Upload the video directly to Supabase Storage
+        const directUpload = await fetch(signedUrl, {
+          method: "PUT",
+          headers: {
+            "Content-Type": videoFile.type,
+            "x-upsert": "false",
+          },
+          body: videoFile,
+        });
+        if (!directUpload.ok) {
           throw new Error("Failed to upload video");
         }
-        const uploadData = await uploadRes.json();
-        videoUrl = uploadData.url;
+        videoUrl = publicUrl;
       }
 
       const res = await fetch("/api/requests", {

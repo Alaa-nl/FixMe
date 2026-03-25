@@ -290,23 +290,58 @@ export default function ChatWindow({ conversationId }: ChatWindowProps) {
     if (selectedFile) {
       setIsUploading(true);
       try {
-        const formData = new FormData();
-        formData.append("file", selectedFile);
-        formData.append("bucket", "repair-media");
+        const isVideo = selectedFile.type.startsWith("video/");
 
-        const uploadRes = await fetch("/api/upload", {
-          method: "POST",
-          body: formData,
-        });
-
-        if (uploadRes.ok) {
-          const uploadData = await uploadRes.json();
-          photoUrl = uploadData.url;
+        if (isVideo) {
+          // Use direct upload for videos (bypasses Vercel 4.5MB limit)
+          const signedRes = await fetch("/api/upload/signed-url", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              fileType: selectedFile.type,
+              fileSize: selectedFile.size,
+              bucket: "repair-media",
+            }),
+          });
+          if (!signedRes.ok) {
+            alert("Failed to prepare video upload");
+            setIsSending(false);
+            setIsUploading(false);
+            return;
+          }
+          const { signedUrl, publicUrl } = await signedRes.json();
+          const directUpload = await fetch(signedUrl, {
+            method: "PUT",
+            headers: { "Content-Type": selectedFile.type, "x-upsert": "false" },
+            body: selectedFile,
+          });
+          if (!directUpload.ok) {
+            alert("Failed to upload video");
+            setIsSending(false);
+            setIsUploading(false);
+            return;
+          }
+          photoUrl = publicUrl;
         } else {
-          alert("Failed to upload file");
-          setIsSending(false);
-          setIsUploading(false);
-          return;
+          // Use API route for images (small enough for serverless)
+          const formData = new FormData();
+          formData.append("file", selectedFile);
+          formData.append("bucket", "repair-media");
+
+          const uploadRes = await fetch("/api/upload", {
+            method: "POST",
+            body: formData,
+          });
+
+          if (uploadRes.ok) {
+            const uploadData = await uploadRes.json();
+            photoUrl = uploadData.url;
+          } else {
+            alert("Failed to upload file");
+            setIsSending(false);
+            setIsUploading(false);
+            return;
+          }
         }
       } catch (error) {
         console.error("Error uploading file:", error);
