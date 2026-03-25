@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Plus } from "lucide-react";
+import { Plus, Trash2 } from "lucide-react";
 
 export default function AdminJobsPage() {
   const [jobs, setJobs] = useState<any[]>([]);
@@ -25,6 +25,29 @@ export default function AdminJobsPage() {
       const data = await res.json();
       setJobs(data.jobs || []);
       setTotalPages(data.totalPages || 1);
+    }
+  };
+
+  const [deleting, setDeleting] = useState<string | null>(null);
+
+  const handleDelete = async (repairRequestId: string, title: string) => {
+    if (!confirm(`Delete request "${title}"? This cannot be undone.`)) return;
+
+    setDeleting(repairRequestId);
+    try {
+      const res = await fetch(`/api/admin/repair-requests/${repairRequestId}`, {
+        method: "DELETE",
+      });
+      if (res.ok) {
+        fetchJobs();
+      } else {
+        const data = await res.json();
+        alert(data.error || "Failed to delete");
+      }
+    } catch {
+      alert("Failed to delete request");
+    } finally {
+      setDeleting(null);
     }
   };
 
@@ -80,6 +103,7 @@ export default function AdminJobsPage() {
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Fixer</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Price</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y">
@@ -97,6 +121,19 @@ export default function AdminJobsPage() {
                   <span className={`px-2 py-1 rounded-full text-xs font-semibold ${getStatusBadge(job.status)}`}>
                     {job.status.replace("_", " ")}
                   </span>
+                </td>
+                <td className="px-6 py-4 text-right">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDelete(job.repairRequest.id, job.repairRequest.title);
+                    }}
+                    disabled={deleting === job.repairRequest.id}
+                    className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50"
+                    title="Delete request"
+                  >
+                    <Trash2 size={16} />
+                  </button>
                 </td>
               </tr>
             ))}
