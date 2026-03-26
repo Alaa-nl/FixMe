@@ -2,13 +2,34 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2, AlertTriangle } from "lucide-react";
+
+const ALL_STATUSES = [
+  "SCHEDULED",
+  "IN_PROGRESS",
+  "COMPLETED",
+  "DISPUTED",
+  "REFUNDED",
+  "CANCELLED",
+];
+
+const STATUS_COLORS: Record<string, string> = {
+  SCHEDULED: "bg-blue-100 text-blue-800",
+  IN_PROGRESS: "bg-orange-100 text-orange-800",
+  COMPLETED: "bg-green-100 text-green-800",
+  DISPUTED: "bg-red-100 text-red-800",
+  REFUNDED: "bg-gray-100 text-gray-800",
+  CANCELLED: "bg-yellow-100 text-yellow-800",
+};
 
 export default function AdminJobsPage() {
   const [jobs, setJobs] = useState<any[]>([]);
   const [status, setStatus] = useState("");
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [deleting, setDeleting] = useState<string | null>(null);
+  const [deletingJob, setDeletingJob] = useState<string | null>(null);
+  const [changingStatus, setChangingStatus] = useState<string | null>(null);
 
   useEffect(() => {
     fetchJobs();
@@ -28,10 +49,13 @@ export default function AdminJobsPage() {
     }
   };
 
-  const [deleting, setDeleting] = useState<string | null>(null);
-
-  const handleDelete = async (repairRequestId: string, title: string) => {
-    if (!confirm(`Delete request "${title}"? This cannot be undone.`)) return;
+  const handleDeleteRequest = async (repairRequestId: string, title: string) => {
+    if (
+      !confirm(
+        `Delete repair request "${title}" and ALL related data (jobs, reviews, payments, messages)? This cannot be undone.`
+      )
+    )
+      return;
 
     setDeleting(repairRequestId);
     try {
@@ -51,15 +75,59 @@ export default function AdminJobsPage() {
     }
   };
 
-  const getStatusBadge = (status: string) => {
-    const colors: any = {
-      SCHEDULED: "bg-blue-100 text-blue-800",
-      IN_PROGRESS: "bg-orange-100 text-orange-800",
-      COMPLETED: "bg-green-100 text-green-800",
-      DISPUTED: "bg-red-100 text-red-800",
-      REFUNDED: "bg-gray-100 text-gray-800",
-    };
-    return colors[status] || "bg-gray-100 text-gray-800";
+  const handleDeleteJob = async (jobId: string, title: string) => {
+    if (
+      !confirm(
+        `Delete this job and all its reviews, disputes, and payments? The repair request "${title}" will remain. This cannot be undone.`
+      )
+    )
+      return;
+
+    setDeletingJob(jobId);
+    try {
+      const res = await fetch(`/api/admin/jobs/${jobId}`, {
+        method: "DELETE",
+      });
+      if (res.ok) {
+        fetchJobs();
+      } else {
+        const data = await res.json();
+        alert(data.error || "Failed to delete job");
+      }
+    } catch {
+      alert("Failed to delete job");
+    } finally {
+      setDeletingJob(null);
+    }
+  };
+
+  const handleStatusChange = async (jobId: string, newStatus: string, currentStatus: string) => {
+    if (newStatus === currentStatus) return;
+    if (
+      !confirm(
+        `Change job status from ${currentStatus.replace("_", " ")} to ${newStatus.replace("_", " ")}? This is an admin override.`
+      )
+    )
+      return;
+
+    setChangingStatus(jobId);
+    try {
+      const res = await fetch(`/api/admin/jobs/${jobId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: newStatus }),
+      });
+      if (res.ok) {
+        fetchJobs();
+      } else {
+        const data = await res.json();
+        alert(data.error || "Failed to change status");
+      }
+    } catch {
+      alert("Failed to change status");
+    } finally {
+      setChangingStatus(null);
+    }
   };
 
   return (
@@ -77,10 +145,13 @@ export default function AdminJobsPage() {
       {/* Filters */}
       <div className="bg-white rounded-xl border p-4">
         <div className="flex gap-2 flex-wrap">
-          {["All", "SCHEDULED", "IN_PROGRESS", "COMPLETED", "DISPUTED", "REFUNDED"].map((s) => (
+          {["All", ...ALL_STATUSES].map((s) => (
             <button
               key={s}
-              onClick={() => { setStatus(s === "All" ? "" : s); setPage(1); }}
+              onClick={() => {
+                setStatus(s === "All" ? "" : s);
+                setPage(1);
+              }}
               className={`px-4 py-2 rounded-lg font-medium ${
                 (s === "All" && !status) || status === s
                   ? "bg-primary text-white"
@@ -118,22 +189,42 @@ export default function AdminJobsPage() {
                 <td className="px-6 py-4 text-sm">{job.fixer.name}</td>
                 <td className="px-6 py-4 text-sm font-semibold">€{job.agreedPrice.toFixed(2)}</td>
                 <td className="px-6 py-4">
-                  <span className={`px-2 py-1 rounded-full text-xs font-semibold ${getStatusBadge(job.status)}`}>
-                    {job.status.replace("_", " ")}
-                  </span>
+                  <select
+                    value={job.status}
+                    onChange={(e) => handleStatusChange(job.id, e.target.value, job.status)}
+                    disabled={changingStatus === job.id}
+                    className={`px-2 py-1 rounded-full text-xs font-semibold border-0 cursor-pointer disabled:opacity-50 ${
+                      STATUS_COLORS[job.status] || "bg-gray-100 text-gray-800"
+                    }`}
+                  >
+                    {ALL_STATUSES.map((s) => (
+                      <option key={s} value={s}>
+                        {s.replace("_", " ")}
+                      </option>
+                    ))}
+                  </select>
                 </td>
                 <td className="px-6 py-4 text-right">
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleDelete(job.repairRequest.id, job.repairRequest.title);
-                    }}
-                    disabled={deleting === job.repairRequest.id}
-                    className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50"
-                    title="Delete request"
-                  >
-                    <Trash2 size={16} />
-                  </button>
+                  <div className="flex items-center justify-end gap-1">
+                    {/* Delete job only */}
+                    <button
+                      onClick={() => handleDeleteJob(job.id, job.repairRequest.title)}
+                      disabled={deletingJob === job.id}
+                      className="p-2 text-gray-400 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition-colors disabled:opacity-50"
+                      title="Delete this job (keeps the repair request)"
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                    {/* Delete entire repair request */}
+                    <button
+                      onClick={() => handleDeleteRequest(job.repairRequest.id, job.repairRequest.title)}
+                      disabled={deleting === job.repairRequest.id}
+                      className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50"
+                      title="Delete entire repair request and all data"
+                    >
+                      <AlertTriangle size={14} />
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))}
@@ -143,11 +234,21 @@ export default function AdminJobsPage() {
         {/* Pagination */}
         {totalPages > 1 && (
           <div className="px-6 py-4 border-t flex justify-between">
-            <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1} className="px-4 py-2 border rounded-lg">
+            <button
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+              disabled={page === 1}
+              className="px-4 py-2 border rounded-lg"
+            >
               Previous
             </button>
-            <span>Page {page} of {totalPages}</span>
-            <button onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages} className="px-4 py-2 border rounded-lg">
+            <span>
+              Page {page} of {totalPages}
+            </span>
+            <button
+              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+              disabled={page === totalPages}
+              className="px-4 py-2 border rounded-lg"
+            >
               Next
             </button>
           </div>

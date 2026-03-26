@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { hasPermission } from "@/lib/checkPermission";
+import { logAdminAction, getIpAddress, AdminActions } from "@/lib/adminLog";
+import { deleteRepairRequestCascade } from "@/lib/adminCascade";
 
 // PATCH /api/admin/repair-requests/[id] - Edit repair request
 export async function PATCH(
@@ -159,12 +161,10 @@ export async function DELETE(
     // Check if repair request exists
     const repairRequest = await prisma.repairRequest.findUnique({
       where: { id: id },
-      include: {
-        jobs: {
-          include: {
-            payments: true,
-          },
-        },
+      select: {
+        id: true,
+        title: true,
+        customerId: true,
       },
     });
 
@@ -175,41 +175,31 @@ export async function DELETE(
       );
     }
 
-    // Check if there are active jobs
-    const activeJobs = repairRequest.jobs.filter(
-      (job) =>
-        job.status === "SCHEDULED" ||
-        job.status === "IN_PROGRESS" ||
-        job.status === "DISPUTED"
+    // Cascade-delete everything in one atomic transaction
+    const result = await prisma.$transaction(
+      async (tx) => {
+        return deleteRepairRequestCascade(tx, id);
+      },
+      { timeout: 15000 }
     );
 
-    if (activeJobs.length > 0) {
-      return NextResponse.json(
-        {
-          error:
-            "Cannot delete repair request with active jobs. Please cancel or complete the jobs first.",
-          activeJobs: activeJobs.map((j) => j.id),
-        },
-        { status: 400 }
-      );
-    }
-
-    // Use transaction to ensure data consistency
-    await prisma.$transaction(async (tx) => {
-      // Delete all related data first (due to cascade delete constraints)
-      // Conversations and messages will be deleted by cascade
-      // Offers will be deleted by cascade
-      // Jobs should already be completed or not exist
-
-      // Delete the repair request
-      await tx.repairRequest.delete({
-        where: { id: id },
-      });
+    // Log the admin action
+    await logAdminAction(session.user.id, AdminActions.REPAIR_REQUEST_DELETED, {
+      target: id,
+      targetType: "repair_request",
+      details: {
+        title: repairRequest.title,
+        customerId: repairRequest.customerId,
+        deletedCounts: result.deletedCounts,
+        jobIds: result.jobIds,
+      },
+      ipAddress: getIpAddress(req),
     });
 
     return NextResponse.json({
-      message: "Repair request deleted successfully",
+      message: "Repair request and all related data deleted successfully",
       deleted: true,
+      deletedCounts: result.deletedCounts,
     });
   } catch (error: any) {
     console.error("Error deleting repair request:", error);

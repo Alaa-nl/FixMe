@@ -108,4 +108,9 @@ export const AdminActions = {
   // Payment management
   PAYMENT_RELEASED: "released_payment",
   PAYMENT_REFUNDED: "refunded_payment",
+
+  // Job & Request management
+  JOB_STATUS_CHANGED: "changed_job_status",
+  JOB_DELETED: "deleted_job",
+  REPAIR_REQUEST_DELETED: "deleted_repair_request",
 } as const;

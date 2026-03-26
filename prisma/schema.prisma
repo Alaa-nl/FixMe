@@ -50,6 +50,7 @@ enum JobStatus {
   COMPLETED
   DISPUTED
   REFUNDED
+  CANCELLED
 }
 
 enum DisputeResolution {
