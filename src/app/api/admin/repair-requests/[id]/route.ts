@@ -3,7 +3,6 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { hasPermission } from "@/lib/checkPermission";
 import { logAdminAction, getIpAddress, AdminActions } from "@/lib/adminLog";
-import { deleteRepairRequestCascade } from "@/lib/adminCascade";
 
 // PATCH /api/admin/repair-requests/[id] - Edit repair request
 export async function PATCH(
@@ -158,13 +157,14 @@ export async function DELETE(
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
-    // Check if repair request exists
+    // Check if repair request exists (findUnique is not filtered by soft-delete)
     const repairRequest = await prisma.repairRequest.findUnique({
       where: { id: id },
       select: {
         id: true,
         title: true,
         customerId: true,
+        deletedAt: true,
       },
     });
 
@@ -175,13 +175,51 @@ export async function DELETE(
       );
     }
 
-    // Cascade-delete everything in one atomic transaction
-    const result = await prisma.$transaction(
-      async (tx) => {
-        return deleteRepairRequestCascade(tx, id);
-      },
-      { timeout: 15000 }
-    );
+    if (repairRequest.deletedAt) {
+      return NextResponse.json(
+        { error: "Repair request is already in trash" },
+        { status: 400 }
+      );
+    }
+
+    const now = new Date();
+
+    // Soft-delete the repair request and all related records
+    await prisma.$transaction(async (tx) => {
+      await tx.repairRequest.update({
+        where: { id },
+        data: { deletedAt: now },
+      });
+
+      // Fetch job IDs for review soft-delete
+      const jobs = await tx.job.findMany({
+        where: { repairRequestId: id },
+        select: { id: true },
+      });
+      const jobIds = jobs.map((j) => j.id);
+
+      await tx.job.updateMany({
+        where: { repairRequestId: id },
+        data: { deletedAt: now },
+      });
+
+      await tx.offer.updateMany({
+        where: { repairRequestId: id },
+        data: { deletedAt: now },
+      });
+
+      await tx.conversation.updateMany({
+        where: { repairRequestId: id },
+        data: { deletedAt: now },
+      });
+
+      if (jobIds.length > 0) {
+        await tx.review.updateMany({
+          where: { jobId: { in: jobIds } },
+          data: { deletedAt: now },
+        });
+      }
+    });
 
     // Log the admin action
     await logAdminAction(session.user.id, AdminActions.REPAIR_REQUEST_DELETED, {
@@ -190,16 +228,15 @@ export async function DELETE(
       details: {
         title: repairRequest.title,
         customerId: repairRequest.customerId,
-        deletedCounts: result.deletedCounts,
-        jobIds: result.jobIds,
+        action: "soft_delete",
       },
       ipAddress: getIpAddress(req),
     });
 
     return NextResponse.json({
-      message: "Repair request and all related data deleted successfully",
+      message:
+        "Moved to trash. Will be permanently deleted after 30 days.",
       deleted: true,
-      deletedCounts: result.deletedCounts,
     });
   } catch (error: any) {
     console.error("Error deleting repair request:", error);

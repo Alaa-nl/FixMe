@@ -235,6 +235,7 @@ model RepairRequest {
   aiDiagnosis  Json?
   createdAt    DateTime            @default(now())
   updatedAt    DateTime            @updatedAt
+  deletedAt    DateTime?
 
   // Relations
   customer      User           @relation(fields: [customerId], references: [id], onDelete: Cascade)
@@ -248,6 +249,7 @@ model RepairRequest {
   @@index([status])
   @@index([city])
   @@index([createdAt])
+  @@index([deletedAt])
 }
 
 model Offer {
@@ -260,6 +262,7 @@ model Offer {
   suggestedTimes  Json?       // Array of ISO date strings: ["2026-03-10T09:00:00Z", ...]
   status          OfferStatus @default(PENDING)
   createdAt       DateTime    @default(now())
+  deletedAt       DateTime?
 
   // Relations
   repairRequest RepairRequest @relation(fields: [repairRequestId], references: [id], onDelete: Cascade)
@@ -270,6 +273,7 @@ model Offer {
   @@index([fixerId])
   @@index([status])
   @@index([createdAt])
+  @@index([deletedAt])
 }
 
 model Job {
@@ -288,6 +292,7 @@ model Job {
   reminder24hSentAt DateTime?
   reminder1hSentAt  DateTime?
   createdAt         DateTime   @default(now())
+  deletedAt         DateTime?
 
   // Relations
   repairRequest RepairRequest @relation(fields: [repairRequestId], references: [id])
@@ -305,6 +310,7 @@ model Job {
   @@index([status])
   @@index([status, scheduledAt])
   @@index([createdAt])
+  @@index([deletedAt])
 }
 
 model Conversation {
@@ -313,6 +319,7 @@ model Conversation {
   customerId      String
   fixerId         String
   createdAt       DateTime @default(now())
+  deletedAt       DateTime?
 
   // Relations
   repairRequest RepairRequest @relation(fields: [repairRequestId], references: [id], onDelete: Cascade)
@@ -323,6 +330,7 @@ model Conversation {
   @@index([repairRequestId])
   @@index([customerId])
   @@index([fixerId])
+  @@index([deletedAt])
 }
 
 model Message {
@@ -352,6 +360,7 @@ model Review {
   rating     Int
   comment    String?  @db.Text
   createdAt  DateTime @default(now())
+  deletedAt  DateTime?
 
   // Relations
   job      Job  @relation(fields: [jobId], references: [id])
@@ -362,6 +371,7 @@ model Review {
   @@index([reviewerId])
   @@index([reviewedId])
   @@index([rating])
+  @@index([deletedAt])
 }
 
 model Dispute {

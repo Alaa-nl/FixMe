@@ -77,7 +77,7 @@ export default async function RequestPage({ params }: RequestPageProps) {
     },
   });
 
-  if (!request) {
+  if (!request || request.deletedAt) {
     notFound();
   }
 

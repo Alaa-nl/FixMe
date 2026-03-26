@@ -3,7 +3,6 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { hasPermission } from "@/lib/checkPermission";
 import { logAdminAction, getIpAddress, AdminActions } from "@/lib/adminLog";
-import { deleteJobChildren } from "@/lib/adminCascade";
 
 const VALID_STATUSES = [
   "SCHEDULED",
@@ -137,7 +136,7 @@ export async function PATCH(
   }
 }
 
-// DELETE /api/admin/jobs/[id] - Cascade-delete a single job
+// DELETE /api/admin/jobs/[id] - Soft-delete a single job
 export async function DELETE(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -165,39 +164,28 @@ export async function DELETE(
       return NextResponse.json({ error: "Job not found" }, { status: 404 });
     }
 
-    const result = await prisma.$transaction(
-      async (tx) => {
-        // Delete notifications referencing this job
-        const notifs = await tx.notification.deleteMany({
-          where: { relatedId: id },
-        });
+    if (job.deletedAt) {
+      return NextResponse.json(
+        { error: "Job is already in trash" },
+        { status: 400 }
+      );
+    }
 
-        // Delete job children (reviews, disputes, payments)
-        const childCounts = await deleteJobChildren(tx, [id]);
+    const now = new Date();
 
-        // Delete the job itself
-        await tx.job.delete({ where: { id } });
+    await prisma.$transaction(async (tx) => {
+      // Soft-delete the job
+      await tx.job.update({
+        where: { id },
+        data: { deletedAt: now },
+      });
 
-        // Check if repair request still has other jobs
-        const remainingJobs = await tx.job.count({
-          where: { repairRequestId: job.repairRequestId },
-        });
-
-        if (remainingJobs === 0) {
-          await tx.repairRequest.update({
-            where: { id: job.repairRequestId },
-            data: { status: "OPEN" },
-          });
-        }
-
-        return {
-          ...childCounts,
-          notifications: notifs.count + childCounts.notifications,
-          repairRequestReset: remainingJobs === 0,
-        };
-      },
-      { timeout: 15000 }
-    );
+      // Soft-delete related reviews
+      await tx.review.updateMany({
+        where: { jobId: id },
+        data: { deletedAt: now },
+      });
+    });
 
     await logAdminAction(session.user.id, AdminActions.JOB_DELETED, {
       target: id,
@@ -207,18 +195,14 @@ export async function DELETE(
         repairRequestTitle: job.repairRequest.title,
         fixerId: job.fixerId,
         customerId: job.customerId,
-        agreedPrice: job.agreedPrice,
-        deletedCounts: result,
-        repairRequestReset: result.repairRequestReset,
+        action: "soft_delete",
       },
       ipAddress: getIpAddress(req),
     });
 
     return NextResponse.json({
-      message: "Job and all related data deleted successfully",
+      message: "Moved to trash. Will be permanently deleted after 30 days.",
       deleted: true,
-      repairRequestReset: result.repairRequestReset,
-      deletedCounts: result,
     });
   } catch (error: any) {
     console.error("Error deleting job:", error);

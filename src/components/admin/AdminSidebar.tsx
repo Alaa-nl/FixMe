@@ -23,6 +23,7 @@ import {
   FileText,
   ScrollText,
   Headset,
+  Trash2,
 } from "lucide-react";
 
 interface AdminSidebarProps {
@@ -122,6 +123,13 @@ const allNavigationItems = [
     badge: null,
   },
   {
+    name: "Trash",
+    href: "/admin/trash",
+    icon: Trash2,
+    requiredPermission: "jobs.delete",
+    badge: "trashed_items",
+  },
+  {
     name: "Activity Log",
     href: "/admin/logs",
     icon: ScrollText,
@@ -151,9 +159,10 @@ export default function AdminSidebar({
     const fetchBadgeCounts = async () => {
       try {
         // Fetch counts in parallel
-        const [disputeRes, supportRes] = await Promise.all([
+        const [disputeRes, supportRes, trashRes] = await Promise.all([
           fetch("/api/admin/disputes/count"),
           fetch("/api/admin/support/count"),
+          fetch("/api/admin/trash/count"),
         ]);
 
         const counts: Record<string, number> = {};
@@ -165,6 +174,10 @@ export default function AdminSidebar({
         if (supportRes.ok) {
           const data = await supportRes.json();
           counts.escalated_support = data.count || 0;
+        }
+        if (trashRes.ok) {
+          const data = await trashRes.json();
+          counts.trashed_items = data.count || 0;
         }
 
         setBadgeCounts(counts);

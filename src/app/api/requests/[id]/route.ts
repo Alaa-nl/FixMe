@@ -29,7 +29,7 @@ export async function DELETE(
       },
     });
 
-    if (!repairRequest) {
+    if (!repairRequest || repairRequest.deletedAt) {
       return NextResponse.json(
         { error: "Repair request not found" },
         { status: 404 }

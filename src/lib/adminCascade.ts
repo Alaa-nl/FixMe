@@ -1,7 +1,10 @@
 import { PrismaClient } from "@prisma/client";
+import { supabaseAdmin } from "@/lib/supabase";
 
 // Type for Prisma interactive transaction client
 type TxClient = Parameters<Parameters<PrismaClient["$transaction"]>[0]>[0];
+
+const STORAGE_BUCKET = "repair-media";
 
 /**
  * Delete all child records of the given jobs (notifications, reviews, disputes, payments).
@@ -129,4 +132,58 @@ export async function deleteRepairRequestCascade(
       jobs: jobsResult.count,
     },
   };
+}
+
+/**
+ * Extract the storage path from a full Supabase public URL.
+ * URL format: https://xxx.supabase.co/storage/v1/object/public/repair-media/userId/filename.webp
+ */
+function extractStoragePath(url: string): string | null {
+  if (!url) return null;
+  try {
+    const marker = `/storage/v1/object/public/${STORAGE_BUCKET}/`;
+    const index = url.indexOf(marker);
+    if (index === -1) return null;
+    return url.substring(index + marker.length);
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Delete photos and video from Supabase Storage for a repair request.
+ */
+export async function deleteStorageFiles(
+  photos: string[],
+  videoUrl: string | null
+): Promise<{ removed: number; errors: string[] }> {
+  const filePaths: string[] = [];
+  const errors: string[] = [];
+
+  if (photos && Array.isArray(photos)) {
+    for (const photoUrl of photos) {
+      const path = extractStoragePath(photoUrl);
+      if (path) filePaths.push(path);
+    }
+  }
+
+  if (videoUrl) {
+    const path = extractStoragePath(videoUrl);
+    if (path) filePaths.push(path);
+  }
+
+  if (filePaths.length === 0) {
+    return { removed: 0, errors: [] };
+  }
+
+  const { error } = await supabaseAdmin.storage
+    .from(STORAGE_BUCKET)
+    .remove(filePaths);
+
+  if (error) {
+    errors.push(error.message);
+    return { removed: 0, errors };
+  }
+
+  return { removed: filePaths.length, errors: [] };
 }

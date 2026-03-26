@@ -111,7 +111,7 @@ export default async function JobPage({ params }: JobPageProps) {
     },
   });
 
-  if (!job) {
+  if (!job || job.deletedAt) {
     redirect("/dashboard");
   }
 
