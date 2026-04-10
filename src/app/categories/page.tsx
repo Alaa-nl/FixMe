@@ -1,12 +1,13 @@
 import Link from "next/link";
 import { prisma } from "@/lib/db";
+import type { Prisma } from "@prisma/client";
 import { CategoryIcon } from "@/lib/categoryIconsReact";
 import { getContentBySection } from "@/lib/siteContent";
 
 export const dynamic = "force-dynamic";
 
 export default async function CategoriesPage() {
-  let categories: Awaited<ReturnType<typeof prisma.category.findMany>> = [];
+  let categories: Prisma.CategoryGetPayload<{ include: { _count: { select: { repairRequests: true } } } }>[] = [];
 
   try {
     categories = await prisma.category.findMany({

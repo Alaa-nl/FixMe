@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { prisma } from "@/lib/db";
+import type { Prisma } from "@prisma/client";
 import { CategoryIcon } from "@/lib/categoryIconsReact";
 import { Wrench } from "lucide-react";
 import Button from "@/components/ui/button";
@@ -15,7 +16,7 @@ interface CategoryPageProps {
 export default async function CategoryPage({ params }: CategoryPageProps) {
   const { slug } = await params;
 
-  let category: Awaited<ReturnType<typeof prisma.category.findUnique>> = null;
+  let category: Prisma.CategoryGetPayload<{ include: { _count: { select: { repairRequests: true } } } }> | null = null;
 
   try {
     category = await prisma.category.findUnique({
