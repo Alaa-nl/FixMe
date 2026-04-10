@@ -10,21 +10,31 @@ import HomepageAnimations from "@/components/home/HomepageAnimations";
 export const dynamic = "force-dynamic";
 
 export default async function Home() {
-  const categories = await prisma.category.findMany({
-    where: { isActive: true },
-    orderBy: { name: "asc" },
-  });
+  // Fetch data with graceful fallbacks — if DB is unavailable, the page
+  // still renders with empty sections instead of crashing entirely.
+  let categories: Awaited<ReturnType<typeof prisma.category.findMany>> = [];
+  let recentRequests: Awaited<ReturnType<typeof prisma.repairRequest.findMany>> = [];
 
-  const recentRequests = await prisma.repairRequest.findMany({
-    where: { status: "OPEN" },
-    orderBy: { createdAt: "desc" },
-    take: 4,
-    include: {
-      category: { select: { name: true, slug: true } },
-      customer: { select: { name: true, avatarUrl: true } },
-      _count: { select: { offers: true } },
-    },
-  });
+  try {
+    [categories, recentRequests] = await Promise.all([
+      prisma.category.findMany({
+        where: { isActive: true },
+        orderBy: { name: "asc" },
+      }),
+      prisma.repairRequest.findMany({
+        where: { status: "OPEN" },
+        orderBy: { createdAt: "desc" },
+        take: 4,
+        include: {
+          category: { select: { name: true, slug: true } },
+          customer: { select: { name: true, avatarUrl: true } },
+          _count: { select: { offers: true } },
+        },
+      }),
+    ]);
+  } catch (error) {
+    console.error("Homepage DB query failed:", error);
+  }
 
   const content = await getContentBySection("homepage");
 

@@ -15,17 +15,22 @@ interface CategoryPageProps {
 export default async function CategoryPage({ params }: CategoryPageProps) {
   const { slug } = await params;
 
-  const [category, content] = await Promise.all([
-    prisma.category.findUnique({
+  let category: Awaited<ReturnType<typeof prisma.category.findUnique>> = null;
+
+  try {
+    category = await prisma.category.findUnique({
       where: { slug },
       include: {
         _count: {
           select: { repairRequests: true },
         },
       },
-    }),
-    getContentBySection("category_detail"),
-  ]);
+    });
+  } catch (error) {
+    console.error("Category detail DB query failed:", error);
+  }
+
+  const content = await getContentBySection("category_detail");
 
   if (!category) {
     notFound();

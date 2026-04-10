@@ -6,8 +6,10 @@ import { getContentBySection } from "@/lib/siteContent";
 export const dynamic = "force-dynamic";
 
 export default async function CategoriesPage() {
-  const [categories, content] = await Promise.all([
-    prisma.category.findMany({
+  let categories: Awaited<ReturnType<typeof prisma.category.findMany>> = [];
+
+  try {
+    categories = await prisma.category.findMany({
       where: { isActive: true },
       orderBy: { name: "asc" },
       include: {
@@ -15,9 +17,12 @@ export default async function CategoriesPage() {
           select: { repairRequests: true },
         },
       },
-    }),
-    getContentBySection("categories"),
-  ]);
+    });
+  } catch (error) {
+    console.error("Categories page DB query failed:", error);
+  }
+
+  const content = await getContentBySection("categories");
 
   return (
     <div className="flex-1 bg-white">
