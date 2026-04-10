@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Camera, HandCoins, CircleCheckBig, ShieldCheck, Lock, MessageSquareText, Wrench, ArrowRight, Star, MapPin, Users } from "lucide-react";
 import Button from "@/components/ui/button";
 import { prisma } from "@/lib/db";
+import type { Prisma } from "@prisma/client";
 import { CategoryIcon } from "@/lib/categoryIconsReact";
 import RequestCard from "@/components/request/RequestCard";
 import { getContentBySection } from "@/lib/siteContent";
@@ -9,11 +10,19 @@ import HomepageAnimations from "@/components/home/HomepageAnimations";
 
 export const dynamic = "force-dynamic";
 
+type RecentRequest = Prisma.RepairRequestGetPayload<{
+  include: {
+    category: { select: { name: true; slug: true } };
+    customer: { select: { name: true; avatarUrl: true } };
+    _count: { select: { offers: true } };
+  };
+}>;
+
 export default async function Home() {
   // Fetch data with graceful fallbacks — if DB is unavailable, the page
   // still renders with empty sections instead of crashing entirely.
-  let categories: Awaited<ReturnType<typeof prisma.category.findMany>> = [];
-  let recentRequests: Awaited<ReturnType<typeof prisma.repairRequest.findMany>> = [];
+  let categories: Prisma.CategoryGetPayload<{}>[] = [];
+  let recentRequests: RecentRequest[] = [];
 
   try {
     [categories, recentRequests] = await Promise.all([
