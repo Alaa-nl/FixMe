@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import { findOrCreateConversation, insertSystemMessage } from "@/lib/chatSystemMessage";
 
 export async function POST(
   request: NextRequest,
@@ -99,6 +100,35 @@ export async function POST(
 
       return updatedJob;
     });
+
+    // Insert system messages
+    try {
+      const conversation = await findOrCreateConversation(
+        job.repairRequestId,
+        job.customerId,
+        job.fixerId
+      );
+
+      await insertSystemMessage(
+        conversation.id,
+        userId,
+        "JOB_CANCELLED",
+        "Job has been cancelled",
+        { jobId: id }
+      );
+
+      if (job.payments && job.payments.length > 0) {
+        await insertSystemMessage(
+          conversation.id,
+          userId,
+          "PAYMENT_REFUNDED",
+          `€${job.payments[0].amount} refunded`,
+          { amount: job.payments[0].amount }
+        );
+      }
+    } catch (msgError) {
+      console.error("Failed to insert system messages:", msgError);
+    }
 
     return NextResponse.json(
       { message: "Job cancelled successfully", job: result },

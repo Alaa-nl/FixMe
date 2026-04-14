@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { notifyAndEmail } from "@/lib/notifications";
+import { findOrCreateConversation, insertSystemMessage } from "@/lib/chatSystemMessage";
 
 const RESOLVABLE_STATES = ["PENDING", "FIXER_OFFERED", "FIXER_REJECTED", "ESCALATED"];
 
@@ -192,6 +193,27 @@ export async function POST(
 
       return updatedDispute;
     });
+
+    // Insert system message into conversation
+    try {
+      const conversation = await findOrCreateConversation(
+        dispute.job.repairRequestId,
+        dispute.job.customerId,
+        dispute.job.fixerId
+      );
+      const resLabel = resolution === "REFUNDED" ? "Full refund issued"
+        : resolution === "PARTIAL_REFUND" ? `Partial refund of €${refundAmount?.toFixed(2)} issued`
+        : "Payment released to fixer";
+      await insertSystemMessage(
+        conversation.id,
+        session.user.id,
+        "DISPUTE_RESOLVED",
+        `Dispute resolved: ${resLabel}`,
+        { disputeId: id, resolution, refundAmount: refundAmount ?? null }
+      );
+    } catch (msgError) {
+      console.error("Failed to insert system message:", msgError);
+    }
 
     // Notify both customer and fixer
     try {

@@ -125,6 +125,8 @@ export async function GET(
       {
         conversation: {
           id: conversation.id,
+          customerId: conversation.customerId,
+          fixerId: conversation.fixerId,
           otherUser,
           repairRequest: conversation.repairRequest,
         },

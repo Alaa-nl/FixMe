@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { notifyAndEmail } from "@/lib/notifications";
+import { findOrCreateConversation, insertSystemMessage } from "@/lib/chatSystemMessage";
 
 // POST - Create a new offer
 export async function POST(request: NextRequest) {
@@ -132,6 +133,36 @@ export async function POST(request: NextRequest) {
       },
     });
 
+    // Create or find conversation and insert OFFER_MADE system message
+    try {
+      const conversation = await findOrCreateConversation(
+        repairRequestId,
+        repairRequest.customerId,
+        user.id
+      );
+
+      await insertSystemMessage(
+        conversation.id,
+        user.id,
+        "OFFER_MADE",
+        `${user.name} made an offer of €${price}`,
+        {
+          offerId: offer.id,
+          price,
+          estimatedTime,
+          message,
+          suggestedTimes: suggestedTimes || null,
+          fixerName: user.name,
+          fixerAvatar: user.avatarUrl,
+          fixerRating: user.fixerProfile?.averageRating ?? 0,
+          fixerTotalJobs: user.fixerProfile?.totalJobs ?? 0,
+          fixerVerified: user.fixerProfile?.verifiedBadge ?? false,
+        }
+      );
+    } catch (convError) {
+      console.error("Failed to create conversation/system message:", convError);
+    }
+
     // Notify the customer about the new offer
     try {
       await notifyAndEmail(
@@ -143,7 +174,6 @@ export async function POST(request: NextRequest) {
       );
     } catch (notifError) {
       console.error("Failed to send notification:", notifError);
-      // Don't fail the request if notification fails
     }
 
     return NextResponse.json(offer, { status: 201 });

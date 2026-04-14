@@ -47,6 +47,9 @@ export async function GET(request: NextRequest) {
           take: 1,
           select: {
             content: true,
+            type: true,
+            metadata: true,
+            isSystemMessage: true,
             createdAt: true,
           },
         },
@@ -152,6 +155,7 @@ export async function POST(request: NextRequest) {
         senderId: userId,
         content,
         photoUrl: photoUrl || null,
+        type: photoUrl ? "PHOTO" : "TEXT",
         read: false,
       },
       include: {

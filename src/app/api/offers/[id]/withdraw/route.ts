@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import { findOrCreateConversation, insertSystemMessage } from "@/lib/chatSystemMessage";
 
 // POST - Fixer withdraws their own pending offer
 export async function POST(
@@ -20,6 +21,7 @@ export async function POST(
 
     const offer = await prisma.offer.findUnique({
       where: { id },
+      include: { repairRequest: true },
     });
 
     if (!offer) {
@@ -49,6 +51,24 @@ export async function POST(
       where: { id },
       data: { status: "WITHDRAWN" },
     });
+
+    // Insert system message into conversation
+    try {
+      const conversation = await findOrCreateConversation(
+        offer.repairRequestId,
+        offer.repairRequest.customerId,
+        offer.fixerId
+      );
+      await insertSystemMessage(
+        conversation.id,
+        session.user.id,
+        "OFFER_WITHDRAWN",
+        `Offer of €${offer.price} withdrawn`,
+        { offerId: id, price: offer.price }
+      );
+    } catch (msgError) {
+      console.error("Failed to insert system message:", msgError);
+    }
 
     return NextResponse.json(updated, { status: 200 });
   } catch (error) {

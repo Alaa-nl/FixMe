@@ -9,7 +9,6 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    // Check authentication
     const session = await auth();
     if (!session || !session.user) {
       return NextResponse.json(
@@ -29,18 +28,14 @@ export async function POST(
         if (isNaN(scheduledAt.getTime())) scheduledAt = null;
       }
     } catch {
-      // No body or invalid JSON — that's fine, scheduledAt is optional
+      // No body or invalid JSON — scheduledAt is optional
     }
 
-    // Get the offer with related data
+    // Fetch the counter-offer
     const offer = await prisma.offer.findUnique({
       where: { id: offerId },
       include: {
-        repairRequest: {
-          include: {
-            customer: true,
-          },
-        },
+        repairRequest: { include: { customer: true } },
         fixer: true,
       },
     });
@@ -49,42 +44,48 @@ export async function POST(
       return NextResponse.json({ error: "Offer not found" }, { status: 404 });
     }
 
-    // Verify the user is the request owner
-    if (offer.repairRequest.customerId !== session.user.id) {
+    // Must be a counter-offer
+    if (!offer.isCounterOffer) {
       return NextResponse.json(
-        { error: "Only the request owner can accept offers" },
-        { status: 403 }
-      );
-    }
-
-    // Verify the repair request is still open
-    if (offer.repairRequest.status !== "OPEN") {
-      return NextResponse.json(
-        {
-          error: "This repair request is no longer accepting offers",
-          details: {
-            currentStatus: offer.repairRequest.status,
-            requiredStatus: "OPEN"
-          }
-        },
+        { error: "This is not a counter-offer. Use the regular accept route." },
         { status: 400 }
       );
     }
 
-    // Calculate platform fee and fixer payout
+    // Only the fixer can accept a counter-offer
+    if (offer.fixerId !== session.user.id) {
+      return NextResponse.json(
+        { error: "Only the fixer can accept a counter-offer" },
+        { status: 403 }
+      );
+    }
+
+    if (offer.status !== "PENDING") {
+      return NextResponse.json(
+        { error: "Only pending counter-offers can be accepted" },
+        { status: 400 }
+      );
+    }
+
+    if (offer.repairRequest.status !== "OPEN") {
+      return NextResponse.json(
+        { error: "This repair request is no longer accepting offers" },
+        { status: 400 }
+      );
+    }
+
     const agreedPrice = offer.price;
     const platformFee = agreedPrice * 0.15;
     const fixerPayout = agreedPrice - platformFee;
 
-    // Use a transaction to update multiple records atomically
     const result = await prisma.$transaction(async (tx) => {
-      // Update the accepted offer status
+      // Accept the counter-offer
       await tx.offer.update({
         where: { id: offerId },
         data: { status: "ACCEPTED" },
       });
 
-      // Reject all other offers for this repair request
+      // Reject all other pending offers
       await tx.offer.updateMany({
         where: {
           repairRequestId: offer.repairRequestId,
@@ -100,7 +101,7 @@ export async function POST(
         data: { status: "IN_PROGRESS" },
       });
 
-      // Create a Job record
+      // Create job
       const job = await tx.job.create({
         data: {
           repairRequestId: offer.repairRequestId,
@@ -115,7 +116,7 @@ export async function POST(
         },
       });
 
-      // Find or create conversation (should already exist from offer creation)
+      // Find conversation
       const conversation = await findOrCreateConversation(
         offer.repairRequestId,
         offer.repairRequest.customerId,
@@ -123,7 +124,7 @@ export async function POST(
         tx
       );
 
-      // Create a Payment record (simulating escrow)
+      // Create payment
       const payment = await tx.payment.create({
         data: {
           jobId: job.id,
@@ -136,19 +137,19 @@ export async function POST(
         },
       });
 
-      // Insert system messages for the acceptance flow
+      // Insert system messages
       await insertSystemMessage(
         conversation.id,
-        offer.repairRequest.customerId,
-        "OFFER_ACCEPTED",
-        `Offer of €${agreedPrice} accepted`,
+        session.user.id,
+        "COUNTER_ACCEPTED",
+        `Counter-offer of €${agreedPrice} accepted`,
         { offerId, price: agreedPrice, jobId: job.id },
         tx
       );
 
       await insertSystemMessage(
         conversation.id,
-        offer.repairRequest.customerId,
+        session.user.id,
         "PAYMENT_HELD",
         `€${agreedPrice} held in escrow`,
         { amount: agreedPrice, paymentId: payment.id },
@@ -157,7 +158,7 @@ export async function POST(
 
       await insertSystemMessage(
         conversation.id,
-        offer.repairRequest.customerId,
+        session.user.id,
         "JOB_SCHEDULED",
         "Job has been scheduled",
         {
@@ -171,61 +172,31 @@ export async function POST(
       return { job, conversation, payment };
     });
 
-    // Notify the fixer whose offer was accepted
+    // Notify the customer
     try {
       await notifyAndEmail(
-        offer.fixerId,
+        offer.repairRequest.customerId,
         "OFFER_ACCEPTED",
-        "Your offer was accepted!",
-        `${offer.repairRequest.customer.name} accepted your offer of €${agreedPrice} for ${offer.repairRequest.title}`,
+        "Your counter-offer was accepted!",
+        `${offer.fixer.name} accepted your counter-offer of €${agreedPrice} for "${offer.repairRequest.title}"`,
         result.job.id
       );
     } catch (notifError) {
-      console.error("Failed to send acceptance notification:", notifError);
-    }
-
-    // Notify all other fixers whose offers were rejected
-    try {
-      const rejectedOffers = await prisma.offer.findMany({
-        where: {
-          repairRequestId: offer.repairRequestId,
-          id: { not: offerId },
-          status: "REJECTED",
-        },
-        include: {
-          fixer: true,
-        },
-      });
-
-      for (const rejectedOffer of rejectedOffers) {
-        try {
-          await notifyAndEmail(
-            rejectedOffer.fixerId,
-            "OFFER_REJECTED",
-            "Offer not selected",
-            `Another fixer was chosen for ${offer.repairRequest.title}. Keep making offers!`,
-            offer.repairRequestId
-          );
-        } catch (err) {
-          console.error("Failed to notify rejected fixer:", err);
-        }
-      }
-    } catch (notifError) {
-      console.error("Failed to send rejection notifications:", notifError);
+      console.error("Failed to send notification:", notifError);
     }
 
     return NextResponse.json(
       {
-        message: "Offer accepted successfully",
+        message: "Counter-offer accepted successfully",
         job: result.job,
         conversationId: result.conversation.id,
       },
       { status: 200 }
     );
   } catch (error) {
-    console.error("Error accepting offer:", error);
+    console.error("Error accepting counter-offer:", error);
     return NextResponse.json(
-      { error: "Failed to accept offer" },
+      { error: "Failed to accept counter-offer" },
       { status: 500 }
     );
   }

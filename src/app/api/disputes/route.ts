@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { notifyAndEmail } from "@/lib/notifications";
 import { getPlatformSettings } from "@/lib/platformSettings";
+import { findOrCreateConversation, insertSystemMessage } from "@/lib/chatSystemMessage";
 
 export async function POST(request: NextRequest) {
   try {
@@ -164,6 +165,24 @@ export async function POST(request: NextRequest) {
 
       return dispute;
     });
+
+    // Insert system message into conversation
+    try {
+      const conversation = await findOrCreateConversation(
+        job.repairRequestId,
+        job.customerId,
+        job.fixerId
+      );
+      await insertSystemMessage(
+        conversation.id,
+        userId,
+        "DISPUTE_OPENED",
+        "A dispute has been opened",
+        { disputeId: result.id, reason: reason.trim().substring(0, 100), jobId }
+      );
+    } catch (msgError) {
+      console.error("Failed to insert system message:", msgError);
+    }
 
     // Notify the fixer about the dispute
     try {

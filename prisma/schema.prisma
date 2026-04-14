@@ -42,6 +42,31 @@ enum OfferStatus {
   ACCEPTED
   REJECTED
   WITHDRAWN
+  COUNTERED
+}
+
+enum MessageType {
+  TEXT
+  PHOTO
+  OFFER_MADE
+  OFFER_ACCEPTED
+  OFFER_REJECTED
+  OFFER_WITHDRAWN
+  COUNTER_OFFER
+  COUNTER_ACCEPTED
+  COUNTER_REJECTED
+  JOB_SCHEDULED
+  JOB_STARTED
+  JOB_COMPLETED
+  JOB_CANCELLED
+  PAYMENT_HELD
+  PAYMENT_RELEASED
+  PAYMENT_REFUNDED
+  DISPUTE_OPENED
+  DISPUTE_RESOLVED
+  REVIEW_LEFT
+  APPOINTMENT_REMINDER
+  SYSTEM
 }
 
 enum JobStatus {
@@ -261,6 +286,9 @@ model Offer {
   message         String      @db.Text
   suggestedTimes  Json?       // Array of ISO date strings: ["2026-03-10T09:00:00Z", ...]
   status          OfferStatus @default(PENDING)
+  parentOfferId   String?
+  isCounterOffer  Boolean     @default(false)
+  counterByUserId String?
   createdAt       DateTime    @default(now())
   deletedAt       DateTime?
 
@@ -268,12 +296,15 @@ model Offer {
   repairRequest RepairRequest @relation(fields: [repairRequestId], references: [id], onDelete: Cascade)
   fixer         User          @relation(fields: [fixerId], references: [id], onDelete: Cascade)
   jobs          Job[]
+  parentOffer   Offer?        @relation("CounterOffers", fields: [parentOfferId], references: [id])
+  counterOffers Offer[]       @relation("CounterOffers")
 
   @@index([repairRequestId])
   @@index([fixerId])
   @@index([status])
   @@index([createdAt])
   @@index([deletedAt])
+  @@index([parentOfferId])
 }
 
 model Job {
@@ -327,6 +358,7 @@ model Conversation {
   fixer         User          @relation("FixerConversations", fields: [fixerId], references: [id])
   messages      Message[]
 
+  @@unique([repairRequestId, customerId, fixerId])
   @@index([repairRequestId])
   @@index([customerId])
   @@index([fixerId])
@@ -334,13 +366,16 @@ model Conversation {
 }
 
 model Message {
-  id             String       @id @default(uuid())
-  conversationId String
-  senderId       String
-  content        String       @db.Text
-  photoUrl       String?
-  read           Boolean      @default(false)
-  createdAt      DateTime     @default(now())
+  id              String       @id @default(uuid())
+  conversationId  String
+  senderId        String
+  content         String       @db.Text
+  photoUrl        String?
+  read            Boolean      @default(false)
+  type            MessageType  @default(TEXT)
+  metadata        Json?
+  isSystemMessage Boolean      @default(false)
+  createdAt       DateTime     @default(now())
 
   // Relations
   conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
@@ -350,6 +385,7 @@ model Message {
   @@index([senderId])
   @@index([read])
   @@index([createdAt])
+  @@index([type])
 }
 
 model Review {

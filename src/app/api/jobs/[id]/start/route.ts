@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { notifyAndEmail } from "@/lib/notifications";
+import { findOrCreateConversation, insertSystemMessage } from "@/lib/chatSystemMessage";
 
 export async function POST(
   request: NextRequest,
@@ -69,6 +70,24 @@ export async function POST(
         startedAt: new Date(),
       },
     });
+
+    // Insert system message into conversation
+    try {
+      const conversation = await findOrCreateConversation(
+        job.repairRequestId,
+        job.customerId,
+        job.fixerId
+      );
+      await insertSystemMessage(
+        conversation.id,
+        userId,
+        "JOB_STARTED",
+        `${job.fixer.name} has started working on the repair`,
+        { jobId: id, fixerName: job.fixer.name, startedAt: new Date().toISOString() }
+      );
+    } catch (msgError) {
+      console.error("Failed to insert system message:", msgError);
+    }
 
     // Notify the customer
     try {

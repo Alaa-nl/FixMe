@@ -18,6 +18,9 @@ interface Conversation {
   };
   lastMessage: {
     content: string;
+    type?: string;
+    metadata?: Record<string, unknown> | null;
+    isSystemMessage?: boolean;
     createdAt: Date | string;
   } | null;
   unreadCount: number;
@@ -62,6 +65,36 @@ export default function ConversationList() {
   const truncateText = (text: string, maxLength: number) => {
     if (text.length <= maxLength) return text;
     return text.substring(0, maxLength) + "...";
+  };
+
+  const getMessagePreview = (msg: Conversation["lastMessage"]) => {
+    if (!msg) return "";
+    if (!msg.type || msg.type === "TEXT" || msg.type === "PHOTO") {
+      return truncateText(msg.content, 40);
+    }
+    // System message previews
+    const metadata = msg.metadata || {};
+    const previews: Record<string, string> = {
+      OFFER_MADE: `Offer: €${metadata.price ?? ""}`,
+      OFFER_ACCEPTED: "Offer accepted",
+      OFFER_REJECTED: "Offer declined",
+      OFFER_WITHDRAWN: "Offer withdrawn",
+      COUNTER_OFFER: `Counter: €${metadata.counterPrice ?? ""}`,
+      COUNTER_ACCEPTED: "Counter-offer accepted",
+      COUNTER_REJECTED: "Counter-offer declined",
+      JOB_SCHEDULED: "Job scheduled",
+      JOB_STARTED: "Job started",
+      JOB_COMPLETED: "Job completed",
+      JOB_CANCELLED: "Job cancelled",
+      PAYMENT_HELD: `€${metadata.amount ?? ""} held`,
+      PAYMENT_RELEASED: `€${metadata.amount ?? ""} released`,
+      PAYMENT_REFUNDED: `€${metadata.amount ?? ""} refunded`,
+      DISPUTE_OPENED: "Dispute opened",
+      DISPUTE_RESOLVED: "Dispute resolved",
+      REVIEW_LEFT: `Review: ${"★".repeat(Number(metadata.rating ?? 0))}`,
+      SYSTEM: truncateText(msg.content, 40),
+    };
+    return previews[msg.type] || truncateText(msg.content, 40);
   };
 
   if (isLoading) {
@@ -144,8 +177,8 @@ export default function ConversationList() {
 
                   <div className="flex items-center justify-between">
                     {conv.lastMessage && (
-                      <p className="text-sm text-gray-600 truncate">
-                        {truncateText(conv.lastMessage.content, 40)}
+                      <p className={`text-sm truncate ${conv.lastMessage.isSystemMessage ? "text-gray-400 italic" : "text-gray-600"}`}>
+                        {getMessagePreview(conv.lastMessage)}
                       </p>
                     )}
                     {conv.unreadCount > 0 && (

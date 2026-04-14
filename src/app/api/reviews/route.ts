@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { notifyAndEmail } from "@/lib/notifications";
+import { findOrCreateConversation, insertSystemMessage } from "@/lib/chatSystemMessage";
 
 export async function POST(request: NextRequest) {
   try {
@@ -143,6 +144,30 @@ export async function POST(request: NextRequest) {
         totalJobs: totalReviews,
       },
     });
+
+    // Insert system message into conversation
+    try {
+      const conversation = await findOrCreateConversation(
+        job.repairRequestId,
+        job.customerId,
+        job.fixerId
+      );
+      await insertSystemMessage(
+        conversation.id,
+        userId,
+        "REVIEW_LEFT",
+        `${session.user.name} left a ${rating}-star review`,
+        {
+          reviewId: review.id,
+          rating,
+          comment: comment?.trim() || null,
+          reviewerName: session.user.name,
+          reviewerId: userId,
+        }
+      );
+    } catch (msgError) {
+      console.error("Failed to insert system message:", msgError);
+    }
 
     // Notify the reviewed user
     try {

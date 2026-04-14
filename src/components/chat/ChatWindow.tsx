@@ -10,6 +10,9 @@ interface Message {
   id: string;
   content: string;
   photoUrl: string | null;
+  type?: string;
+  metadata?: Record<string, unknown> | null;
+  isSystemMessage?: boolean;
   createdAt: Date | string;
   read: boolean;
   sender: {
@@ -24,6 +27,8 @@ interface Message {
 interface ConversationData {
   conversation: {
     id: string;
+    customerId: string;
+    fixerId: string;
     otherUser: {
       id: string;
       name: string;
@@ -481,6 +486,53 @@ export default function ChatWindow({ conversationId }: ChatWindowProps) {
     }
   };
 
+  // Handle actions from interactive chat cards (offer accept/reject/counter, etc.)
+  const handleCardAction = async (action: string, data: Record<string, unknown>) => {
+    try {
+      let url = "";
+      let body: Record<string, unknown> = {};
+
+      switch (action) {
+        case "accept-offer":
+          url = `/api/offers/${data.offerId}/accept`;
+          break;
+        case "reject-offer":
+          url = `/api/offers/${data.offerId}/reject`;
+          break;
+        case "counter-offer":
+          url = `/api/offers/${data.offerId}/counter`;
+          body = { counterPrice: data.counterPrice, counterMessage: data.counterMessage };
+          break;
+        case "accept-counter":
+          url = `/api/offers/${data.offerId}/counter-accept`;
+          break;
+        case "reject-counter":
+          url = `/api/offers/${data.offerId}/counter-reject`;
+          break;
+        default:
+          console.warn("Unknown card action:", action);
+          return;
+      }
+
+      const res = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        alert(err.error || "Action failed. Please try again.");
+      }
+
+      // Refresh messages to show updated state
+      fetchMessages(true);
+    } catch (error) {
+      console.error("Error handling card action:", error);
+      alert("Something went wrong. Please try again.");
+    }
+  };
+
   const groupMessagesByDate = (messages: Message[]) => {
     const groups: { [key: string]: Message[] } = {};
 
@@ -596,11 +648,15 @@ export default function ChatWindow({ conversationId }: ChatWindowProps) {
                 key={message.id}
                 message={message}
                 isOwn={message.sender.id === session?.user?.id}
+                currentUserId={session?.user?.id}
+                isCustomer={session?.user?.id === conversationData?.conversation.customerId}
+                isFixer={session?.user?.id === conversationData?.conversation.fixerId}
                 onRetry={
                   message.failed
                     ? () => handleRetryMessage(message.id, message.content)
                     : undefined
                 }
+                onAction={handleCardAction}
               />
             ))}
           </div>

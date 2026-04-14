@@ -22,9 +22,7 @@ export async function POST(
     const offer = await prisma.offer.findUnique({
       where: { id: offerId },
       include: {
-        repairRequest: {
-          include: { customer: true },
-        },
+        repairRequest: { include: { customer: true } },
         fixer: true,
       },
     });
@@ -33,16 +31,24 @@ export async function POST(
       return NextResponse.json({ error: "Offer not found" }, { status: 404 });
     }
 
-    if (offer.repairRequest.customerId !== session.user.id) {
+    if (!offer.isCounterOffer) {
       return NextResponse.json(
-        { error: "Only the request owner can reject offers" },
+        { error: "This is not a counter-offer" },
+        { status: 400 }
+      );
+    }
+
+    // Only the fixer can reject a counter-offer
+    if (offer.fixerId !== session.user.id) {
+      return NextResponse.json(
+        { error: "Only the fixer can reject a counter-offer" },
         { status: 403 }
       );
     }
 
     if (offer.status !== "PENDING") {
       return NextResponse.json(
-        { error: "Only pending offers can be rejected" },
+        { error: "Only pending counter-offers can be rejected" },
         { status: 400 }
       );
     }
@@ -52,7 +58,7 @@ export async function POST(
       data: { status: "REJECTED" },
     });
 
-    // Insert system message into conversation
+    // Insert system message
     try {
       const conversation = await findOrCreateConversation(
         offer.repairRequestId,
@@ -62,35 +68,35 @@ export async function POST(
       await insertSystemMessage(
         conversation.id,
         session.user.id,
-        "OFFER_REJECTED",
-        `Offer of €${offer.price} declined`,
+        "COUNTER_REJECTED",
+        `Counter-offer of €${offer.price} declined`,
         { offerId, price: offer.price }
       );
     } catch (msgError) {
       console.error("Failed to insert system message:", msgError);
     }
 
-    // Notify the fixer
+    // Notify the customer
     try {
       await notifyAndEmail(
-        offer.fixerId,
+        offer.repairRequest.customerId,
         "OFFER_REJECTED",
-        "Offer declined",
-        `${offer.repairRequest.customer.name} declined your offer of €${offer.price} for "${offer.repairRequest.title}". Keep making offers on other requests!`,
+        "Counter-offer declined",
+        `${offer.fixer.name} declined your counter-offer of €${offer.price} for "${offer.repairRequest.title}"`,
         offer.repairRequestId
       );
     } catch (notifError) {
-      console.error("Failed to send rejection notification:", notifError);
+      console.error("Failed to send notification:", notifError);
     }
 
     return NextResponse.json(
-      { message: "Offer rejected successfully" },
+      { message: "Counter-offer rejected" },
       { status: 200 }
     );
   } catch (error) {
-    console.error("Error rejecting offer:", error);
+    console.error("Error rejecting counter-offer:", error);
     return NextResponse.json(
-      { error: "Failed to reject offer" },
+      { error: "Failed to reject counter-offer" },
       { status: 500 }
     );
   }

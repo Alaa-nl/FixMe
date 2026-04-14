@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db";
 import { getPlatformSettings } from "@/lib/platformSettings";
 import { notifyAndEmail, sendInvoiceEmail } from "@/lib/notifications";
 import { generateServiceInvoice, generateCommissionInvoice } from "@/lib/invoice";
+import { findOrCreateConversation, insertSystemMessage } from "@/lib/chatSystemMessage";
 
 export async function POST(
   request: NextRequest,
@@ -115,6 +116,44 @@ export async function POST(
 
       return updatedJob;
     });
+
+    // Insert system messages into conversation
+    try {
+      const payment = job.payments && job.payments.length > 0 ? job.payments[0] : null;
+      const payout = payment?.fixerPayout || job.agreedPrice * 0.85;
+
+      const conversation = await findOrCreateConversation(
+        job.repairRequestId,
+        job.customerId,
+        job.fixerId
+      );
+
+      await insertSystemMessage(
+        conversation.id,
+        userId,
+        "JOB_COMPLETED",
+        "Job has been completed",
+        { jobId: id, completedAt: new Date().toISOString() }
+      );
+
+      await insertSystemMessage(
+        conversation.id,
+        userId,
+        "PAYMENT_RELEASED",
+        `€${job.agreedPrice} released`,
+        { amount: job.agreedPrice, fixerPayout: payout }
+      );
+
+      await insertSystemMessage(
+        conversation.id,
+        userId,
+        "SYSTEM",
+        "How was the repair? Leave a review!",
+        { preview: "Leave a review", jobId: id }
+      );
+    } catch (msgError) {
+      console.error("Failed to insert system messages:", msgError);
+    }
 
     // Notify the fixer
     try {
