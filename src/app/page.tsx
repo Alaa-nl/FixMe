@@ -115,44 +115,15 @@ export default async function Home() {
               </div>
             </HomepageAnimations>
 
-            {/* Right — illustration card stack */}
+            {/* Right — hero illustration */}
             <HomepageAnimations variant="hero-right">
               <div className="hidden md:flex items-center justify-center">
-                <div className="relative w-full max-w-sm">
-                  {/* Main visual card */}
-                  <div className="w-full aspect-[4/3] bg-gradient-to-br from-secondary/[0.06] to-primary/[0.08] rounded-3xl flex items-center justify-center border border-secondary/[0.08] relative overflow-hidden">
-                    <div className="absolute inset-0 noise-bg" />
-                    <div className="text-center relative z-10">
-                      <Wrench className="w-20 h-20 text-primary/25 mx-auto mb-3" strokeWidth={1.2} />
-                      <p className="text-secondary/40 font-display font-bold text-xl">FixMe</p>
-                    </div>
-                  </div>
-
-                  {/* Floating card — top right */}
-                  <div className="absolute -top-5 -right-5 bg-white rounded-2xl shadow-elevated px-4 py-3 border border-gray-100/80" style={{ animation: "float 4s ease-in-out infinite" }}>
-                    <div className="flex items-center gap-2.5">
-                      <div className="w-9 h-9 bg-success/10 rounded-xl flex items-center justify-center">
-                        <CircleCheckBig className="w-4.5 h-4.5 text-success" />
-                      </div>
-                      <div>
-                        <p className="text-xs font-bold text-gray-800">Geverifieerd</p>
-                        <p className="text-[11px] text-gray-400">Beoordeeld & betrouwbaar</p>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Floating card — bottom left */}
-                  <div className="absolute -bottom-5 -left-5 bg-white rounded-2xl shadow-elevated px-4 py-3 border border-gray-100/80" style={{ animation: "float 4s ease-in-out infinite 1s" }}>
-                    <div className="flex items-center gap-2.5">
-                      <div className="w-9 h-9 bg-primary/10 rounded-xl flex items-center justify-center">
-                        <Star className="w-4.5 h-4.5 text-primary" />
-                      </div>
-                      <div>
-                        <p className="text-xs font-bold text-gray-800">4.9 Gemiddeld</p>
-                        <p className="text-[11px] text-gray-400">Klantbeoordeling</p>
-                      </div>
-                    </div>
-                  </div>
+                <div className="relative w-full max-w-md">
+                  <img
+                    src="/images/hero-illustration.svg"
+                    alt="FixMe app — chat-based repair marketplace"
+                    className="w-full h-auto drop-shadow-lg"
+                  />
                 </div>
               </div>
             </HomepageAnimations>
