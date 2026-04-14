@@ -16,6 +16,7 @@ import { haversineDistance } from "@/lib/geo";
 import SuggestedFixers from "@/components/request/SuggestedFixers";
 import RequestLocationMapClient from "@/components/map/RequestLocationMapClient";
 import DeleteRequestButton from "@/components/request/DeleteRequestButton";
+import AdminDeleteRequestButton from "@/components/request/AdminDeleteRequestButton";
 import ViewCounter from "@/components/request/ViewCounter";
 
 export const dynamic = "force-dynamic";
@@ -83,6 +84,7 @@ export default async function RequestPage({ params }: RequestPageProps) {
   }
 
   const isRequestOwner = session?.user?.id === request.customer.id;
+  const isAdmin = session?.user?.userType === "ADMIN";
   const isLoggedIn = !!session?.user;
 
   // Check if current user is a fixer
@@ -485,6 +487,14 @@ export default async function RequestPage({ params }: RequestPageProps) {
                   </p>
                 </div>
               )
+            )}
+
+            {/* Admin delete button -- visible to admins on any listing */}
+            {isAdmin && !isRequestOwner && (
+              <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-200">
+                <p className="text-xs text-gray-500 mb-3">Admin action — moves listing to trash (recoverable within 30 days)</p>
+                <AdminDeleteRequestButton requestId={request.id} />
+              </div>
             )}
           </div>
         </div>
