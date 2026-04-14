@@ -16,6 +16,7 @@ import { haversineDistance } from "@/lib/geo";
 import SuggestedFixers from "@/components/request/SuggestedFixers";
 import RequestLocationMapClient from "@/components/map/RequestLocationMapClient";
 import DeleteRequestButton from "@/components/request/DeleteRequestButton";
+import ViewCounter from "@/components/request/ViewCounter";
 
 export const dynamic = "force-dynamic";
 
@@ -393,6 +394,14 @@ export default async function RequestPage({ params }: RequestPageProps) {
                   <div className="text-sm text-gray-600 mb-1 flex items-center gap-1.5"><MessageSquare className="w-3.5 h-3.5" /> Offers</div>
                   <div className="text-sm font-medium text-gray-800">
                     {request._count.offers}
+                  </div>
+                </div>
+
+                {/* Views */}
+                <div>
+                  <div className="text-sm text-gray-600 mb-1">Views</div>
+                  <div className="text-sm font-medium text-gray-800">
+                    <ViewCounter requestId={request.id} initialCount={request.viewCount} size="sm" />
                   </div>
                 </div>
               </div>

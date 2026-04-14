@@ -33,6 +33,12 @@ export async function POST(
             name: true,
           },
         },
+        fixer: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
         repairRequest: {
           select: {
             id: true,
@@ -147,9 +153,16 @@ export async function POST(
       await insertSystemMessage(
         conversation.id,
         userId,
-        "SYSTEM",
+        "REVIEW_PROMPT",
         "How was the repair? Leave a review!",
-        { preview: "Leave a review", jobId: id }
+        {
+          preview: "Leave a review",
+          jobId: id,
+          customerName: job.customer.name,
+          fixerName: job.fixer.name,
+          customerId: job.customerId,
+          fixerId: job.fixerId,
+        }
       );
     } catch (msgError) {
       console.error("Failed to insert system messages:", msgError);

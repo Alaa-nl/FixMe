@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { MapPin, Clock, AlertTriangle, CheckCircle2, CircleDot, MessageCircle } from "lucide-react";
+import { MapPin, Clock, AlertTriangle, CheckCircle2, CircleDot, MessageCircle, Eye } from "lucide-react";
 import { timeAgo } from "@/lib/utils";
 import { CategoryIcon } from "@/lib/categoryIconsReact";
 
@@ -31,6 +31,7 @@ interface RequestCardProps {
     _count: {
       offers: number;
     };
+    viewCount?: number;
     distanceKm?: number;
   };
 }
@@ -174,9 +175,17 @@ export default function RequestCard({ request }: RequestCardProps) {
           )}
         </div>
 
-        {/* Footer — time and offer count */}
+        {/* Footer — time, views, and offer count */}
         <div className="flex items-center justify-between pt-3 border-t border-gray-100/80">
-          <span className="text-xs text-gray-400" suppressHydrationWarning>{timeAgo(request.createdAt)}</span>
+          <div className="flex items-center gap-3">
+            <span className="text-xs text-gray-400" suppressHydrationWarning>{timeAgo(request.createdAt)}</span>
+            {(request.viewCount ?? 0) > 0 && (
+              <span className="inline-flex items-center gap-1 text-xs text-gray-400">
+                <Eye className="w-3 h-3" />
+                {request.viewCount}
+              </span>
+            )}
+          </div>
           <span className="inline-flex items-center gap-1 text-xs font-bold text-primary">
             <MessageCircle className="w-3.5 h-3.5" />
             {request._count.offers === 0

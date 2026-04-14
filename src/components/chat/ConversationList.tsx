@@ -89,6 +89,7 @@ export default function ConversationList() {
       DISPUTE_OPENED: "⚠ Dispute opened",
       DISPUTE_RESOLVED: "✓ Dispute resolved",
       REVIEW_LEFT: `★ ${metadata.rating ?? ""}-star review`,
+      REVIEW_PROMPT: "⭐ Leave a review",
       SYSTEM: msg.content.length > 45 ? msg.content.substring(0, 45) + "..." : msg.content,
     };
     return previews[msg.type] || (msg.content.length > 45 ? msg.content.substring(0, 45) + "..." : msg.content);

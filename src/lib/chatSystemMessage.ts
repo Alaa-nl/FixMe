@@ -106,6 +106,8 @@ export function getSystemMessagePreview(type: MessageType, metadata?: Record<str
       return `Review: ${"★".repeat(Number(metadata?.rating ?? 0))}`;
     case "APPOINTMENT_REMINDER":
       return "Appointment reminder";
+    case "REVIEW_PROMPT":
+      return "Leave a review";
     case "SYSTEM":
       return metadata?.preview as string ?? "System message";
     default:

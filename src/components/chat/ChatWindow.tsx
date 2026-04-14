@@ -520,6 +520,10 @@ export default function ChatWindow({ conversationId }: ChatWindowProps) {
         case "cancel-job":
           url = `/api/jobs/${data.jobId}/cancel`;
           break;
+        case "refresh":
+          // Just refresh messages (used after inline review submit)
+          fetchMessages(true);
+          return;
         default:
           console.warn("Unknown card action:", action);
           return;

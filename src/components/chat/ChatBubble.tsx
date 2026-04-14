@@ -6,6 +6,7 @@ import CounterOfferCard from "./CounterOfferCard";
 import JobStatusCard from "./JobStatusCard";
 import PaymentCard from "./PaymentCard";
 import ReviewCard from "./ReviewCard";
+import ReviewPromptCard from "./ReviewPromptCard";
 import DisputeCard from "./DisputeCard";
 
 interface ChatBubbleProps {
@@ -101,6 +102,18 @@ export default function ChatBubble({
         <ReviewCard
           metadata={metadata as any}
           createdAt={message.createdAt}
+        />
+      );
+
+    case "REVIEW_PROMPT":
+      return (
+        <ReviewPromptCard
+          metadata={metadata as any}
+          createdAt={message.createdAt}
+          currentUserId={currentUserId}
+          isCustomer={isCustomer}
+          isFixer={isFixer}
+          onAction={handleAction}
         />
       );
 

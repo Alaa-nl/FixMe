@@ -66,6 +66,7 @@ enum MessageType {
   DISPUTE_RESOLVED
   REVIEW_LEFT
   APPOINTMENT_REMINDER
+  REVIEW_PROMPT
   SYSTEM
 }
 
@@ -258,6 +259,7 @@ model RepairRequest {
   mobility     Mobility
   status       RepairRequestStatus @default(OPEN)
   aiDiagnosis  Json?
+  viewCount    Int                 @default(0)
   createdAt    DateTime            @default(now())
   updatedAt    DateTime            @updatedAt
   deletedAt    DateTime?
@@ -268,6 +270,7 @@ model RepairRequest {
   offers        Offer[]
   jobs          Job[]
   conversations Conversation[]
+  views         RequestView[]
 
   @@index([customerId])
   @@index([categoryId])
@@ -275,6 +278,20 @@ model RepairRequest {
   @@index([city])
   @@index([createdAt])
   @@index([deletedAt])
+}
+
+model RequestView {
+  id              String   @id @default(uuid())
+  repairRequestId String
+  viewerId        String?
+  createdAt       DateTime @default(now())
+
+  // Relations
+  repairRequest RepairRequest @relation(fields: [repairRequestId], references: [id], onDelete: Cascade)
+
+  @@unique([repairRequestId, viewerId])
+  @@index([repairRequestId])
+  @@index([createdAt])
 }
 
 model Offer {
