@@ -104,9 +104,15 @@ export default function JobStatusCard({
   };
 
   // Determine which actions to show based on job status and user role
+  // Cancel is available from both SCHEDULED and IN_PROGRESS for either party
+  const jobCancellable = jobStatus === "SCHEDULED" || jobStatus === "IN_PROGRESS";
   const showStartJob = type === "JOB_SCHEDULED" && isFixer && jobStatus === "SCHEDULED";
-  const showCancelJob = type === "JOB_SCHEDULED" && jobStatus === "SCHEDULED";
   const showCompleteJob = type === "JOB_STARTED" && isCustomer && jobStatus === "IN_PROGRESS";
+  // Show cancel on the card that matches the current status (so it appears on the latest relevant card)
+  const showCancelJob =
+    jobCancellable &&
+    ((type === "JOB_SCHEDULED" && jobStatus === "SCHEDULED") ||
+     (type === "JOB_STARTED" && jobStatus === "IN_PROGRESS"));
   const hasActions = showStartJob || showCancelJob || showCompleteJob;
 
   return (

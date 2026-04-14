@@ -42,21 +42,24 @@ export async function POST(
       );
     }
 
-    // Validate job is in SCHEDULED status (can't cancel once started)
-    if (job.status !== "SCHEDULED") {
+    // Allow cancellation from SCHEDULED or IN_PROGRESS
+    const cancellableStatuses = ["SCHEDULED", "IN_PROGRESS"];
+    if (!cancellableStatuses.includes(job.status)) {
       return NextResponse.json(
-        { error: "Job can only be cancelled from SCHEDULED status" },
+        { error: "Job can only be cancelled when scheduled or in progress" },
         { status: 400 }
       );
     }
 
+    const wasInProgress = job.status === "IN_PROGRESS";
+
     // Use transaction to update everything atomically
     const result = await prisma.$transaction(async (tx) => {
-      // Update job to REFUNDED
+      // Update job to CANCELLED
       const updatedJob = await tx.job.update({
         where: { id },
         data: {
-          status: "REFUNDED",
+          status: "CANCELLED",
         },
       });
 
