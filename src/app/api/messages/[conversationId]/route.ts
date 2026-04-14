@@ -121,6 +121,26 @@ export async function GET(
         ? conversation.fixer
         : conversation.customer;
 
+    // Fetch active job for this conversation (to show action buttons on job cards)
+    const activeJob = await prisma.job.findFirst({
+      where: {
+        repairRequestId: conversation.repairRequestId,
+        customerId: conversation.customerId,
+        fixerId: conversation.fixerId,
+      },
+      orderBy: { createdAt: "desc" },
+      select: { id: true, status: true },
+    });
+
+    // Fetch active offers to determine offer statuses for card rendering
+    const activeOffers = await prisma.offer.findMany({
+      where: {
+        repairRequestId: conversation.repairRequestId,
+        fixerId: conversation.fixerId,
+      },
+      select: { id: true, status: true },
+    });
+
     return NextResponse.json(
       {
         conversation: {
@@ -129,6 +149,10 @@ export async function GET(
           fixerId: conversation.fixerId,
           otherUser,
           repairRequest: conversation.repairRequest,
+          activeJob: activeJob || null,
+          offerStatuses: Object.fromEntries(
+            activeOffers.map((o) => [o.id, o.status])
+          ),
         },
         messages,
         hasMore,

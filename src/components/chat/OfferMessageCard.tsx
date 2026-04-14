@@ -2,7 +2,15 @@
 
 import { useState } from "react";
 import { timeAgo } from "@/lib/utils";
-import { Clock, Star, CheckCircle, XCircle, ArrowLeftRight, BadgeCheck } from "lucide-react";
+import {
+  Clock,
+  Star,
+  CheckCircle,
+  XCircle,
+  ArrowLeftRight,
+  BadgeCheck,
+  Loader2,
+} from "lucide-react";
 import CounterOfferForm from "./CounterOfferForm";
 
 interface OfferMessageCardProps {
@@ -61,49 +69,52 @@ export default function OfferMessageCard({
   const statusBadge = () => {
     if (!offerStatus || offerStatus === "PENDING") return null;
     const badges: Record<string, { label: string; color: string }> = {
-      ACCEPTED: { label: "Accepted", color: "bg-emerald-100 text-emerald-700" },
-      REJECTED: { label: "Declined", color: "bg-red-100 text-red-700" },
-      WITHDRAWN: { label: "Withdrawn", color: "bg-gray-100 text-gray-600" },
-      COUNTERED: { label: "Countered", color: "bg-blue-100 text-blue-700" },
+      ACCEPTED: { label: "Accepted", color: "bg-emerald-100 text-emerald-700 border-emerald-200" },
+      REJECTED: { label: "Declined", color: "bg-red-50 text-red-600 border-red-200" },
+      WITHDRAWN: { label: "Withdrawn", color: "bg-gray-100 text-gray-500 border-gray-200" },
+      COUNTERED: { label: "Countered", color: "bg-blue-50 text-blue-600 border-blue-200" },
     };
     const badge = badges[offerStatus];
     if (!badge) return null;
     return (
-      <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${badge.color}`}>
+      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md border ${badge.color}`}>
         {badge.label}
       </span>
     );
   };
 
   return (
-    <div className="flex justify-center my-3">
-      <div className="w-[85%] max-w-sm bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
+    <div className="flex justify-center my-4">
+      <div className="w-[88%] max-w-sm bg-white border border-gray-200/80 rounded-2xl shadow-card overflow-hidden">
         {/* Header */}
-        <div className="px-4 pt-3 pb-2 flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
+        <div className="px-5 pt-4 pb-3 flex items-center justify-between">
+          <div className="flex items-center gap-3">
             {metadata.fixerAvatar ? (
               <img
                 src={metadata.fixerAvatar}
                 alt={metadata.fixerName}
-                className="w-8 h-8 rounded-full object-cover"
+                className="w-10 h-10 rounded-full object-cover ring-2 ring-gray-100"
               />
             ) : (
-              <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-gray-600 text-xs font-bold">
+              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-secondary-400 to-secondary-600 flex items-center justify-center text-white text-sm font-bold ring-2 ring-gray-100">
                 {metadata.fixerName.charAt(0).toUpperCase()}
               </div>
             )}
             <div>
-              <div className="flex items-center gap-1">
-                <span className="text-sm font-semibold text-gray-800">{metadata.fixerName}</span>
+              <div className="flex items-center gap-1.5">
+                <span className="text-sm font-bold font-display text-secondary-800">
+                  {metadata.fixerName}
+                </span>
                 {metadata.fixerVerified && (
-                  <BadgeCheck className="w-3.5 h-3.5 text-blue-500" />
+                  <BadgeCheck className="w-4 h-4 text-primary" />
                 )}
               </div>
-              <div className="flex items-center gap-2 text-[11px] text-gray-500">
+              <div className="flex items-center gap-2.5 text-[11px] text-gray-400 mt-0.5">
                 <span className="flex items-center gap-0.5">
                   <Star className="w-3 h-3 text-amber-400 fill-amber-400" />
                   {metadata.fixerRating.toFixed(1)}
                 </span>
+                <span className="w-0.5 h-0.5 rounded-full bg-gray-300" />
                 <span>{metadata.fixerTotalJobs} jobs</span>
               </div>
             </div>
@@ -112,32 +123,40 @@ export default function OfferMessageCard({
         </div>
 
         {/* Price + time */}
-        <div className="px-4 py-2 border-t border-gray-100">
+        <div className="px-5 py-3 bg-gradient-to-r from-primary-50/50 to-transparent border-y border-gray-100">
           <div className="flex items-baseline justify-between">
-            <span className="text-2xl font-bold text-gray-900">€{metadata.price}</span>
-            <span className="flex items-center gap-1 text-xs text-gray-500">
-              <Clock className="w-3 h-3" />
+            <div className="flex items-baseline gap-1">
+              <span className="text-3xl font-display font-bold text-secondary-900">
+                €{metadata.price}
+              </span>
+            </div>
+            <span className="flex items-center gap-1.5 text-xs text-gray-500 font-medium">
+              <Clock className="w-3.5 h-3.5" />
               {metadata.estimatedTime}
             </span>
           </div>
         </div>
 
         {/* Message */}
-        <div className="px-4 py-2 border-t border-gray-100">
-          <p className="text-sm text-gray-600 line-clamp-3">{metadata.message}</p>
-        </div>
+        {metadata.message && (
+          <div className="px-5 py-3">
+            <p className="text-sm text-gray-600 leading-relaxed line-clamp-3">
+              {metadata.message}
+            </p>
+          </div>
+        )}
 
         {/* Suggested times */}
         {metadata.suggestedTimes && metadata.suggestedTimes.length > 0 && (
-          <div className="px-4 py-2 border-t border-gray-100">
-            <p className="text-[10px] font-medium text-gray-500 uppercase tracking-wider mb-1">
-              Suggested times
+          <div className="px-5 py-3 border-t border-gray-100">
+            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2">
+              Available times
             </p>
-            <div className="flex flex-wrap gap-1">
+            <div className="flex flex-wrap gap-1.5">
               {metadata.suggestedTimes.map((time, i) => (
                 <span
                   key={i}
-                  className="text-[11px] px-2 py-0.5 bg-gray-100 text-gray-600 rounded-md"
+                  className="text-[11px] px-2.5 py-1 bg-secondary-50 text-secondary-700 rounded-lg font-medium"
                 >
                   {new Date(time).toLocaleDateString("en-NL", {
                     weekday: "short",
@@ -154,19 +173,23 @@ export default function OfferMessageCard({
 
         {/* Action buttons */}
         {showActions && !showCounterForm && (
-          <div className="px-4 py-3 border-t border-gray-100 flex gap-2">
+          <div className="px-5 py-3.5 border-t border-gray-100 flex gap-2">
             <button
               onClick={handleAccept}
               disabled={isActioning}
-              className="flex-1 flex items-center justify-center gap-1.5 py-2 bg-emerald-600 text-white text-sm font-medium rounded-lg hover:bg-emerald-700 transition-colors disabled:opacity-50"
+              className="flex-1 flex items-center justify-center gap-1.5 py-2.5 bg-emerald-600 text-white text-sm font-semibold rounded-xl hover:bg-emerald-700 transition-all disabled:opacity-50 shadow-sm"
             >
-              <CheckCircle className="w-4 h-4" />
+              {isActioning ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <CheckCircle className="w-4 h-4" />
+              )}
               Accept
             </button>
             <button
               onClick={() => setShowCounterForm(true)}
               disabled={isActioning}
-              className="flex-1 flex items-center justify-center gap-1.5 py-2 bg-blue-50 text-blue-700 text-sm font-medium rounded-lg hover:bg-blue-100 transition-colors disabled:opacity-50"
+              className="flex-1 flex items-center justify-center gap-1.5 py-2.5 bg-secondary-50 text-secondary-700 text-sm font-semibold rounded-xl hover:bg-secondary-100 transition-all disabled:opacity-50"
             >
               <ArrowLeftRight className="w-4 h-4" />
               Counter
@@ -174,10 +197,9 @@ export default function OfferMessageCard({
             <button
               onClick={handleReject}
               disabled={isActioning}
-              className="flex-1 flex items-center justify-center gap-1.5 py-2 bg-gray-100 text-gray-600 text-sm font-medium rounded-lg hover:bg-gray-200 transition-colors disabled:opacity-50"
+              className="flex items-center justify-center gap-1.5 px-4 py-2.5 text-gray-400 text-sm font-medium rounded-xl hover:bg-red-50 hover:text-red-500 transition-all disabled:opacity-50"
             >
               <XCircle className="w-4 h-4" />
-              Decline
             </button>
           </div>
         )}
@@ -192,8 +214,10 @@ export default function OfferMessageCard({
         )}
 
         {/* Timestamp */}
-        <div className="px-4 py-1.5 border-t border-gray-50">
-          <span className="text-[10px] text-gray-400">{timeAgo(createdAt)}</span>
+        <div className="px-5 py-2 border-t border-gray-50">
+          <span className="text-[10px] text-gray-400 font-medium tracking-wide uppercase tabular-nums">
+            {timeAgo(createdAt)}
+          </span>
         </div>
       </div>
     </div>

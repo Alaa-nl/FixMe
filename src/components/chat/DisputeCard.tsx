@@ -17,9 +17,12 @@ interface DisputeCardProps {
 export default function DisputeCard({ type, metadata, createdAt }: DisputeCardProps) {
   const isOpened = type === "DISPUTE_OPENED";
   const Icon = isOpened ? AlertTriangle : Shield;
-  const color = isOpened ? "text-red-600" : "text-blue-600";
-  const bg = isOpened ? "bg-red-50" : "bg-blue-50";
-  const border = isOpened ? "border-red-200" : "border-blue-200";
+  const color = isOpened ? "text-red-500" : "text-secondary-600";
+  const iconBg = isOpened ? "bg-red-100" : "bg-secondary-100";
+  const bg = isOpened
+    ? "bg-gradient-to-br from-red-50/80 to-white"
+    : "bg-gradient-to-br from-secondary-50/80 to-white";
+  const border = isOpened ? "border-red-200/60" : "border-secondary-200/60";
 
   const resolutionLabel = () => {
     if (!metadata.resolution) return null;
@@ -32,32 +35,36 @@ export default function DisputeCard({ type, metadata, createdAt }: DisputeCardPr
   };
 
   return (
-    <div className="flex justify-center my-3">
-      <div className={`w-[75%] max-w-xs border ${border} rounded-xl overflow-hidden ${bg}`}>
-        <div className="px-4 py-3">
-          <div className="flex items-center gap-2 mb-2">
-            <Icon className={`w-5 h-5 ${color}`} />
-            <span className={`text-sm font-semibold ${color}`}>
+    <div className="flex justify-center my-4">
+      <div className={`w-[78%] max-w-xs border ${border} rounded-2xl overflow-hidden ${bg} shadow-card`}>
+        <div className="px-5 py-4">
+          <div className="flex items-center gap-3 mb-3">
+            <div className={`w-9 h-9 rounded-xl ${iconBg} flex items-center justify-center flex-shrink-0`}>
+              <Icon className={`w-4 h-4 ${color}`} />
+            </div>
+            <span className={`text-sm font-bold font-display ${color}`}>
               {isOpened ? "Dispute Opened" : "Dispute Resolved"}
             </span>
           </div>
           {isOpened && metadata.reason && (
-            <p className="text-sm text-gray-600 line-clamp-2">{metadata.reason}</p>
+            <p className="text-sm text-gray-600 leading-relaxed line-clamp-2 mb-2">{metadata.reason}</p>
           )}
           {!isOpened && (
-            <p className="text-sm text-gray-600">{resolutionLabel()}</p>
+            <p className="text-sm text-gray-600 leading-relaxed mb-2">{resolutionLabel()}</p>
           )}
           {metadata.disputeId && (
             <Link
               href={`/disputes/${metadata.disputeId}`}
-              className="inline-block mt-2 text-xs text-blue-600 hover:underline font-medium"
+              className="inline-flex items-center text-xs text-primary font-semibold hover:underline"
             >
-              View details
+              View details →
             </Link>
           )}
         </div>
-        <div className="px-4 py-1.5 border-t border-gray-100/50">
-          <span className="text-[10px] text-gray-400">{timeAgo(createdAt)}</span>
+        <div className="px-5 py-2 border-t border-gray-100/50">
+          <span className="text-[10px] text-gray-400 font-medium tracking-wide uppercase tabular-nums">
+            {timeAgo(createdAt)}
+          </span>
         </div>
       </div>
     </div>

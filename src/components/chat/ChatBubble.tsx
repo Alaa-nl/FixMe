@@ -77,6 +77,11 @@ export default function ChatBubble({
           type={type}
           metadata={metadata as any}
           createdAt={message.createdAt}
+          currentUserId={currentUserId}
+          isCustomer={isCustomer}
+          isFixer={isFixer}
+          jobStatus={metadata.jobStatus as string | undefined}
+          onAction={handleAction}
         />
       );
 
@@ -124,55 +129,52 @@ export default function ChatBubble({
         />
       );
 
-    // Default: TEXT and PHOTO — original bubble behavior
+    // Default: TEXT and PHOTO — refined bubble
     default:
       return (
-        <div className={`flex ${isOwn ? "justify-end" : "justify-start"} mb-4`}>
-          <div className={`max-w-[70%] ${isOwn ? "items-end" : "items-start"} flex flex-col`}>
-            {/* Photo if present */}
+        <div className={`flex ${isOwn ? "justify-end" : "justify-start"} mb-3`}>
+          <div className={`max-w-[75%] ${isOwn ? "items-end" : "items-start"} flex flex-col`}>
             {message.photoUrl && (
-              <div className="mb-2">
+              <div className="mb-1.5">
                 <img
                   src={message.photoUrl}
                   alt="Attachment"
-                  className="max-w-xs rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
+                  className="max-w-xs rounded-2xl cursor-pointer hover:opacity-90 transition-opacity shadow-card"
                   onClick={() => window.open(message.photoUrl || "", "_blank")}
                 />
               </div>
             )}
 
-            {/* Message bubble */}
             <div
-              className={`rounded-2xl px-4 py-2 ${
+              className={`rounded-2xl px-4 py-2.5 ${
                 message.failed
-                  ? "bg-red-100 text-red-800 border border-red-300"
+                  ? "bg-red-50 text-red-700 border border-red-200"
                   : isOwn
-                  ? "bg-primary text-white rounded-br-sm"
-                  : "bg-gray-100 text-gray-800 rounded-bl-sm"
+                  ? "bg-primary text-white rounded-br-md shadow-sm"
+                  : "bg-white text-gray-800 rounded-bl-md border border-gray-100 shadow-card"
               }`}
             >
-              <p className="whitespace-pre-wrap break-words">{message.content}</p>
+              <p className="whitespace-pre-wrap break-words text-sm leading-relaxed">{message.content}</p>
             </div>
 
-            {/* Timestamp and read status */}
-            <div className="flex items-center gap-2 mt-1 px-2">
-              <span className="text-xs text-gray-500">{timeAgo(message.createdAt)}</span>
+            <div className="flex items-center gap-1.5 mt-1 px-1">
+              <span className="text-[11px] text-gray-400">{timeAgo(message.createdAt)}</span>
               {isOwn && message.sending && (
-                <span className="text-xs text-gray-400">Sending...</span>
+                <span className="text-[11px] text-gray-300">Sending...</span>
               )}
               {isOwn && message.failed && onRetry && (
                 <button
                   onClick={onRetry}
-                  className="text-xs text-red-600 hover:underline font-medium"
+                  className="text-[11px] text-red-500 hover:underline font-semibold"
                 >
                   Retry
                 </button>
               )}
               {isOwn && !message.sending && !message.failed && message.read && (
-                <CheckCheck className="w-3.5 h-3.5 text-blue-500" />
+                <CheckCheck className="w-3.5 h-3.5 text-primary-400" />
               )}
               {isOwn && !message.sending && !message.failed && !message.read && (
-                <Check className="w-3.5 h-3.5 text-gray-400" />
+                <Check className="w-3.5 h-3.5 text-gray-300" />
               )}
             </div>
           </div>

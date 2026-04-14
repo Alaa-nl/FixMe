@@ -38,6 +38,8 @@ interface ConversationData {
       id: string;
       title: string;
     };
+    activeJob?: { id: string; status: string } | null;
+    offerStatuses?: Record<string, string>;
   };
   messages: Message[];
   hasMore?: boolean;
@@ -509,6 +511,15 @@ export default function ChatWindow({ conversationId }: ChatWindowProps) {
         case "reject-counter":
           url = `/api/offers/${data.offerId}/counter-reject`;
           break;
+        case "start-job":
+          url = `/api/jobs/${data.jobId}/start`;
+          break;
+        case "complete-job":
+          url = `/api/jobs/${data.jobId}/complete`;
+          break;
+        case "cancel-job":
+          url = `/api/jobs/${data.jobId}/cancel`;
+          break;
         default:
           console.warn("Unknown card action:", action);
           return;
@@ -564,16 +575,19 @@ export default function ChatWindow({ conversationId }: ChatWindowProps) {
 
   if (isLoading) {
     return (
-      <div className="h-full flex items-center justify-center bg-gray-50">
-        <p className="text-gray-500">Loading messages...</p>
+      <div className="h-full flex items-center justify-center bg-background">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-8 h-8 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
+          <p className="text-sm text-gray-400 font-medium">Loading messages...</p>
+        </div>
       </div>
     );
   }
 
   if (!conversationData) {
     return (
-      <div className="h-full flex items-center justify-center bg-gray-50">
-        <p className="text-gray-500">Conversation not found</p>
+      <div className="h-full flex items-center justify-center bg-background">
+        <p className="text-sm text-gray-400">Conversation not found</p>
       </div>
     );
   }
@@ -581,11 +595,11 @@ export default function ChatWindow({ conversationId }: ChatWindowProps) {
   const messageGroups = groupMessagesByDate(messages);
 
   return (
-    <div className="h-full flex flex-col bg-white relative">
+    <div className="h-full flex flex-col bg-background relative">
       {/* Header */}
-      <div className="border-b bg-white px-4 py-3 flex items-center gap-3">
-        <Link href="/messages" className="md:hidden">
-          <ArrowLeft className="w-6 h-6 text-gray-600" />
+      <div className="border-b border-gray-200/80 bg-white/95 backdrop-blur-sm px-4 md:px-6 py-3 flex items-center gap-3 z-10">
+        <Link href="/messages" className="md:hidden p-1 -ml-1 rounded-lg hover:bg-gray-100 transition-colors">
+          <ArrowLeft className="w-5 h-5 text-secondary-600" />
         </Link>
 
         <Link href={`/profile/${conversationData.conversation.otherUser.id}`} className="shrink-0">
@@ -593,32 +607,59 @@ export default function ChatWindow({ conversationId }: ChatWindowProps) {
             <img
               src={conversationData.conversation.otherUser.avatarUrl}
               alt={conversationData.conversation.otherUser.name}
-              className="w-10 h-10 rounded-full object-cover hover:ring-2 hover:ring-primary transition-all"
+              className="w-10 h-10 rounded-full object-cover ring-2 ring-gray-100 hover:ring-primary-200 transition-all shadow-sm"
             />
           ) : (
-            <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-600 font-semibold hover:ring-2 hover:ring-primary transition-all">
+            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-secondary-400 to-secondary-600 flex items-center justify-center text-white font-bold text-sm ring-2 ring-gray-100 hover:ring-primary-200 transition-all shadow-sm">
               {conversationData.conversation.otherUser.name.charAt(0).toUpperCase()}
             </div>
           )}
         </Link>
 
         <div className="flex-1 min-w-0">
-          <Link href={`/profile/${conversationData.conversation.otherUser.id}`} className="font-semibold text-gray-800 truncate hover:text-primary transition-colors block">
+          <Link
+            href={`/profile/${conversationData.conversation.otherUser.id}`}
+            className="text-sm font-bold font-display text-secondary-800 truncate hover:text-primary transition-colors block"
+          >
             {conversationData.conversation.otherUser.name}
           </Link>
           <Link
             href={`/request/${conversationData.conversation.repairRequest.id}`}
-            className="text-xs text-primary hover:underline truncate block"
+            className="text-xs text-primary-600/80 hover:text-primary hover:underline truncate block font-medium"
           >
             {conversationData.conversation.repairRequest.title}
           </Link>
         </div>
+
+        {/* Job status badge in header */}
+        {conversationData.conversation.activeJob && (
+          <div className={`hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold ${
+            conversationData.conversation.activeJob.status === "COMPLETED"
+              ? "bg-emerald-50 text-emerald-700"
+              : conversationData.conversation.activeJob.status === "IN_PROGRESS"
+              ? "bg-amber-50 text-amber-700"
+              : conversationData.conversation.activeJob.status === "SCHEDULED"
+              ? "bg-secondary-50 text-secondary-700"
+              : "bg-gray-100 text-gray-600"
+          }`}>
+            <div className={`w-1.5 h-1.5 rounded-full ${
+              conversationData.conversation.activeJob.status === "COMPLETED"
+                ? "bg-emerald-500"
+                : conversationData.conversation.activeJob.status === "IN_PROGRESS"
+                ? "bg-amber-500 animate-pulse"
+                : conversationData.conversation.activeJob.status === "SCHEDULED"
+                ? "bg-secondary-500"
+                : "bg-gray-400"
+            }`} />
+            {conversationData.conversation.activeJob.status.replace("_", " ")}
+          </div>
+        )}
       </div>
 
       {/* Messages Area */}
       <div
         ref={messageAreaRef}
-        className="flex-1 overflow-y-auto p-4 bg-gray-50 pb-24 md:pb-4"
+        className="flex-1 overflow-y-auto px-4 md:px-6 py-4 pb-24 md:pb-4"
       >
         {/* Load More Button */}
         {hasMore && (
@@ -626,7 +667,7 @@ export default function ChatWindow({ conversationId }: ChatWindowProps) {
             <button
               onClick={loadMoreMessages}
               disabled={isLoadingMore}
-              className="px-4 py-2 bg-white border border-gray-300 rounded-full text-sm text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-5 py-2 bg-white border border-gray-200 rounded-xl text-xs font-medium text-gray-500 hover:bg-gray-50 hover:border-gray-300 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm"
             >
               {isLoadingMore ? "Loading..." : "Load older messages"}
             </button>
@@ -636,29 +677,48 @@ export default function ChatWindow({ conversationId }: ChatWindowProps) {
         {Object.entries(messageGroups).map(([dateLabel, msgs]) => (
           <div key={dateLabel}>
             {/* Date Divider */}
-            <div className="flex items-center justify-center my-4">
-              <div className="px-3 py-1 bg-gray-200 rounded-full text-xs text-gray-600">
+            <div className="flex items-center justify-center my-5">
+              <div className="flex-1 h-px bg-gray-200/60" />
+              <div className="px-4 py-1 text-[11px] font-semibold text-gray-400 uppercase tracking-wider">
                 {dateLabel}
               </div>
+              <div className="flex-1 h-px bg-gray-200/60" />
             </div>
 
             {/* Messages */}
-            {msgs.map((message) => (
-              <ChatBubble
-                key={message.id}
-                message={message}
-                isOwn={message.sender.id === session?.user?.id}
-                currentUserId={session?.user?.id}
-                isCustomer={session?.user?.id === conversationData?.conversation.customerId}
-                isFixer={session?.user?.id === conversationData?.conversation.fixerId}
-                onRetry={
-                  message.failed
-                    ? () => handleRetryMessage(message.id, message.content)
-                    : undefined
+            {msgs.map((message) => {
+              // Enrich system message metadata with live statuses
+              const enrichedMessage = { ...message };
+              if (message.type && message.metadata && conversationData) {
+                const meta = { ...(message.metadata as Record<string, unknown>) };
+                // Inject live offer status for offer/counter cards
+                if (meta.offerId && conversationData.conversation.offerStatuses) {
+                  meta.offerStatus = conversationData.conversation.offerStatuses[meta.offerId as string];
                 }
-                onAction={handleCardAction}
-              />
-            ))}
+                // Inject live job status for job cards
+                if (conversationData.conversation.activeJob) {
+                  meta.jobStatus = conversationData.conversation.activeJob.status;
+                }
+                enrichedMessage.metadata = meta;
+              }
+
+              return (
+                <ChatBubble
+                  key={message.id}
+                  message={enrichedMessage}
+                  isOwn={message.sender.id === session?.user?.id}
+                  currentUserId={session?.user?.id}
+                  isCustomer={session?.user?.id === conversationData?.conversation.customerId}
+                  isFixer={session?.user?.id === conversationData?.conversation.fixerId}
+                  onRetry={
+                    message.failed
+                      ? () => handleRetryMessage(message.id, message.content)
+                      : undefined
+                  }
+                  onAction={handleCardAction}
+                />
+              );
+            })}
           </div>
         ))}
         <div ref={messagesEndRef} />
@@ -668,9 +728,9 @@ export default function ChatWindow({ conversationId }: ChatWindowProps) {
       {newMessageCount > 0 && (
         <button
           onClick={() => scrollToBottom()}
-          className="absolute bottom-28 md:bottom-20 left-1/2 -translate-x-1/2 z-10 flex items-center gap-1.5 px-4 py-2 bg-primary text-white text-sm font-medium rounded-full shadow-lg hover:bg-orange-600 transition-colors animate-in fade-in slide-in-from-bottom-2"
+          className="absolute bottom-28 md:bottom-20 left-1/2 -translate-x-1/2 z-10 flex items-center gap-1.5 px-4 py-2 bg-secondary-800 text-white text-xs font-semibold rounded-full shadow-elevated hover:bg-secondary-700 transition-all"
         >
-          <ChevronDown className="w-4 h-4" />
+          <ChevronDown className="w-3.5 h-3.5" />
           {newMessageCount === 1
             ? "1 new message"
             : `${newMessageCount} new messages`}
@@ -678,7 +738,7 @@ export default function ChatWindow({ conversationId }: ChatWindowProps) {
       )}
 
       {/* Input Area */}
-      <div className="border-t bg-white p-4 fixed bottom-16 md:bottom-0 left-0 right-0 md:relative">
+      <div className="border-t border-gray-200/80 bg-white/95 backdrop-blur-sm p-3 md:p-4 fixed bottom-16 md:bottom-0 left-0 right-0 md:relative">
         {/* File Preview */}
         {filePreview && (
           <div className="mb-3 relative inline-block">
@@ -687,33 +747,32 @@ export default function ChatWindow({ conversationId }: ChatWindowProps) {
                 <img
                   src={filePreview}
                   alt="Preview"
-                  className="max-w-xs max-h-40 rounded-lg border-2 border-gray-300"
+                  className="max-w-xs max-h-32 rounded-xl border border-gray-200 shadow-card"
                 />
               ) : (
                 <video
                   src={filePreview}
-                  className="max-w-xs max-h-40 rounded-lg border-2 border-gray-300"
+                  className="max-w-xs max-h-32 rounded-xl border border-gray-200 shadow-card"
                   controls
                 />
               )}
               <button
                 type="button"
                 onClick={handleCancelFile}
-                className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition-colors"
+                className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition-colors shadow-sm"
               >
-                <X className="w-4 h-4" />
+                <X className="w-3.5 h-3.5" />
               </button>
             </div>
             {isUploading && (
-              <div className="absolute inset-0 bg-black bg-opacity-50 rounded-lg flex items-center justify-center">
-                <div className="text-white text-sm">Uploading...</div>
+              <div className="absolute inset-0 bg-black/40 rounded-xl flex items-center justify-center backdrop-blur-sm">
+                <div className="text-white text-xs font-medium">Uploading...</div>
               </div>
             )}
           </div>
         )}
 
         <form onSubmit={handleSendMessage} className="flex items-end gap-2">
-          {/* Hidden file input */}
           <input
             type="file"
             ref={fileInputRef}
@@ -722,24 +781,22 @@ export default function ChatWindow({ conversationId }: ChatWindowProps) {
             className="hidden"
           />
 
-          {/* Attach button */}
           <button
             type="button"
             onClick={() => fileInputRef.current?.click()}
-            className="flex-shrink-0 p-2 text-gray-500 hover:text-primary transition-colors"
+            className="flex-shrink-0 p-2.5 text-gray-400 hover:text-primary rounded-xl hover:bg-primary-50 transition-all"
             disabled={isSending || isUploading}
           >
             <Paperclip className="w-5 h-5" />
           </button>
 
-          {/* Text input */}
           <textarea
             value={newMessage}
             onChange={(e) => setNewMessage(e.target.value)}
             onKeyPress={handleKeyPress}
             placeholder="Type a message..."
             rows={1}
-            className="flex-1 px-4 py-2 border border-gray-300 rounded-full resize-none focus:outline-none focus:ring-2 focus:ring-primary max-h-32"
+            className="flex-1 px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-2xl resize-none focus:outline-none focus:ring-2 focus:ring-primary/30 focus:bg-white focus:border-primary-200 transition-all text-sm max-h-32 placeholder:text-gray-400"
             style={{
               minHeight: "2.5rem",
               maxHeight: "8rem",
@@ -747,16 +804,15 @@ export default function ChatWindow({ conversationId }: ChatWindowProps) {
             disabled={isUploading}
           />
 
-          {/* Send button */}
           <button
             type="submit"
             disabled={(!newMessage.trim() && !selectedFile) || isSending || isUploading}
-            className="flex-shrink-0 w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed hover:bg-orange-600 transition-colors"
+            className="flex-shrink-0 w-10 h-10 rounded-xl bg-primary text-white flex items-center justify-center disabled:opacity-30 disabled:cursor-not-allowed hover:bg-primary-600 transition-all shadow-sm hover:shadow-glow-orange"
           >
             {isSending || isUploading ? (
-              <div className="animate-spin w-5 h-5 border-2 border-white border-t-transparent rounded-full" />
+              <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full" />
             ) : (
-              <Send className="w-5 h-5" />
+              <Send className="w-4 h-4" />
             )}
           </button>
         </form>
